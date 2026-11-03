@@ -809,7 +809,7 @@
 
                         <i class="far fa-bell-slash"></i>
 
-                        <div>No notifications found.</div>
+                        <div>No notifications found. </div>
 
                     </div>
                 @endforelse
@@ -1497,34 +1497,27 @@
 
 
             const notificationList = document.getElementById('notificationList');
-
             const sentNotifications = document.getElementById('sentNotifications');
-
-
-
-            if (notificationList && sentNotifications) {
-
-
-
-                notificationList.classList.remove('d-none');
-
-
-
-                sentNotifications.classList.add('d-none');
-
-
-
-            }
-
-
 
             document.querySelectorAll('.tab-btn').forEach(function(btn) {
 
+                btn.addEventListener('click', function() {
 
+                    const tab = this.dataset.tab;
 
-                btn.classList.toggle('active', btn.dataset.tab === 'all');
+                    document.querySelectorAll('.tab-btn').forEach(function(b) {
+                        b.classList.remove('active');
+                    });
 
+                    this.classList.add('active');
 
+                    // Show All notifications
+                    notificationList.classList.toggle('d-none', tab !== 'all');
+
+                    // Show Sent notifications
+                    sentNotifications.classList.toggle('d-none', tab !== 'sent');
+
+                });
 
             });
 

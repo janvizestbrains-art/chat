@@ -1909,21 +1909,8 @@
                         </button>
                     </div>
 
-                    <div class="chat-search">
-                        <div class="box">
-                            <i class="fas fa-magnifying-glass"></i>
-                            <input type="text" id="searchContact" placeholder="Search chats">
-                        </div>
-                    </div>
-
-                    <div class="chat-filters" id="chatFilters">
-                        <button type="button" class="active" data-filter="all">All</button>
-                        <button type="button" data-filter="unread">Unread</button>
-                        <button type="button" data-filter="groups">Groups</button>
-                    </div>
-
                     <div class="contacts" id="contacts">
-                        @foreach ($users as $user)
+                        {{-- @foreach ($users as $user)
                             <div class="contact {{ $loop->iteration == 1 ? 'active' : '' }} has-unread"
                                 data-user-id="{{ $user->id }}" data-target="pane-{{ $loop->iteration }}"
                                 data-conversation-id="{{ $user->conversationParticipants->first()?->conversation_id }}"
@@ -1944,7 +1931,7 @@
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        @endforeach --}}
                         {{-- <div class="contact has-unread" data-target="pane-3" data-name="Site Engineers"
                             data-group="1">
                             <div class="avatar" style="background:#ea580c"><i class="fas fa-users"></i></div>
@@ -2654,18 +2641,8 @@
 
                     <div class="emoji-panel" id="emojiPanel"></div>
 
-                    <div class="attach-menu" id="attachMenu">
-                        <label>
-                            <span class="ic" style="background:#8b5cf6"><i class="fas fa-image"></i></span>
-                            Photos
-                            <input type="file" id="imgInput" accept="image/*" multiple hidden>
-                        </label>
-                        <label>
-                            <span class="ic" style="background:#3b82f6"><i class="fas fa-file-lines"></i></span>
-                            Document
-                            <input type="file" id="docInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip"
-                                hidden>
-                        </label>
+                    <div class="attach-menu" id="attachMenu" style="display: none;">
+
                     </div>
 
                     <div class="reply-bar" id="replyBar">
@@ -2823,58 +2800,127 @@
                 attachMenu.classList.remove('show');
             }
 
-            // function loadContact() {
-            //     $.ajax({
-            //         url: "{{ route('loadContact') }}",
-            //         method: "GET",
-            //         success: function(response) {
-            //             console.log(response);
-            //         }
-            //     })
-            // }
-            //openchat   calling
+            function loadContacts() {
 
-            $(document).ready(function() {
+                $.ajax({
+                    url: "{{ route('loadContact') }}",
+                    type: "GET",
 
-                let activeContact = $('.contact.active').first();
+                    success: function(response) {
 
-                if (activeContact.length) {
-                    openChat(activeContact[0]);
-                }
+                        let html = '';
 
-            });
-            /* ---------- open a chat ---------- */
-            function openChat(contact) {
+                        $.each(response.users, function(index, user) {
 
-                $('.contact').removeClass('active');
+                            console.log(user);
 
-                $(contact).addClass('active');
+                            let name = user.employee?.full_name ?? '';
+                            let profile = user.employee?.profile_url ?? '';
 
-                receiverId = $(contact).data('user-id');
+                            let latestMessage = null;
+                            let latestParticipant = null;
 
-                conversationId = $(contact).data('conversation-id');
+                            user.conversation_participants.forEach(function(participant) {
 
-                closePanels();
-                resetNew();
+                                let message = participant.conversation?.latest_message;
 
-                app.classList.add('open');
+                                if (message && (!latestMessage ||
+                                        new Date(message.created_at) > new Date(
+                                            latestMessage.created_at))) {
 
-                loadChat(conversationId, receiverId);
-            }
-            contactsEl.addEventListener('click', function(e) {
-                var c = e.target.closest('.contact');
-                if (c) openChat(c);
-            });
+                                    latestMessage = message;
+                                    latestParticipant = participant;
+                                }
+                            });
 
-            document.querySelectorAll('.chat-head .back').forEach(function(b) {
-                b.addEventListener('click', function() {
-                    app.classList.remove('open');
+                            let conversationId = latestParticipant?.conversation_id ?? '';
+                            let messageText = latestMessage?.message ?? '';
+
+                            let time = '';
+
+                            if (latestMessage) {
+                                time = new Date(latestMessage.created_at).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            }
+
+                            html += `
+                    <div class="contact"
+                        data-user-id="${user.id}"
+                        data-conversation-id="${conversationId}"
+                        data-name="${escapeHtml(name)}">
+
+                        <img class="avatar online"
+                            src="${escapeHtml(profile)}"
+                            style="background:#2563eb">
+
+                        <div class="contact-info">
+                            <div class="contact-top">
+                                <strong>${escapeHtml(name)}</strong>
+                                <small>${time}</small>
+                            </div>
+
+                            <div class="contact-bottom">
+                                <span class="preview">${escapeHtml(messageText)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                        });
+
+                        // Display all contacts
+                        $('#contacts').html(html);
+
+                        // Automatically open first contact
+                        let firstContact = $('#contacts .contact').first();
+
+                        if (firstContact.length) {
+                            openChat(firstContact[0]);
+                        }
+                    },
+
+                    error: function(xhr) {
+                        console.log(xhr.responseJSON || xhr.responseText);
+                    }
                 });
-            });
+            }
+
+            function escapeHtml(value) {
+                return $('<div>').text(value ?? '').html();
+            }
 
 
             //load chat
 
+            $(document).ready(function() {
+                loadContacts();
+            });
+
+
+
+            function openChat(contact) {
+
+                // Remove active class from all contacts
+                $('.contact').removeClass('active');
+
+                // Add active class to selected contact
+                $(contact).addClass('active');
+
+                // Get selected user's details
+                receiverId = $(contact).data('user-id');
+                conversationId = $(contact).data('conversation-id');
+
+                // Close other panels
+                closePanels();
+                resetNew();
+
+                // Open chat panel
+                app.classList.add('open');
+
+                // Load selected user's chat
+                loadChat(conversationId, receiverId);
+            }
 
             function loadChat(conversationId, receiverId, target) {
 
@@ -2909,7 +2955,7 @@
 
                 <div class="who">
                     <strong>${$('<div>').text(userName).html()}</strong>
-                    <small class="on">online</small>
+
                 </div>
             </div>
 
@@ -3109,69 +3155,69 @@
                 // TODO (Laravel): post the message to the server here, e.g. fetch('/chat/send', {...})
             }
 
-            function sendImages(list, caption) {
-                var body = activeBody();
-                ensureToday(body);
+            // function sendImages(list, caption) {
+            //     var body = activeBody();
+            //     ensureToday(body);
 
-                list.forEach(function(p, i) {
-                    var cap = i === 0 ? caption : '';
-                    var row = outRow(body);
-                    var bubble = el('div', 'bubble has-img');
+            //     list.forEach(function(p, i) {
+            //         var cap = i === 0 ? caption : '';
+            //         var row = outRow(body);
+            //         var bubble = el('div', 'bubble has-img');
 
-                    var wrap = el('div', 'img-wrap' + (cap ? '' : ' shade'));
-                    wrap.dataset.caption = cap;
-                    var img = document.createElement('img');
-                    img.src = p.url;
-                    img.alt = p.name;
-                    wrap.appendChild(img);
+            //         var wrap = el('div', 'img-wrap' + (cap ? '' : ' shade'));
+            //         wrap.dataset.caption = cap;
+            //         var img = document.createElement('img');
+            //         img.src = p.url;
+            //         img.alt = p.name;
+            //         wrap.appendChild(img);
 
-                    if (!cap) wrap.appendChild(tickMeta('meta-over'));
-                    bubble.appendChild(wrap);
+            //         if (!cap) wrap.appendChild(tickMeta('meta-over'));
+            //         bubble.appendChild(wrap);
 
-                    if (cap) {
-                        var c = el('div', 'img-caption', cap);
-                        c.appendChild(tickMeta('meta'));
-                        bubble.appendChild(c);
-                    }
+            //         if (cap) {
+            //             var c = el('div', 'img-caption', cap);
+            //             c.appendChild(tickMeta('meta'));
+            //             bubble.appendChild(c);
+            //         }
 
-                    row.appendChild(bubble);
-                    appendRow(row);
-                    watchTicks(row);
-                    body = activeBody();
-                });
+            //         row.appendChild(bubble);
+            //         appendRow(row);
+            //         watchTicks(row);
+            //         body = activeBody();
+            //     });
 
-                var pv = document.createElement('span');
-                pv.appendChild(el('i', 'fas fa-camera'));
-                pv.appendChild(document.createTextNode(caption || 'Photo'));
-                updateContact(pv);
-            }
+            //     var pv = document.createElement('span');
+            //     pv.appendChild(el('i', 'fas fa-camera'));
+            //     pv.appendChild(document.createTextNode(caption || 'Photo'));
+            //     updateContact(pv);
+            // }
 
-            function sendDoc(file) {
-                var body = activeBody();
-                ensureToday(body);
+            // function sendDoc(file) {
+            //     var body = activeBody();
+            //     ensureToday(body);
 
-                var row = outRow(body);
-                var bubble = el('div', 'bubble');
+            //     var row = outRow(body);
+            //     var bubble = el('div', 'bubble');
 
-                var card = el('div', 'doc-card');
-                card.appendChild(el('i', 'fas fa-file-lines ico'));
-                var t = el('div');
-                t.appendChild(el('div', 'name', file.name));
-                t.appendChild(el('small', '', sizeText(file.size)));
-                card.appendChild(t);
+            //     var card = el('div', 'doc-card');
+            //     card.appendChild(el('i', 'fas fa-file-lines ico'));
+            //     var t = el('div');
+            //     t.appendChild(el('div', 'name', file.name));
+            //     t.appendChild(el('small', '', sizeText(file.size)));
+            //     card.appendChild(t);
 
-                bubble.appendChild(card);
-                bubble.appendChild(tickMeta('meta'));
-                row.appendChild(bubble);
+            //     bubble.appendChild(card);
+            //     bubble.appendChild(tickMeta('meta'));
+            //     row.appendChild(bubble);
 
-                appendRow(row);
-                watchTicks(row);
+            //     appendRow(row);
+            //     watchTicks(row);
 
-                var pv = document.createElement('span');
-                pv.appendChild(el('i', 'fas fa-file-lines'));
-                pv.appendChild(document.createTextNode(file.name));
-                updateContact(pv);
-            }
+            //     var pv = document.createElement('span');
+            //     pv.appendChild(el('i', 'fas fa-file-lines'));
+            //     pv.appendChild(document.createTextNode(file.name));
+            //     updateContact(pv);
+            // }
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();

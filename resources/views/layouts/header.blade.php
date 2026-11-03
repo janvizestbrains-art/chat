@@ -13,7 +13,7 @@
               <a href="{{ route('index') }}" class="{{ request()->routeIs('index') ? 'active' : '' }}">
                   <i class="fas fa-bell"></i>
                   <span>Notifications</span>
-                  <span class="count">3</span>
+
               </a>
           </li>
           @can('apply leave')
@@ -32,13 +32,14 @@
                   </a>
               </li>
           @endcan
-
-          <li>
-              <a href="{{ route('chat') }}" class="{{ request()->routeIs('chat') ? 'active' : '' }}">
-                  <i class="fas fa-comments"></i>
-                  <span>Chat</span>
-              </a>
-          </li>
+          @can('chat')
+              <li>
+                  <a href="{{ route('chat') }}" class="{{ request()->routeIs('chat') ? 'active' : '' }}">
+                      <i class="fas fa-comments"></i>
+                      <span>Chat</span>
+                  </a>
+              </li>
+          @endcan
 
           <li>
               <a href="{{ route('logout') }}">

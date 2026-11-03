@@ -150,7 +150,16 @@ $user->employee->append([
             ->max('conversation.latestMessage.created_at')
         )
         ->values();
+      $users->each(function ($user) {
+    $user->employee->append([
+        'full_name',
+        'profile_url'
+    ]);
+    });
 
-
+      return response()->json([
+        "status" =>true,
+        'users'=>$users,
+      ]);
 }
 }
