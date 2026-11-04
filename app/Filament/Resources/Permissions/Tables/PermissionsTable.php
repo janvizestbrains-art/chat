@@ -23,8 +23,8 @@ class PermissionsTable
                 //
             ])
             ->recordActions([
-                 ViewAction::make(),
-                EditAction::make(),
+
+
                 DeleteAction::make(),
 
             ])

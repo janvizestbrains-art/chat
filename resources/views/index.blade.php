@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Notifications | HVAC Employee Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
@@ -36,7 +32,7 @@
             color: var(--text);
         }
 
-        /* ===== FIXED SIDEBAR (does not move on scroll) ===== */
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
             top: 0;
@@ -137,7 +133,7 @@
             border-radius: 20px;
         }
 
-        /* ===== MAIN CONTENT (only this area scrolls) ===== */
+        /* MAIN */
         .main {
             margin-left: var(--sidebar-w);
             min-height: 100vh;
@@ -169,7 +165,6 @@
             color: var(--muted);
         }
 
-        /* Create notification button */
         .btn-create {
             display: inline-flex;
             align-items: center;
@@ -197,7 +192,7 @@
             max-width: 1000px;
         }
 
-        /* Notification cards */
+        /* NOTIFICATION CARDS */
         .notification-card {
             position: relative;
             background: #fff;
@@ -302,7 +297,7 @@
             gap: 6px;
         }
 
-        /* ===== TABS (All / Sent) ===== */
+        /* TABS */
         .tabs-bar {
             display: inline-flex;
             gap: 6px;
@@ -369,7 +364,7 @@
             margin-bottom: 10px;
         }
 
-        /* ===== CREATE NOTIFICATION MODAL ===== */
+        /* MODAL */
         .modal-content {
             border: 0;
             border-radius: 18px;
@@ -384,6 +379,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
         .modal-header-custom .title-wrap {
@@ -414,7 +410,6 @@
             font-size: 12.5px;
         }
 
-        /* Keep header + footer (Cancel / Send) always visible, only the body scrolls */
         .modal-dialog-scrollable .modal-content {
             max-height: 100%;
             display: flex;
@@ -427,10 +422,6 @@
             flex: 1 1 auto;
             min-height: 0;
             overflow: hidden;
-        }
-
-        .modal-header-custom {
-            flex-shrink: 0;
         }
 
         .modal-body {
@@ -467,7 +458,7 @@
             margin-top: 4px;
         }
 
-        /* Users box */
+        /* USERS */
         .users-box {
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -626,7 +617,7 @@
             font-size: 14px;
             padding: 10px 26px;
             border-radius: 10px;
-            box-shadow: 0 6px 16px rgba(91, 98, 114, 0.35);
+            box-shadow: 0 6px 16px rgba(91, 98, 114, .35);
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -637,7 +628,7 @@
             box-shadow: 0 10px 22px rgba(37, 99, 235, .45);
         }
 
-        /* Toast */
+        /* TOAST */
         .toast-wrap {
             position: fixed;
             top: 20px;
@@ -653,7 +644,7 @@
             box-shadow: 0 10px 28px rgba(5, 150, 105, .35);
         }
 
-        /* Mobile */
+        /* MOBILE */
         @media (max-width: 992px) {
             :root {
                 --sidebar-w: 78px;
@@ -717,35 +708,26 @@
             }
         }
     </style>
-
 </head>
 
 <body>
 
-    <!-- ===== FIXED SIDEBAR ===== -->
-
     @include('layouts.header')
-
-    <!-- ===== MAIN ===== -->
 
     <main class="main">
 
         <div class="topbar">
 
             <div>
-
                 <h4>Notifications</h4>
-
                 <p>Stay updated with all your latest messages and announcements.</p>
-
             </div>
-
-            <!-- Create Notification Button -->
 
             @can('create notification')
                 <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#createNotificationModal">
 
-                    <i class="fas fa-plus-circle"></i> <span>Create Notification</span>
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create Notification</span>
 
                 </button>
             @endcan
@@ -754,36 +736,42 @@
 
         <div class="content">
 
-            <!-- Tabs -->
-
             @can('create notification')
                 <div class="tabs-bar" id="notifTabs">
 
                     <button type="button" class="tab-btn active" data-tab="all">
 
-                        <i class="fas fa-bell"></i> All <span class="tab-count"
-                            id="countAll">{{ $notifications->count() }}</span>
+                        <i class="fas fa-bell"></i> All
+
+                        <span class="tab-count" id="countAll">
+                            {{ $notifications->count() }}
+                        </span>
 
                     </button>
 
                     <button type="button" class="tab-btn" data-tab="sent">
 
-                        <i class="fas fa-paper-plane"></i> Sent <span class="tab-count"
-                            id="countSent">{{ $sent->count() }}</span>
+                        <i class="fas fa-paper-plane"></i> Sent
+
+                        <span class="tab-count" id="countSent">
+                            {{ $sent->count() }}
+                        </span>
 
                     </button>
 
                 </div>
             @endcan
 
-            <!-- Notification list -->
+            <!-- ALL NOTIFICATIONS -->
 
             <div id="notificationList">
 
                 @forelse ($notifications as $notification)
                     <div class="notification-card announcement">
 
-                        <div class="notification-icon icon-announcement"><i class="fas fa-bullhorn"></i></div>
+                        <div class="notification-icon icon-announcement">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
 
                         <div class="notification-content">
 
@@ -793,9 +781,10 @@
 
                             <div class="notification-meta">
 
-                                <span><i class="far fa-clock"></i>
-
-                                    {{ $notification->created_at->diffForHumans() }}</span>
+                                <span>
+                                    <i class="far fa-clock"></i>
+                                    {{ $notification->created_at->diffForHumans() }}
+                                </span>
 
                             </div>
 
@@ -806,15 +795,14 @@
                 @empty
 
                     <div class="empty-state" id="emptyState">
-
                         <i class="far fa-bell-slash"></i>
-
-                        <div>No notifications found. </div>
-
+                        <div>No notifications found.</div>
                     </div>
                 @endforelse
 
             </div>
+
+            <!-- SENT NOTIFICATIONS -->
 
             @can('create notification')
 
@@ -823,7 +811,9 @@
                     @forelse ($sent as $notification)
                         <div class="notification-card announcement">
 
-                            <div class="notification-icon icon-announcement"><i class="fas fa-bullhorn"></i></div>
+                            <div class="notification-icon icon-announcement">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
 
                             <div class="notification-content">
 
@@ -833,15 +823,15 @@
 
                                 <div class="notification-meta">
 
-                                    <span><i class="far fa-clock"></i>
+                                    <span>
+                                        <i class="far fa-clock"></i>
+                                        {{ $notification->created_at->diffForHumans() }}
+                                    </span>
 
-                                        {{ $notification->created_at->diffForHumans() }}</span>
-
-                                    <span><i class="fas fa-paper-plane"></i> Sent to
-
-                                        {{ count($notification->user_ids) }}
-
-                                        users</span>
+                                    <span>
+                                        <i class="fas fa-paper-plane"></i>
+                                        Sent to {{ count($notification->user_ids) }} users
+                                    </span>
 
                                 </div>
 
@@ -851,12 +841,9 @@
 
                     @empty
 
-                        <div class="empty-state" id="sentEmptyState" style="display: none;">
-
+                        <div class="empty-state">
                             <i class="far fa-bell-slash"></i>
-
                             <div>No notifications found.</div>
-
                         </div>
                     @endforelse
 
@@ -868,7 +855,7 @@
 
     </main>
 
-    <!-- ===== CREATE NOTIFICATION MODAL ===== -->
+    <!-- CREATE NOTIFICATION MODAL -->
 
     <div class="modal fade" id="createNotificationModal" tabindex="-1" aria-labelledby="createNotificationLabel"
         aria-hidden="true">
@@ -881,14 +868,13 @@
 
                     <div class="title-wrap">
 
-                        <div class="title-icon"><i class="fas fa-paper-plane"></i></div>
+                        <div class="title-icon">
+                            <i class="fas fa-paper-plane"></i>
+                        </div>
 
                         <div>
-
                             <h5 id="createNotificationLabel">Create Notification</h5>
-
                             <small>Write a message and choose who should receive it.</small>
-
                         </div>
 
                     </div>
@@ -898,44 +884,56 @@
 
                 </div>
 
-                <form id="notificationForm" method="POST" action="{{ route('sendNotification') }}">
+                <!-- novalidate disables browser validation -->
+                <form id="notificationForm" method="POST" action="{{ route('sendNotification') }}" novalidate>
 
                     @csrf
 
                     <div class="modal-body">
 
-                        <!-- Title -->
+                        <!-- TITLE -->
 
                         <div class="mb-3">
 
-                            <label for="notifTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <label for="notifTitle" class="form-label">
+                                Title <span class="text-danger">*</span>
+                            </label>
 
                             <input type="text" class="form-control" id="notifTitle" maxlength="80"
                                 placeholder="Enter notification title" name="title">
 
-                            <div class="invalid-feedback">Please enter a title.</div>
+                            <div class="invalid-feedback">
+                                Please enter a title.
+                            </div>
 
                         </div>
 
-                        <!-- Description -->
+                        <!-- DESCRIPTION -->
 
                         <div class="mb-4">
 
-                            <label for="notifDescription" class="form-label">Description
-                                <span                                     class="text-danger">*</span></label>
+                            <label for="notifDescription" class="form-label">
+                                Description <span class="text-danger">*</span>
+                            </label>
 
-                            <textarea class="form-control" id="notifDescription" rows="4" name="description" maxlength="300"                  
-                                              placeholder="Write your message here..."></textarea>
+                            <textarea class="form-control" id="notifDescription" rows="4" name="description" maxlength="300"
+                                placeholder="Write your message here..."></textarea>
 
-                            <div class="char-count"><span id="descCount">0</span>/300</div>
+                            <div class="char-count">
+                                <span id="descCount">0</span>/300
+                            </div>
 
-                            <div class="invalid-feedback">Please enter a description.</div>
+                            <div class="invalid-feedback">
+                                Please enter a description.
+                            </div>
 
                         </div>
 
-                        <!-- Users -->
+                        <!-- USERS -->
 
-                        <label class="form-label">Send To <span class="text-danger">*</span></label>
+                        <label class="form-label">
+                            Send To <span class="text-danger">*</span>
+                        </label>
 
                         <div class="users-box" id="usersBox">
 
@@ -971,27 +969,31 @@
                                         <div class="user-avatar"
                                             style="background:linear-gradient(135deg,#60a5fa,#2563eb)">
 
-                                            {{ substr($e->full_name, 0, 1) }}</div>
+                                            {{ substr($e->full_name, 0, 1) }}
+
+                                        </div>
 
                                         <div class="user-info">
 
                                             <strong>{{ $e->full_name }}</strong>
 
-                                            <small>{{ $e->email }}
-                                                &bull; {{ $e->phone }}</small>
+                                            <small>
+                                                {{ $e->email }} &bull; {{ $e->phone }}
+                                            </small>
 
                                         </div>
 
-                                        <span class="user-role">{{ $e->designation }}</span>
+                                        <span class="user-role">
+                                            {{ $e->designation }}
+                                        </span>
 
                                     </label>
 
                                 @empty
 
-                                    <div class="text-center text-muted py-4 d-none" id="noUsers">
-
-                                        <i class="fas fa-user-slash mb-2"></i><br>No users found
-
+                                    <div class="text-center text-muted py-4" id="noUsers">
+                                        <i class="fas fa-user-slash mb-2"></i>
+                                        <br>No users found
                                     </div>
                                 @endforelse
 
@@ -999,25 +1001,34 @@
 
                         </div>
 
+                        <!-- USER ERROR -->
+
                         <div class="text-danger mt-2 d-none" id="userError" style="font-size:13px;">
 
-                            <i class="fas fa-exclamation-circle"></i> Please select at
-                            least one user.
+                            <i class="fas fa-exclamation-circle"></i>
+                            Please select at least one user.
 
                         </div>
 
                     </div>
 
+                    <!-- FOOTER -->
+
                     <div class="modal-footer-custom">
 
-                        <div class="selected-info"><b id="selectedCount">0</b> user(s)
-                            selected</div>
+                        <div class="selected-info">
+                            <b id="selectedCount">0</b> user(s) selected
+                        </div>
 
                         <div class="d-flex gap-2">
 
-                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
 
-                            <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i> Send</button>
+                            <button type="submit" class="btn-send">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
 
                         </div>
 
@@ -1031,7 +1042,7 @@
 
     </div>
 
-    <!-- Success toast -->
+    <!-- SUCCESS TOAST -->
 
     <div class="toast-wrap">
 
@@ -1040,10 +1051,10 @@
 
             <div class="d-flex">
 
-                <div class="toast-body" id="toastMessage"><i class="fas fa-check-circle me-2"></i>
-                    Notification sent
-
-                    successfully.</div>
+                <div class="toast-body" id="toastMessage">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Notification sent successfully.
+                </div>
 
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                     aria-label="Close"></button>
@@ -1054,105 +1065,123 @@
 
     </div>
 
+    <!-- LIBRARIES -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+
     <script>
         dayjs.extend(dayjs_plugin_relativeTime);
     </script>
+
     <script>
         window.authUserId = @json(auth()->id());
-
         console.log('Logged-in User ID:', window.authUserId);
     </script>
 
     @vite(['resources/js/app.js'])
 
+    <!-- CUSTOM JAVASCRIPT -->
+
     <script>
+        // =========================================
+        // 1. REVERB REALTIME NOTIFICATION
+        // =========================================
+
         window.addEventListener('echo-ready', function() {
 
             const userId = window.authUserId;
+
+            if (!window.Echo || !userId) {
+                return;
+            }
 
             window.Echo.private(`users.${userId}`)
                 .listen('.notification.created', function(event) {
 
                     console.log('Complete Event Data:', event);
 
-                    let notification = event.notification ?? event.data ?? event;
+                    const notification =
+                        event.notification ?? event.data ?? event;
 
-                    console.log('Notification Data:', notification);
+                    const title = notification.title ?? 'New Notification';
 
-                    document.getElementById('emptyState')?.remove();
+                    const description =
+                        notification.description ?? notification.message ?? '';
 
-                    let title = notification.title ?? 'New Notification';
-                    let description = notification.description ?? notification.message ?? '';
                     let createdAt = 'Just now';
 
-                    if (notification.createdAt) {
-                        let seconds = dayjs().diff(dayjs(notification.createdAt), 'second');
+                    const date = notification.createdAt ??
+                        notification.created_at;
 
-                        if (seconds < 60) {
-                            createdAt = seconds + ' seconds ago';
-                        } else {
-                            createdAt = dayjs(notification.createdAt).fromNow();
-                        }
+                    if (date) {
+
+                        const seconds = dayjs().diff(dayjs(date), 'second');
+
+                        createdAt = seconds < 60 ?
+                            seconds + ' seconds ago' :
+                            dayjs(date).fromNow();
+
                     }
 
                     function escapeHtml(value) {
+
                         const div = document.createElement('div');
                         div.textContent = value ?? '';
+
                         return div.innerHTML;
+
                     }
 
-                    let html = `
-                <div class="notification-card announcement">
+                    document.getElementById('emptyState')?.remove();
 
-                    <div class="notification-icon icon-announcement">
-                        <i class="fas fa-bullhorn"></i>
-                    </div>
+                    const html = `
+                        <div class="notification-card announcement">
 
-                    <div class="notification-content">
+                            <div class="notification-icon icon-announcement">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
 
-                        <h6>${escapeHtml(title)}</h6>
+                            <div class="notification-content">
 
-                        <p>${escapeHtml(description)}</p>
+                                <h6>${escapeHtml(title)}</h6>
 
-                        <div class="notification-meta">
-                            <span>
-                                <i class="far fa-clock"></i>
-                                ${escapeHtml(createdAt)}
-                            </span>
+                                <p>${escapeHtml(description)}</p>
+
+                                <div class="notification-meta">
+                                    <span>
+                                        <i class="far fa-clock"></i>
+                                        ${escapeHtml(createdAt)}
+                                    </span>
+                                </div>
+
+                            </div>
+
                         </div>
-
-                    </div>
-
-                </div>
-            `;
+                    `;
 
                     document.getElementById('notificationList')
-                        .insertAdjacentHTML('afterbegin', html);
+                        ?.insertAdjacentHTML('afterbegin', html);
+
+                    const countAll = document.getElementById('countAll');
+
+                    if (countAll) {
+                        countAll.textContent =
+                            Number(countAll.textContent) + 1;
+                    }
 
                 });
 
         });
 
 
-
-
-
-
-        /* =========================================
-
-           2. NOTIFICATION FORM ELEMENTS
-
-        ========================================= */
-
-
+        // =========================================
+        // 2. NOTIFICATION FORM
+        // =========================================
 
         (function() {
-
-
 
             const modalEl = document.getElementById('createNotificationModal');
 
@@ -1175,517 +1204,337 @@
             const noUsers = document.getElementById('noUsers');
 
 
-
-            // Check required elements
-
             if (!modalEl || !form) {
-
                 console.error('Notification modal or form not found');
-
                 return;
-
             }
 
 
+            // GET EMPLOYEE ROWS
 
             function userRows() {
-
                 return document.querySelectorAll('#usersList .user-row');
-
             }
-
-
 
             function checks() {
-
                 return document.querySelectorAll('#usersList .user-check');
-
             }
 
 
-
-            function escapeHtml(str) {
-
-                const div = document.createElement('div');
-
-                div.textContent = str ?? '';
-
-                return div.innerHTML;
-
-            }
-
-
-
-
-
-            /* =========================================
-
-               3. DESCRIPTION CHARACTER COUNTER
-
-            ========================================= */
-
-
-
-            if (descInput && descCount) {
-
-
-
-                descInput.addEventListener('input', function() {
-
-                    descCount.textContent = descInput.value.length;
-
-                });
-
-
-
-            }
-
-
-
-
-
-            /* =========================================
-
-               4. UPDATE SELECTED USERS
-
-            ========================================= */
-
-
+            // =========================================
+            // 3. UPDATE SELECTED EMPLOYEES
+            // =========================================
 
             function updateSelected() {
 
+                let totalSelected = 0;
 
+                checks().forEach(function(check) {
 
-                let n = 0;
-
-
-
-                checks().forEach(function(c) {
-
-
-
-                    const row = c.closest('.user-row');
-
-
+                    const row = check.closest('.user-row');
 
                     if (row) {
-
-                        row.classList.toggle('selected', c.checked);
-
+                        row.classList.toggle('selected', check.checked);
                     }
 
-
-
-                    if (c.checked) {
-
-                        n++;
-
+                    if (check.checked) {
+                        totalSelected++;
                     }
-
-
 
                 });
 
+                selectedCount.textContent = totalSelected;
 
+                const visibleChecks = Array.from(checks()).filter(function(check) {
 
-                if (selectedCount) {
-
-                    selectedCount.textContent = n;
-
-                }
-
-
-
-                const visible = Array.from(checks()).filter(function(c) {
-
-
-
-                    const row = c.closest('.user-row');
-
-
+                    const row = check.closest('.user-row');
 
                     return row && row.style.display !== 'none';
 
-
-
                 });
-
-
 
                 if (selectAll) {
 
-
+                    const checkedVisible = visibleChecks.filter(function(check) {
+                        return check.checked;
+                    }).length;
 
                     selectAll.checked =
+                        visibleChecks.length > 0 &&
+                        checkedVisible === visibleChecks.length;
 
-                        visible.length > 0 &&
-
-                        visible.every(function(c) {
-
-                            return c.checked;
-
-                        });
-
-
+                    selectAll.indeterminate =
+                        checkedVisible > 0 &&
+                        checkedVisible < visibleChecks.length;
 
                 }
 
-
-
-                if (n > 0 && userError) {
-
+                if (totalSelected > 0) {
                     userError.classList.add('d-none');
-
                 }
 
-
-
             }
 
 
+            // =========================================
+            // 4. CHECKBOX CHANGE
+            // =========================================
 
+            checks().forEach(function(check) {
 
-
-            /* =========================================
-
-               5. USER CHECKBOX CHANGE
-
-            ========================================= */
-
-
-
-            checks().forEach(function(c) {
-
-
-
-                c.addEventListener('change', updateSelected);
-
-
+                check.addEventListener('change', updateSelected);
 
             });
 
 
+            // =========================================
+            // 5. SELECT ALL
+            // =========================================
 
+            selectAll.addEventListener('change', function() {
 
+                checks().forEach(function(check) {
 
-            /* =========================================
+                    const row = check.closest('.user-row');
 
-               6. SELECT ALL USERS
-
-            ========================================= */
-
-
-
-            if (selectAll) {
-
-
-
-                selectAll.addEventListener('change', function() {
-
-
-
-                    checks().forEach(function(c) {
-
-
-
-                        const row = c.closest('.user-row');
-
-
-
-                        if (row && row.style.display !== 'none') {
-
-                            c.checked = selectAll.checked;
-
-                        }
-
-
-
-                    });
-
-
-
-                    updateSelected();
-
-
-
-                });
-
-
-
-            }
-
-
-
-
-
-            /* =========================================
-
-               7. SEARCH USERS
-
-            ========================================= */
-
-
-
-            if (searchInput) {
-
-
-
-                searchInput.addEventListener('input', function() {
-
-
-
-                    const q = searchInput.value.trim().toLowerCase();
-
-
-
-                    let shown = 0;
-
-
-
-                    userRows().forEach(function(row) {
-
-
-
-                        const match = row.textContent.toLowerCase().includes(q);
-
-
-
-                        row.style.display = match ? '' : 'none';
-
-
-
-                        if (match) {
-
-                            shown++;
-
-                        }
-
-
-
-                    });
-
-
-
-                    if (noUsers) {
-
-                        noUsers.classList.toggle('d-none', shown !== 0);
-
+                    if (row && row.style.display !== 'none') {
+                        check.checked = this.checked;
                     }
 
+                }, this);
 
-
-                    updateSelected();
-
-
-
-                });
-
-
-
-            }
-
-
-
-
-
-            /* =========================================
-
-               8. DEFAULT TAB ON PAGE LOAD
-
-            ========================================= */
-
-
-
-            const notificationList = document.getElementById('notificationList');
-            const sentNotifications = document.getElementById('sentNotifications');
-
-            document.querySelectorAll('.tab-btn').forEach(function(btn) {
-
-                btn.addEventListener('click', function() {
-
-                    const tab = this.dataset.tab;
-
-                    document.querySelectorAll('.tab-btn').forEach(function(b) {
-                        b.classList.remove('active');
-                    });
-
-                    this.classList.add('active');
-
-                    // Show All notifications
-                    notificationList.classList.toggle('d-none', tab !== 'all');
-
-                    // Show Sent notifications
-                    sentNotifications.classList.toggle('d-none', tab !== 'sent');
-
-                });
+                updateSelected();
 
             });
 
 
+            // =========================================
+            // 6. SEARCH EMPLOYEES
+            // =========================================
 
+            searchInput.addEventListener('input', function() {
 
+                const search = this.value.trim().toLowerCase();
 
-            /* =========================================
+                let shown = 0;
 
-               9. ALL / SENT TABS
+                userRows().forEach(function(row) {
 
-            ========================================= */
+                    const match = row.textContent
+                        .toLowerCase()
+                        .includes(search);
 
+                    row.style.display = match ? '' : 'none';
 
-
-            document.querySelectorAll('.tab-btn').forEach(function(btn) {
-
-
-
-                btn.addEventListener('click', function() {
-
-
-
-                    const tab = this.dataset.tab;
-
-
-
-                    document.querySelectorAll('.tab-btn').forEach(function(b) {
-
-
-
-                        b.classList.remove('active');
-
-
-
-                    });
-
-
-
-                    this.classList.add('active');
-
-
-
-                    if (notificationList) {
-
-
-
-                        notificationList.querySelectorAll('.notification-card')
-
-                            .forEach(function(card) {
-
-
-
-                                card.classList.toggle('d-none', tab === 'sent');
-
-
-
-                            });
-
-
-
+                    if (match) {
+                        shown++;
                     }
-
-
-
-                    if (sentNotifications) {
-
-
-
-                        sentNotifications.classList.toggle('d-none', tab !== 'sent');
-
-
-
-                    }
-
-
 
                 });
 
-
-
-            });
-
-
-
-
-
-            /* =========================================
-
-               10. RESET FORM WHEN MODAL CLOSES
-
-            ========================================= */
-
-
-
-            modalEl.addEventListener('hidden.bs.modal', function() {
-
-
-
-                form.reset();
-
-
-
-                if (descCount) {
-
-                    descCount.textContent = '0';
-
+                if (noUsers) {
+                    noUsers.classList.toggle('d-none', shown !== 0);
                 }
 
+                updateSelected();
+
+            });
 
 
-                if (titleInput) {
+            // =========================================
+            // 7. DESCRIPTION CHARACTER COUNTER
+            // =========================================
+
+            descInput.addEventListener('input', function() {
+
+                descCount.textContent = this.value.length;
+
+                if (this.value.trim() !== '') {
+                    this.classList.remove('is-invalid');
+                }
+
+            });
+
+
+            // =========================================
+            // 8. TITLE VALIDATION ON INPUT
+            // =========================================
+
+            titleInput.addEventListener('input', function() {
+
+                if (this.value.trim() !== '') {
+                    this.classList.remove('is-invalid');
+                }
+
+            });
+
+
+            // =========================================
+            // 9. FRONTEND FORM VALIDATION
+            // =========================================
+
+            form.addEventListener('submit', function(e) {
+
+                e.preventDefault();
+
+                let isValid = true;
+
+
+                // TITLE
+
+                if (titleInput.value.trim() === '') {
+
+                    titleInput.classList.add('is-invalid');
+
+                    isValid = false;
+
+                } else {
 
                     titleInput.classList.remove('is-invalid');
 
                 }
 
 
+                // DESCRIPTION
 
-                if (descInput) {
+                if (descInput.value.trim() === '') {
+
+                    descInput.classList.add('is-invalid');
+
+                    isValid = false;
+
+                } else {
 
                     descInput.classList.remove('is-invalid');
 
                 }
 
 
+                // EMPLOYEES
 
-                if (userError) {
+                const selectedUsers = document.querySelectorAll(
+                    '#usersList .user-check:checked'
+                );
+
+                if (selectedUsers.length === 0) {
+
+                    userError.classList.remove('d-none');
+
+                    isValid = false;
+
+                } else {
 
                     userError.classList.add('d-none');
 
                 }
 
 
+                // STOP IF INVALID
 
-                userRows().forEach(function(row) {
+                if (!isValid) {
 
+                    if (titleInput.classList.contains('is-invalid')) {
 
+                        titleInput.focus();
 
-                    row.style.display = '';
+                    } else if (descInput.classList.contains('is-invalid')) {
 
+                        descInput.focus();
 
+                    } else {
 
-                });
+                        document.getElementById('usersBox')
+                            .scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
 
+                    }
 
-
-                if (noUsers) {
-
-                    noUsers.classList.add('d-none');
+                    return;
 
                 }
 
 
+                // ALL VALID - SUBMIT FORM
 
-                updateSelected();
-
-
+                form.submit();
 
             });
 
 
+            // =========================================
+            // 10. ALL / SENT TABS
+            // =========================================
 
-            // Initial selected count
+            const notificationList =
+                document.getElementById('notificationList');
+
+            const sentNotifications =
+                document.getElementById('sentNotifications');
+
+            document.querySelectorAll('.tab-btn').forEach(function(button) {
+
+                button.addEventListener('click', function() {
+
+                    const tab = this.dataset.tab;
+
+                    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                        btn.classList.remove('active');
+                    });
+
+                    this.classList.add('active');
+
+                    if (notificationList) {
+                        notificationList.classList.toggle('d-none', tab !== 'all');
+                    }
+
+                    if (sentNotifications) {
+                        sentNotifications.classList.toggle('d-none', tab !== 'sent');
+                    }
+
+                });
+
+            });
+
+
+            // =========================================
+            // 11. RESET FORM WHEN MODAL CLOSES
+            // =========================================
+
+            modalEl.addEventListener('hidden.bs.modal', function() {
+
+                form.reset();
+
+                titleInput.classList.remove('is-invalid');
+
+                descInput.classList.remove('is-invalid');
+
+                userError.classList.add('d-none');
+
+                descCount.textContent = '0';
+
+                searchInput.value = '';
+
+                userRows().forEach(function(row) {
+                    row.style.display = '';
+                });
+
+                if (noUsers) {
+                    noUsers.classList.add('d-none');
+                }
+
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+
+                updateSelected();
+
+            });
+
+
+            // INITIALIZE
 
             updateSelected();
-
-
 
         })();
     </script>

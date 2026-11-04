@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat | HVAC Employee Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
@@ -1911,26 +1910,26 @@
 
                     <div class="contacts" id="contacts">
                         {{-- @foreach ($users as $user)
-                            <div class="contact {{ $loop->iteration == 1 ? 'active' : '' }} has-unread"
-                                data-user-id="{{ $user->id }}" data-target="pane-{{ $loop->iteration }}"
-                                data-conversation-id="{{ $user->conversationParticipants->first()?->conversation_id }}"
-                                data-name="{{ $user->employee?->full_name }}">
+                        <div class="contact {{ $loop->iteration == 1 ? 'active' : '' }} has-unread"
+                            data-user-id="{{ $user->id }}" data-target="pane-{{ $loop->iteration }}"
+                            data-conversation-id="{{ $user->conversationParticipants->first()?->conversation_id }}"
+                            data-name="{{ $user->employee?->full_name }}">
 
-                                <img class="avatar online" src="{{ $user->employee?->profile_url }}"
-                                    style="background:#2563eb">
+                            <img class="avatar online" src="{{ $user->employee?->profile_url }}"
+                                style="background:#2563eb">
 
-                                <div class="contact-info">
-                                    <div class="contact-top">
-                                        <strong>{{ $user->employee?->full_name }}</strong>
-                                        <small></small>
-                                    </div>
+                            <div class="contact-info">
+                                <div class="contact-top">
+                                    <strong>{{ $user->employee?->full_name }}</strong>
+                                    <small></small>
+                                </div>
 
-                                    <div class="contact-bottom">
-                                        <span class="preview"></span>
-                                        <em class="unread">2</em>
-                                    </div>
+                                <div class="contact-bottom">
+                                    <span class="preview"></span>
+                                    <em class="unread">2</em>
                                 </div>
                             </div>
+                        </div>
                         @endforeach --}}
                         {{-- <div class="contact has-unread" data-target="pane-3" data-name="Site Engineers"
                             data-group="1">
@@ -2039,598 +2038,33 @@
 
                     <div class="panes">
 
-                        <!-- ============ PANE 1 : Rahul Sharma ============ -->
-                        {{-- @foreach ($users as $user)
-                            <div class="chat-pane {{ $loop->first ? 'active' : '' }}" id="pane-{{ $loop->iteration }}"
-                                data-user-id="{{ $user->id }}">
-
-                                <div class="chat-head">
-                                    <i class="fas fa-arrow-left back"></i>
-                                    <img class="avatar online" src="{{ $user->profile_url }}"
-                                        style="background:#2563eb">
-                                    <div class="who">
-                                        <strong>{{ $user->full_name }}</strong>
-                                        <small class="on">online</small>
-                                    </div>
-                                </div>
-
-                                <div class="chat-body">
-
-                                    <div class="day-chip"><span>Saturday, 31 October</span></div>
-
-                                    <div class="msg in first">
-                                        <div class="bubble">Morning! Did you check the schedule?<span
-                                                class="meta">9:05
-                                                AM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Yes, I have the list for today.<span class="meta">9:12 AM
-                                                <i class="fas fa-check-double"></i></span></div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Please carry the pressure gauge and spare filters.<span
-                                                class="meta">9:19 AM</span></div>
-                                    </div>
-                                    <div class="msg in">
-                                        <div class="bubble">Customer is asking for an ETA as well.<span
-                                                class="meta">9:20
-                                                AM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Noted. Starting from site 2, will reach by 1 PM.<span
-                                                class="meta">9:26 AM <i class="fas fa-check-double"></i></span></div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Compressor reading is normal now?<span class="meta">11:40
-                                                AM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Yes, it is normal. I will note it in the report.<span
-                                                class="meta">11:45 AM <i class="fas fa-check-double"></i></span></div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Great, good job!<span class="meta">11:47 AM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Thanks Rahul 😊<span class="meta">11:48 AM <i
-                                                    class="fas fa-check-double"></i></span></div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Any update on the spare parts order?<span
-                                                class="meta">3:15
-                                                PM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Supplier confirmed delivery for tomorrow.<span
-                                                class="meta">3:22
-                                                PM <i class="fas fa-check-double"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Perfect, thanks for following up.<span class="meta">3:25
-                                                PM</span></div>
-                                    </div>
-
-                                    <div class="day-chip"><span>Sunday, 1 November</span></div>
-
-                                    <div class="msg out first">
-                                        <div class="bubble">Hi Rahul, happy Sunday! Just checking tomorrow's plan.<span
-                                                class="meta">11:02 AM <i class="fas fa-check-double"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Hi! Tomorrow we have two AC installations and one service
-                                            call.<span class="meta">11:05 AM</span></div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble has-img">
-                                            <div class="img-wrap"
-                                                data-caption="This is the spot for the outdoor unit at site 4.">
-                                                <img src="https://picsum.photos/seed/hvac-site4/600/420"
-                                                    alt="Outdoor unit">
-                                            </div>
-                                            <div class="img-caption">This is the spot for the outdoor unit at site
-                                                4.<span class="meta">11:06 AM</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Looks good. Is the mounting bracket available?<span
-                                                class="meta">11:09 AM <i class="fas fa-check-double"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Yes, it is in the store room. I will pick it up.<span
-                                                class="meta">11:10 AM</span></div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">
-                                            <div class="doc-card">
-                                                <i class="fas fa-file-pdf ico"></i>
-                                                <div>
-                                                    <div class="name">Service_Schedule_Nov.pdf</div>
-                                                    <small>248 KB</small>
-                                                </div>
-                                            </div>
-                                            <span class="meta">11:12 AM</span>
-                                        </div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Got it, thanks 👍<span class="meta">11:14 AM <i
-                                                    class="fas fa-check-double"></i></span></div>
-                                    </div>
-
-                                    <div class="day-chip"><span>Today</span></div>
-
-                                    <div class="msg in first">
-                                        <div class="bubble">Good morning! Site 2 service is done?<span
-                                                class="meta">9:30
-                                                AM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Good morning. Yes, finished and filter replaced.<span
-                                                class="meta">9:41 AM <i class="fas fa-check-double"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble has-img">
-                                            <div class="img-wrap shade" data-caption="">
-                                                <img src="https://picsum.photos/seed/hvac-filter/600/420"
-                                                    alt="Filter">
-                                                <span class="meta-over">12:40 PM <i
-                                                        class="fas fa-check-double"></i></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="msg out">
-                                        <div class="bubble">Photo of the new filter after replacement.<span
-                                                class="meta">12:41 PM <i class="fas fa-check-double"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Looks clean. Thanks!<span class="meta">12:50 PM</span>
-                                        </div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Good afternoon! Can you send me the maintenance report for
-                                            last
-                                            week?<span class="meta">5:32 PM</span></div>
-                                    </div>
-                                    <div class="msg out first">
-                                        <div class="bubble">Good afternoon. I am finishing it now, will send it
-                                            shortly.<span class="meta">5:35 PM <i
-                                                    class="fas fa-check-double"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="msg in first">
-                                        <div class="bubble">Sure, I will share the report today.<span
-                                                class="meta">5:40
-                                                PM</span></div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        @endforeach --}}
-
-                        <!-- ============ PANE 2 : HR Team ============ -->
-                        {{-- <div class="chat-pane" id="pane-2">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar online" style="background:#059669">HR</div>
-                                <div class="who">
-                                    <strong>HR Team</strong>
-                                    <small class="on">online</small>
-                                </div>
-                            </div>
+                        <!-- Welcome screen: shown when no chat is selected -->
+                        <div class="chat-pane active" id="welcomeScreen">
 
                             <div class="chat-body">
 
-                                <div class="day-chip"><span>Yesterday</span></div>
+                                <div
+                                    style="height:100%; display:flex; align-items:center; justify-content:center; text-align:center;">
 
-                                <div class="msg out first">
-                                    <div class="bubble">Hello, I applied for leave from 10 Nov to 12 Nov.<span
-                                            class="meta">3:20 PM <i class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble">Hello! We have received your request. It is under review.<span
-                                            class="meta">3:45 PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Okay, thank you.<span class="meta">3:47 PM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
+                                    <div>
 
-                                <div class="day-chip"><span>Today</span></div>
+                                        <h2>Welcome to Employee Chat</h2>
 
-                                <div class="msg in first">
-                                    <div class="bubble">Your leave request has been approved.<span class="meta">4:15
-                                            PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Thank you so much!<span class="meta">4:17 PM <i
-                                                class="fas fa-check-double"></i></span></div>
+                                        <p>Select a contact to start your conversation.</p>
+
+                                        <small>
+                                            <i class="fas fa-lock"></i>
+                                            Your conversations are private.
+                                        </small>
+                                    </div>
+
                                 </div>
 
                             </div>
+
                         </div>
 
-                        <!-- ============ PANE 3 : Site Engineers (group) ============ -->
-                        <div class="chat-pane" id="pane-3">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#ea580c"><i class="fas fa-users"></i></div>
-                                <div class="who">
-                                    <strong>Site Engineers</strong>
-                                    <small>Amit, Karan, Neha, Priya, You</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Friday, 30 October</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#2563eb">Amit</span>Morning
-                                        team! Today's visit list is in the sheet.<span class="meta">9:02 AM</span>
-                                    </div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#db2777">Karan</span>Got
-                                        it. I will take site 6.<span class="meta">9:10 AM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">I will cover site 4 and site 5.<span class="meta">9:15 AM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#059669">Neha</span>Please
-                                        carry the pressure gauge and spare filters.<span class="meta">9:20 AM</span>
-                                    </div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#7c3aed">Priya</span>Customer
-                                        is asking for an ETA at site
-                                        5.<span class="meta">10:05 AM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Tell them we will reach by 1 PM.<span class="meta">10:08 AM
-                                            <i class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#2563eb">Amit</span>Compressor
-                                        reading is normal at site
-                                        3.<span class="meta">12:30 PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Great, please note it in the report.<span class="meta">12:34
-                                            PM <i class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#db2777">Karan</span>Gas
-                                        refill completed at the second floor.<span class="meta">4:10 PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Good job, team! 👏<span class="meta">4:15 PM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                                <div class="day-chip"><span>Yesterday</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble has-img">
-                                        <span class="sender" style="color:#2563eb">Amit</span>
-                                        <div class="img-wrap" data-caption="AC unit installation done at site 4.">
-                                            <img src="https://picsum.photos/seed/hvac-ac-unit/600/420" alt="AC unit">
-                                        </div>
-                                        <div class="img-caption">AC unit installation done at site 4.<span
-                                                class="meta">2:10 PM</span></div>
-                                    </div>
-                                </div>
-                                <div class="msg in">
-                                    <div class="bubble"><span class="sender" style="color:#2563eb">Amit</span>Cable
-                                        routing is also finished.<span class="meta">2:11 PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Excellent work, Amit!<span class="meta">2:20 PM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble has-img">
-                                        <span class="sender" style="color:#db2777">Karan</span>
-                                        <div class="img-wrap shade" data-caption="">
-                                            <img src="https://picsum.photos/seed/hvac-duct/600/420" alt="Duct work">
-                                            <span class="meta-over">3:02 PM</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="msg in">
-                                    <div class="bubble"><span class="sender" style="color:#db2777">Karan</span>Duct
-                                        work for site 6 is 80% done.<span class="meta">3:03 PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Nice. Finish it by tomorrow evening.<span class="meta">3:10
-                                            PM <i class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                                <div class="day-chip"><span>Today</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#059669">Neha</span>Who has
-                                        the thermal camera today?<span class="meta">10:15 AM</span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#7c3aed">Priya</span>I have
-                                        it, will return by evening.<span class="meta">10:22 AM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Okay, please keep it safe.<span class="meta">10:25 AM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#2563eb">Amit</span>AC unit
-                                        installation done at site 4.<span class="meta">4:30 PM</span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 4 : Priya Patel ============ -->
-                        <div class="chat-pane" id="pane-4">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#db2777">PP</div>
-                                <div class="who">
-                                    <strong>Priya Patel</strong>
-                                    <small>last seen today at 3:10 PM</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Yesterday</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble">Did you get the customer feedback form?<span class="meta">1:00
-                                            PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Yes, I will fill it in this evening.<span class="meta">1:08
-                                            PM <i class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                                <div class="day-chip"><span>Today</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble has-img">
-                                        <div class="img-wrap" data-caption="Scan of the signed form.">
-                                            <img src="https://picsum.photos/seed/hvac-form/600/420" alt="Form">
-                                        </div>
-                                        <div class="img-caption">Scan of the signed form.<span class="meta">2:55
-                                                PM</span></div>
-                                    </div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Thanks! See you tomorrow.<span class="meta">3:10 PM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 5 : Manager - Vikram ============ -->
-                        <div class="chat-pane" id="pane-5">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#7c3aed">VM</div>
-                                <div class="who">
-                                    <strong>Manager - Vikram</strong>
-                                    <small>last seen yesterday at 6:45 PM</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Saturday, 31 October</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble">Please submit the timesheet by Friday.<span class="meta">6:45
-                                            PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Sure sir, I will submit it on time.<span class="meta">6:50
-                                            PM <i class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                                <div class="day-chip"><span>Yesterday</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble">
-                                        <div class="doc-card">
-                                            <i class="fas fa-file-excel ico" style="color:#16a34a"></i>
-                                            <div>
-                                                <div class="name">Timesheet_Template.xlsx</div>
-                                                <small>36 KB</small>
-                                            </div>
-                                        </div>
-                                        <span class="meta">10:00 AM</span>
-                                    </div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Received, thank you.<span class="meta">10:04 AM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 6 : Neha Joshi ============ -->
-                        <div class="chat-pane" id="pane-6">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar online" style="background:#0891b2">NJ</div>
-                                <div class="who">
-                                    <strong>Neha Joshi</strong>
-                                    <small class="on">online</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Sunday, 1 November</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble">Can you cover my shift on Thursday?<span class="meta">8:10
-                                            PM</span></div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Yes, no problem.<span class="meta">8:15 PM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble">Ok, noted.<span class="meta">8:16 PM</span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 7 : Karan Mehta ============ -->
-                        <div class="chat-pane" id="pane-7">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#ca8a04">KM</div>
-                                <div class="who">
-                                    <strong>Karan Mehta</strong>
-                                    <small>last seen today at 11:30 AM</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Today</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble has-img">
-                                        <div class="img-wrap" data-caption="Please check the wiring panel photo.">
-                                            <img src="https://picsum.photos/seed/hvac-panel/600/420" alt="Wiring panel">
-                                        </div>
-                                        <div class="img-caption">Please check the wiring panel photo.<span
-                                                class="meta">11:28 AM</span></div>
-                                    </div>
-                                </div>
-                                <div class="msg in">
-                                    <div class="bubble">Is this the correct connection?<span class="meta">11:30
-                                            AM</span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 8 : Warehouse (group) ============ -->
-                        <div class="chat-pane" id="pane-8">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#0d9488"><i class="fas fa-users"></i></div>
-                                <div class="who">
-                                    <strong>Warehouse</strong>
-                                    <small>Suresh, Dinesh, You</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Yesterday</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble"><span class="sender" style="color:#ea580c">Suresh</span>20
-                                        new filters arrived.<span class="meta">11:00 AM</span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble has-img">
-                                        <span class="sender" style="color:#ea580c">Suresh</span>
-                                        <div class="img-wrap" data-caption="Stock photo.">
-                                            <img src="https://picsum.photos/seed/hvac-stock/600/420" alt="Stock">
-                                        </div>
-                                        <div class="img-caption">Stock photo.<span class="meta">11:01 AM</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Please keep 5 aside for Site 4.<span class="meta">11:20 AM
-                                            <i class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 9 : Accounts Dept ============ -->
-                        <div class="chat-pane" id="pane-9">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#dc2626">AD</div>
-                                <div class="who">
-                                    <strong>Accounts Dept</strong>
-                                    <small>last seen Saturday</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Saturday, 31 October</span></div>
-
-                                <div class="msg in first">
-                                    <div class="bubble">
-                                        <div class="doc-card">
-                                            <i class="fas fa-file-pdf ico"></i>
-                                            <div>
-                                                <div class="name">Salary_Slip_Oct.pdf</div>
-                                                <small>120 KB</small>
-                                            </div>
-                                        </div>
-                                        <span class="meta">5:00 PM</span>
-                                    </div>
-                                </div>
-                                <div class="msg out first">
-                                    <div class="bubble">Received, thank you.<span class="meta">5:30 PM <i
-                                                class="fas fa-check-double"></i></span></div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- ============ PANE 10 : Amit Verma ============ -->
-                        <div class="chat-pane" id="pane-10">
-
-                            <div class="chat-head">
-                                <i class="fas fa-arrow-left back"></i>
-                                <div class="avatar" style="background:#4f46e5">AV</div>
-                                <div class="who">
-                                    <strong>Amit Verma</strong>
-                                    <small>last seen Friday</small>
-                                </div>
-                            </div>
-
-                            <div class="chat-body">
-
-                                <div class="day-chip"><span>Friday, 30 October</span></div>
-
-                                <div class="msg out first">
-                                    <div class="bubble">Amit, did you finish the Site 3 report?<span class="meta">4:00
-                                            PM <i class="fas fa-check-double"></i></span></div>
-                                </div>
-                                <div class="msg in first">
-                                    <div class="bubble">Almost done, will send in 10 minutes.<span class="meta">4:05
-                                            PM</span></div>
-                                </div>
-
-                            </div>
-                        </div> --}}
+                        <!-- Your dynamically loaded chat panes will appear here -->
 
                         <button type="button" class="scroll-down" id="scrollDown" aria-label="Scroll to latest">
                             <i class="fas fa-chevron-down"></i>
@@ -2641,9 +2075,7 @@
 
                     <div class="emoji-panel" id="emojiPanel"></div>
 
-                    <div class="attach-menu" id="attachMenu" style="display: none;">
-
-                    </div>
+                    <div class="attach-menu" id="attachMenu" style="display: none;"></div>
 
                     <div class="reply-bar" id="replyBar">
                         <span class="bar-line"></span>
@@ -2656,32 +2088,24 @@
                         </button>
                     </div>
 
-                    <form class="chat-footer" id="chatForm" autocomplete="off">
-                        <button type="button" class="tool" id="emojiBtn" aria-label="Emoji"><i
-                                class="far fa-face-smile"></i></button>
-                        <button type="button" class="tool" id="attachBtn" aria-label="Attach"><i
-                                class="fas fa-paperclip"></i></button>
+                    <!-- Keep your textbox outside panes -->
+                    <form class="chat-footer" id="chatForm" autocomplete="off" style="display: none;">
+                        <button type="button" class="tool" id="emojiBtn" aria-label="Emoji">
+                            <i class="far fa-face-smile"></i>
+                        </button>
+
+                        <button type="button" class="tool" id="attachBtn" aria-label="Attach">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+
                         <input type="text" id="msgInput" placeholder="Type a message">
+
                         <button type="submit" class="btn-send-chat" aria-label="Send">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
 
-                    <!-- Image preview before sending -->
-                    <div class="preview-screen" id="previewScreen">
-                        <div class="preview-top">
-                            <i class="fas fa-xmark" id="previewClose"></i>
-                            <span>Preview</span>
-                        </div>
-                        <div class="preview-main"><img id="previewImg" alt="preview"></div>
-                        <div class="preview-thumbs" id="previewThumbs"></div>
-                        <div class="preview-foot">
-                            <input type="text" id="previewCaption" placeholder="Add a caption...">
-                            <button type="button" class="btn-send-chat" id="previewSend" aria-label="Send photos">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Keep your existing preview-screen HTML here -->
 
                 </section>
 
@@ -2699,6 +2123,104 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        window.authUserId = @json(auth()->id());
+
+        console.log('Logged-in User ID:', window.authUserId);
+    </script>
+
+    @vite(['resources/js/app.js'])
+    <script>
+        $(document).ready(function() {
+
+
+            // display message when chat is open  and that read
+            window.Echo.private(`users.${window.authUserId}`)
+
+                .listen('.message.sent', function(event) {
+
+                    if (event.sender_id == window.authUserId) {
+                        return;
+                    }
+                    let pane = $('.chat-pane').filter(function() {
+                        return $(this).data('conversation-id') == event.conversation_id;
+                    });
+
+                    if (pane.hasClass('active')) {
+
+                        let time = new Date(event.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+
+                        pane.find('.chat-body').append(`
+                    <div class="msg in">
+                        <div class="bubble">
+                            ${$('<div>').text(event.message).html()}
+                            <span class="meta">${time}</span>
+                        </div>
+                    </div>
+                `);
+
+                        MessageRead(event.conversation_id, event.sender_id);
+
+                        let body = pane.find('.chat-body');
+                        body.scrollTop(body[0].scrollHeight);
+
+                    } else {
+                        console.log('Message received. Chat is not open.');
+                    }
+
+                });
+
+        });
+
+        // window.addEventListener('echo-ready', function() {
+        //     window.Echo.private(`users.${window.authUserId}`).listen('.message.read', function(event) {
+        //         let pane = $('.chat-pane').filter(function() {
+        //             return $(this).data('conversation-id') == event.conversation_id;
+        //         });
+        //         console.log("pane value is ", pane);
+
+        //         pane.find('.msg.out .message-status')
+        //             .removeClass('single-tick')
+        //             .addClass('read-tick')
+        //             .html('<i class="fas fa-check-double"></i>');
+        //     });
+        // });
+
+
+
+
+
+
+        function MessageRead(conversation_id, sender_id) {
+
+            $.ajax({
+                url: "{{ route('messageRead') }}",
+                type: "GET",
+                data: {
+                    conversation_id: conversation_id,
+                    sender_id: sender_id,
+                },
+                success: function(response) {
+
+                    if (response.status) {
+
+                        let pane = $('.chat-pane').filter(function() {
+                            return $(this).data('conversation-id') == conversation_id;
+                        });
+
+                        pane.find('.msg.out .message-status')
+                            .removeClass('single-tick')
+                            .addClass('read-tick')
+                            .html('<i class="fas fa-check-double"></i>');
+                    }
+                }
+            });
+        }
+    </script>
     <script>
         (function() {
 
@@ -2812,74 +2334,71 @@
 
                         $.each(response.users, function(index, user) {
 
-                            console.log(user);
-
                             let name = user.employee?.full_name ?? '';
                             let profile = user.employee?.profile_url ?? '';
 
+                            // Get latest message time from sender/receiver relationships
                             let latestMessage = null;
-                            let latestParticipant = null;
 
-                            user.conversation_participants.forEach(function(participant) {
+                            let sentTime = user.last_sent_message ?
+                                new Date(user.last_sent_message) :
+                                null;
 
-                                let message = participant.conversation?.latest_message;
+                            let receivedTime = user.last_received_message ?
+                                new Date(user.last_received_message) :
+                                null;
 
-                                if (message && (!latestMessage ||
-                                        new Date(message.created_at) > new Date(
-                                            latestMessage.created_at))) {
-
-                                    latestMessage = message;
-                                    latestParticipant = participant;
-                                }
-                            });
-
-                            let conversationId = latestParticipant?.conversation_id ?? '';
-                            let messageText = latestMessage?.message ?? '';
-
-                            let time = '';
-
-                            if (latestMessage) {
-                                time = new Date(latestMessage.created_at).toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
+                            if (sentTime && receivedTime) {
+                                latestMessage = sentTime > receivedTime ? sentTime : receivedTime;
+                            } else {
+                                latestMessage = sentTime || receivedTime;
                             }
 
+                            let time = latestMessage ?
+                                latestMessage.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) :
+                                '';
+
+                            // No conversation yet: conversation ID will be empty
+                            let conversationId = user.conversation_id;
+
+                            // Latest message preview (if provided by backend)
+                            let messageText = user.latest_message ?? 'No messages yet';
+                            let unreadCount = user.unread_messages_count;
+
                             html += `
-                    <div class="contact"
-                        data-user-id="${user.id}"
-                        data-conversation-id="${conversationId}"
-                        data-name="${escapeHtml(name)}">
+            <div class="contact"
+                data-user-id="${user.id}"
+                data-conversation-id="${conversationId}"
+                data-name="${escapeHtml(name)}">
 
-                        <img class="avatar online"
-                            src="${escapeHtml(profile)}"
-                            style="background:#2563eb">
+                <img class="avatar online"
+                    src="${escapeHtml(profile)}"
+                    style="background:#2563eb">
 
-                        <div class="contact-info">
-                            <div class="contact-top">
-                                <strong>${escapeHtml(name)}</strong>
-                                <small>${time}</small>
-                            </div>
-
-                            <div class="contact-bottom">
-                                <span class="preview">${escapeHtml(messageText)}</span>
-                            </div>
-                        </div>
+                <div class="contact-info">
+                    <div class="contact-top">
+                        <strong>${escapeHtml(name)}</strong>
+                        <small>${time}</small>
                     </div>
-                `;
+
+                    <div class="contact-bottom">
+                        <span class="preview">${escapeHtml(messageText)}</span>
+                                        ${unreadCount > 0 ? `<em class="unread">${unreadCount}</em>` : ''}
+
+                    </div>
+                </div>
+            </div>
+        `;
                         });
 
-                        // Display all contacts
                         $('#contacts').html(html);
 
                         // Automatically open first contact
-                        let firstContact = $('#contacts .contact').first();
 
-                        if (firstContact.length) {
-                            openChat(firstContact[0]);
-                        }
                     },
-
                     error: function(xhr) {
                         console.log(xhr.responseJSON || xhr.responseText);
                     }
@@ -2901,24 +2420,25 @@
 
             function openChat(contact) {
 
-                // Remove active class from all contacts
                 $('.contact').removeClass('active');
-
-                // Add active class to selected contact
                 $(contact).addClass('active');
 
-                // Get selected user's details
                 receiverId = $(contact).data('user-id');
                 conversationId = $(contact).data('conversation-id');
 
-                // Close other panels
                 closePanels();
                 resetNew();
 
-                // Open chat panel
                 app.classList.add('open');
 
-                // Load selected user's chat
+                $('#welcomeScreen').removeClass('active');
+
+                // Show message textbox after selecting a contact
+                $('#chatForm').show();
+
+                $(contact).removeClass('has-unread');
+                $(contact).find('.unread').remove();
+
                 loadChat(conversationId, receiverId);
             }
 
@@ -2936,7 +2456,11 @@
 
                     success: function(response) {
 
+
                         let chatContent = $('.panes');
+                        chatContent.find('.chat-pane').remove();
+
+
 
                         // Get user details even if there are no messages
                         let userName = response.user?.employee?.full_name || '';
@@ -2944,7 +2468,9 @@
 
                         // Create chat header and body first
                         let html = `
-        <div class="chat-pane active" data-user-id="${receiverId}">
+        <div class="chat-pane active" data-user-id="${receiverId}"
+        data-conversation-id="${conversationId}"
+        >
 
             <div class="chat-head">
                 <i class="fas fa-arrow-left back"></i>
@@ -3066,6 +2592,7 @@
                         });
 
                         scrollBottom(body[0], false);
+
                     },
 
                     error: function(xhr) {
@@ -3134,6 +2661,7 @@
                     success: function(response) {
                         if (response.status === true) {
                             loadChat(response.conversation.id, receiverId);
+                            loadContacts();
                         }
                     }
                 })

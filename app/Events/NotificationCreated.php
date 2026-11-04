@@ -60,4 +60,7 @@ class NotificationCreated implements ShouldBroadcastNow
     {
             return "notification.created";
     }
+
+
+
 }

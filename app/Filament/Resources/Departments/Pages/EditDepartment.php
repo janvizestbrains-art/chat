@@ -10,6 +10,12 @@ class EditDepartment extends EditRecord
 {
     protected static string $resource = DepartmentResource::class;
 
+
+    public function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
     protected function getHeaderActions(): array
     {
         return [

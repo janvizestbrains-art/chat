@@ -1,0 +1,8 @@
+MessageSent
+MessageRead
+UnreadCountUpdated
+MessageDelivered
+UserTyping
+UserStoppedTyping
+MessageDeleted
+MessageUpdated

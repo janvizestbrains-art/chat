@@ -22,4 +22,6 @@ Route::get('/chat', [ChatController::class, 'chat'])->name('chat');
 Route::get('/load-contacts', [ChatController::class, 'loadContact'])->name('loadContact');
 Route::post('/chat-send', [ChatController::class, 'chatSend'])->name('chatSend');
 Route::get('/load-chat', [ChatController::class, 'loadChat'])->name('loadChat');
+Route::get('/message-read', [ChatController::class, 'messageRead'])->name('messageRead');
+
 });

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageRead;
+use App\Events\MessageSent;
 use App\Events\NotificationCreated;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
@@ -12,6 +14,7 @@ use App\Models\User;
 use Illuminate\Container\Attributes\Auth as AttributesAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\RequiredUnless;
 
 class ChatController extends Controller
 {
@@ -61,105 +64,173 @@ class ChatController extends Controller
 
     public function chat()
     {
-        $users = User::with("conversationParticipants",'employee')->whereNot("id", Auth::id())
-        ->whereHas('employee')->get();
+        $users = User::with("conversationParticipants", 'employee')->whereNot("id", Auth::id())
+            ->whereHas('employee')->get();
         // dd(Auth::id());
-//        dd($users->map(function ($user) {
-//     return [
-//         'user_id' => $user->id,
-//         'employee_id' => $user->employee?->id,
-//         'employee_name' => $user->employee?->full_name,
-//         'conversation_ids' => $user->conversationParticipants->pluck('conversation_id'),
-//     ];
-// }));
+        //        dd($users->map(function ($user) {
+        //     return [
+        //         'user_id' => $user->id,
+        //         'employee_id' => $user->employee?->id,
+        //         'employee_name' => $user->employee?->full_name,
+        //         'conversation_ids' => $user->conversationParticipants->pluck('conversation_id'),
+        //     ];
+        // }));
         return view("chat", compact("users"));
     }
     public function chatSend(Request $request)
     {
         if ($request->conversation_id) {
             $conversation = Conversation::where("id", $request->conversation_id)->first();
+
+
         } else {
             $conversation = Conversation::create([
                 "type" => "Private"
             ]);
-              ConversationParticipant::create([
-            'conversation_id' => $conversation->id,
-            'user_id' => Auth::id(),
-        ]);
+            ConversationParticipant::create([
+                'conversation_id' => $conversation->id,
+                'user_id' => Auth::id(),
+            ]);
 
-        ConversationParticipant::create([
-            'conversation_id' => $conversation->id,
-            'user_id' => $request->reciver_id,
-        ]);
+            ConversationParticipant::create([
+                'conversation_id' => $conversation->id,
+                'user_id' => $request->reciver_id,
+            ]);
         }
 
         $message = Message::create([
             "conversation_id" => $conversation->id,
             "sender_id" => Auth::id(),
+            'receiver_id' => $request->reciver_id,
             "message" => $request->message,
             "is_read" => 0,
-            "read_at" => now(),
+
         ]);
+        MessageSent::dispatch(
+            $conversation->id,
+            Auth::id(),
+            $request->reciver_id,
+            $request->message,
+            0,
+            $message->created_at,
+        );
         return response()->json([
             "status" => true,
-            "conversation"=>$conversation,
+            "conversation" => $conversation,
 
-            ]);
+        ]);
     }
 
     public function loadChat(Request $request)
     {
+
         $chat = ConversationParticipant::with("user.employee", "conversation.messages")->where("conversation_id", $request->conversationId)->get();
 
-      $user = User::with('employee')
-    ->where('id', $request->receiverId)
-    ->first();
+    if($request->conversationId)
+    {
 
-$user->employee->append([
-    'full_name',
-    'profile_url'
-]);
+    Message::where('conversation_id', $request->conversationId)
+    ->where('sender_id', $request->receiverId)
+    ->whereNot("sender_id",Auth::id())
+    ->where("is_read",false)
+    ->update([
+        'is_read' => true,
+        'read_at' => now(),
+    ]);
+    }
+
+        $user = User::with('employee')
+            ->where('id', $request->receiverId)
+            ->first();
+
+        $user->employee->append([
+            'full_name',
+            'profile_url'
+        ]);
 
 
-        if($chat->count()>0)
-
-{        return response()->json(
-            [
-                "status" => true,
-                "data" => $chat,
-                'user'=>$user,
-            ]
-        );
-}
-    else
-        {
+        if ($chat->count() > 0) {
+            return response()->json(
+                [
+                    "status" => true,
+                    "data" => $chat,
+                    'user' => $user,
+                ]
+            );
+        }
+        else {
             return response()->json([
-                "status"=>false,
-                'user'=>$user,
+                "status" => false,
+                'user' => $user,
 
             ]);
         }
     }
-   public function loadContact()
-{
-    $users = User::where('id', '!=', Auth::id())
-        ->whereHas('employee')
-        ->with('employee', 'conversationParticipants.conversation.latestMessage')
-        ->get()
-        ->sortByDesc(fn ($user) => $user->conversationParticipants
-            ->max('conversation.latestMessage.created_at')
-        )
-        ->values();
-      $users->each(function ($user) {
-    $user->employee->append([
-        'full_name',
-        'profile_url'
-    ]);
-    });
+    public function loadContact()
+    {
+        $authId = Auth::id();
 
-      return response()->json([
-        "status" =>true,
-        'users'=>$users,
-      ]);
+        $users = User::where('id', '!=', $authId)
+            ->whereHas('employee')
+            ->with('employee')
+            ->get();
+
+        $users->each(function ($user) use ($authId) {
+
+            $latestMessage = Message::where(function ($query) use ($authId, $user) {
+
+                $query->where('sender_id', $user->id)
+                    ->where('receiver_id', $authId);
+            })->orWhere(function ($query) use ($authId, $user) {
+
+                $query->where('sender_id', $authId)
+                    ->where('receiver_id', $user->id);
+            })
+                ->latest('created_at')
+                ->first();
+
+            $user->latest_message = $latestMessage?->message;
+            $user->latest_message_at = $latestMessage?->created_at;
+            $user->conversation_id = $latestMessage?->conversation_id;
+        $user->unread_messages_count = Message::where('sender_id', $user->id)
+        ->where('receiver_id', $authId)
+        ->where('is_read', 0)
+        ->count();
+
+            $user->employee->append([
+                'full_name',
+                'profile_url'
+            ]);
+        });
+
+        $users = $users->sortByDesc('latest_message_at')->values();
+
+        return response()->json([
+            'status' => true,
+            'users' => $users
+        ]);
+    }
+   public function messageRead(Request $request)
+{
+    $messages = Message::where('conversation_id', $request->conversation_id)
+        ->where('sender_id', $request->sender_id)
+        ->where('receiver_id', Auth::id())
+        ->where('is_read', false);
+
+    $messages->update([
+        'is_read' => true,
+        'read_at' => now(),
+    ]);
+
+    MessageRead::dispatch(
+        $request->conversation_id,
+        $request->sender_id
+    );
+    $messages=$messages->get();
+
+    return response()->json([
+        'success' => true,
+        'messages'=>$messages
+    ]);
 }
 }
