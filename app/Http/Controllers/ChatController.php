@@ -172,6 +172,10 @@ class ChatController extends Controller
                     'is_read' => true,
                     'read_at' => now(),
                 ]);
+            MessageRead::dispatch(
+            $request->conversationId,
+            $request->receiverId,
+        );
         }
 
         $user = User::with('employee')

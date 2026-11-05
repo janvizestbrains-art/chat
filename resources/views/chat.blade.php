@@ -8,6 +8,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .message-status.read-tick {
+            color: #34b7f1;
+        }
+
         .empty-chat {
             height: 100%;
             display: flex;
@@ -2422,7 +2426,27 @@
                 preview.show();
 
             });
+
+            channel.listen('.message.read', function(event) {
+
+                console.log('Read event received:', event);
+
+                let pane = $('.chat-pane').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+
+                pane.find('.msg.out .message-status')
+                    .removeClass('single-tick')
+                    .addClass('read-tick')
+                    .html('<i class="fas fa-check-double"></i>');
+
+            });
         });
+
+
+
+
 
         function MessageRead(conversation_id, sender_id) {
             $.ajax({
@@ -2741,9 +2765,10 @@
 
                             if (messageType === 'out') {
                                 ticks = message.is_read ?
-                                    '<i class="fas fa-check-double read-tick"></i>' :
-                                    '<i class="fas fa-check single-tick"></i>';
+                                    '<span class="message-status read-tick"><i class="fas fa-check-double"></i></span>' :
+                                    '<span class="message-status single-tick"><i class="fas fa-check"></i></span>';
                             }
+
 
 
                             let rendered = ChatMedia.render(message, time + ' ' + ticks);
