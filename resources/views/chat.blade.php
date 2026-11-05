@@ -2305,82 +2305,124 @@
         /* ===================== real-time listener ===================== */
 
 
+        window.addEventListener('echo-ready', function() {
 
-        $(document).ready(function() {
+            const channel = window.Echo.private(`users.${window.authUserId}`);
 
-            window.Echo.private(`users.${window.authUserId}`)
+            channel.listen('.message.sent', function(event) {
 
-                .listen('.message.sent', function(event) {
+                if (Number(event.sender_id) === Number(window.authUserId)) {
+                    return;
+                }
 
-
-                    if (Number(event.sender_id) === Number(window.authUserId)) {
-                        return;
-                    }
-
-
-                    let pane = $('.chat-pane').filter(function() {
-
-                        return Number($(this).data('conversation-id')) ===
-                            Number(event.conversation_id);
-
-                    });
-
-
-                    if (!pane.length) {
-                        console.log('Conversation pane not found.');
-                        return;
-                    }
-
-
-                    if (pane.hasClass('active')) {
-
-
-                        let time = new Date(event.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                        });
-
-
-                        let body = pane.find('.chat-body');
-
-                        body.find('.empty-chat').remove();
-
-                        let hasAttachment =
-                            (event.file_type === 'image' || event.file_type === 'document') &&
-                            event.file_path;
-
-                        let messageEvent = {
-                            ...event,
-                            message: hasAttachment ? '' : (event.message || '')
-                        };
-
-                        let rendered = ChatMedia.render(messageEvent, time);
-
-                        // Append only one message wrapper
-                        if (rendered.html.trim()) {
-                            body.append(`
-        <div class="msg in">
-            <div class="${rendered.cls}">
-                ${rendered.html}
-            </div>
-        </div>
-    `);
-                        }
-
-                        MessageRead(event.conversation_id, event.sender_id);
-
-                        body.scrollTop(body[0].scrollHeight);
-                    } else {
-
-                        console.log('Message received. Chat is not open.');
-
-                    }
-
+                let pane = $('.chat-pane').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
                 });
 
-        });
+                if (pane.hasClass('active')) {
 
+                    let time = new Date(event.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+
+                    let body = pane.find('.chat-body');
+
+                    body.find('.empty-chat').remove();
+
+                    let hasAttachment =
+                        (event.file_type === 'image' || event.file_type === 'document') &&
+                        event.file_path;
+
+                    let messageEvent = {
+                        ...event,
+                        message: hasAttachment ? '' : (event.message || '')
+                    };
+
+                    let rendered = ChatMedia.render(messageEvent, time);
+
+                    if (rendered.html.trim()) {
+                        body.append(`
+                    <div class="msg in">
+                        <div class="${rendered.cls}">
+                            ${rendered.html}
+                        </div>
+                    </div>
+                `);
+                    }
+
+                    // Mark incoming message as read
+                    MessageRead(event.conversation_id, event.sender_id);
+
+                    body.scrollTop(body[0].scrollHeight);
+
+                } else {
+
+                    console.log('Message received. Chat is not open.');
+
+                }
+
+            });
+
+
+            channel.listen('.message.count', function(event) {
+
+                console.log('Count event:', event);
+
+                let pane = $('.chat-pane').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+
+                let contact = $('.contact').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+
+                let badge = contact.find('.unread');
+
+
+                if (pane.hasClass('active')) {
+                    badge.hide();
+                    return;
+                }
+
+                badge.text(event.count);
+
+                if (Number(event.count) > 0) {
+                    badge.show();
+                } else {
+                    badge.hide();
+                }
+
+            });
+
+
+
+            channel.listen('.message.latestmessage', function(event) {
+
+
+                let contact = $('.contact').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+
+
+
+                if (contact.length === 0) {
+                    console.log('Contact not found for conversation:', event.conversation_id);
+                    return;
+                }
+
+                let preview = contact.find('.preview');
+
+                preview.text(event.latest_message ?? '');
+                preview.show();
+
+            });
+        });
 
         function MessageRead(conversation_id, sender_id) {
             $.ajax({
@@ -2517,24 +2559,8 @@
                             let profile = user.employee?.profile_url ?? '';
 
                             let latestMessage = null;
-                            let sentTime = user.last_sent_message ? new Date(user
-                                .last_sent_message) : null;
-                            let receivedTime = user.last_received_message ? new Date(user
-                                .last_received_message) : null;
 
-                            if (sentTime && receivedTime) {
-                                latestMessage = sentTime > receivedTime ? sentTime : receivedTime;
-                            } else {
-                                latestMessage = sentTime || receivedTime;
-                            }
-
-                            let time = latestMessage ?
-                                latestMessage.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) : '';
-
-                            let convId = cleanId(user.conversation_id);
+                            let convId = user.conversation_id;
                             let messageText = user.latest_message ?? '';
                             let unreadCount = user.unread_messages_count;
 
@@ -2551,12 +2577,14 @@
                                     <div class="contact-info">
                                         <div class="contact-top">
                                             <strong>${escapeHtml(name)}</strong>
-                                            <small>${time}</small>
+
                                         </div>
 
                                         <div class="contact-bottom">
                                             <span class="preview">${escapeHtml(messageText)}</span>
-                                            ${unreadCount > 0 ? `<em class="unread">${unreadCount}</em>` : ''}
+                                           <em class="unread" style="${unreadCount > 0 ? '' : 'display:none;'}">
+        ${unreadCount}
+    </em>
                                         </div>
                                     </div>
                                 </div>
@@ -2792,7 +2820,7 @@
                 resetNew();
             });
 
-        
+
             document.addEventListener('scroll', function(e) {
                 var b = e.target;
                 if (!b || !b.classList || !b.classList.contains('chat-body')) return;

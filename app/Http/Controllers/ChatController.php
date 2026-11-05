@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageCount;
+use App\Events\MessageLatest;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
 use App\Events\NotificationCreated;
@@ -111,30 +113,41 @@ class ChatController extends Controller
             "file_type"=>$request->type,
             "file_path"=>$path,
         ]);
-          MessageSent::dispatch(
-            $conversation->id,
-            Auth::id(),
-            $request->reciver_id,
-            $request->message,
-            0,
-            $message->created_at,
-            $attachment->file_type,
-            $attachment->file_path ,
 
-        );
 
 
     }
 }
- MessageSent::dispatch(
+        $unread_count=Message::where("conversation_id",$conversation->id)->where("receiver_id",$request->reciver_id)->where("is_read",false)->count();
+        //dd($unread_count);
+
+
+    MessageCount::dispatch(
+    $conversation->id,
+    $request->reciver_id,
+    $unread_count
+);
+
+            MessageLatest::dispatch(
+                $conversation->id,
+                $request->reciver_id,
+                $message->message??'Sent a File',
+            );
+
+
+        MessageSent::dispatch(
             $conversation->id,
             Auth::id(),
             $request->reciver_id,
             $request->message,
             0,
             $message->created_at,
+            $attachment->file_type??null,
+            $attachment->file_path??null ,
 
         );
+
+
 
 
         return response()->json([

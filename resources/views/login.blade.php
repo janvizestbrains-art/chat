@@ -64,12 +64,12 @@
                     <button type="submit" class="btn-primary">Login</button>
                     <p class="success" id="successMsg"></p>
                 </form>
-                <div class="divider"><span>or continue with</span></div>
+                {{-- <div class="divider"><span>or continue with</span></div>
 
                 <div class="social">
                     <button type="button" class="btn-social">G&nbsp; Google</button>
                     <button type="button" class="btn-social">f&nbsp; Facebook</button>
-                </div>
+                </div> --}}
 
         </section>
 
