@@ -24,9 +24,11 @@ class MessageSent implements ShouldBroadcastNow
        public int $conversation_id,
        public int $sender_id,
        public int $receiver_id,
-        public string $message,
+        public ?string $message=null,
         public int $is_read,
         public Carbon $created_at,
+        public ?string $file_type =null,
+        public ?string $file_path=null,
     )
     {
 
@@ -53,6 +55,8 @@ class MessageSent implements ShouldBroadcastNow
                 "message" =>$this->message,
                 "is_read"=>$this->is_read,
                 "created_at" =>$this->created_at,
+                "file_type" =>$this->file_type,
+                "file_path" =>$this->file_path,
             ];
     }
     public function broadCastAs():string

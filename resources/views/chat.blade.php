@@ -68,7 +68,7 @@
             color: var(--text);
         }
 
-        /* ================= Sidebar (same as leaves page) ================= */
+        /* ================= Sidebar ================= */
         .sidebar {
             position: fixed;
             top: 0;
@@ -302,7 +302,6 @@
             color: #1d4ed8;
         }
 
-        /* scrollable names */
         .contacts {
             flex: 1 1 auto;
             min-height: 0;
@@ -363,6 +362,7 @@
             justify-content: center;
             position: relative;
             box-shadow: 0 3px 8px rgba(15, 23, 42, .18);
+            object-fit: cover;
         }
 
         .avatar.online::after {
@@ -519,7 +519,6 @@
             color: #16a34a;
         }
 
-        /* scrollable history */
         .chat-body {
             flex: 1 1 auto;
             min-height: 0;
@@ -623,7 +622,6 @@
             gap: 4px;
         }
 
-        /* message status ticks */
         .meta .tick,
         .meta-over .tick {
             color: #8696a0;
@@ -1041,7 +1039,7 @@
             padding: 0 20px;
         }
 
-        /* ================= Message actions (WhatsApp style) ================= */
+        /* ================= Message actions ================= */
         .msg {
             position: relative;
         }
@@ -1075,7 +1073,6 @@
             color: #0f172a;
         }
 
-        /* dropdown menu */
         .msg-menu {
             position: fixed;
             z-index: 2600;
@@ -1170,7 +1167,6 @@
             margin: 5px 6px;
         }
 
-        /* reactions under a message */
         .msg .reactions {
             position: absolute;
             bottom: -13px;
@@ -1205,7 +1201,6 @@
             margin-bottom: 17px;
         }
 
-        /* badges (star / pin) */
         .bubble .flag-badge {
             position: absolute;
             top: -8px;
@@ -1246,7 +1241,6 @@
             }
         }
 
-        /* reply quote inside a bubble */
         .quote {
             display: flex;
             gap: 8px;
@@ -1285,7 +1279,6 @@
             color: var(--muted);
         }
 
-        /* reply bar above composer */
         .reply-bar {
             flex-shrink: 0;
             display: none;
@@ -1335,7 +1328,6 @@
             cursor: pointer;
         }
 
-        /* pinned message bar */
         .pinned-bar {
             flex-shrink: 0;
             display: none;
@@ -1376,7 +1368,6 @@
             font-size: 14px;
         }
 
-        /* inline edit */
         .edit-box {
             display: flex;
             flex-direction: column;
@@ -1427,7 +1418,6 @@
             color: var(--text);
         }
 
-        /* deleted placeholder */
         .msg.deleted .bubble {
             background: #f1f5f9 !important;
             color: #94a3b8;
@@ -1445,7 +1435,6 @@
             display: none;
         }
 
-        /* empty chat */
         .empty-chat {
             text-align: center;
             color: #94a3b8;
@@ -1463,7 +1452,6 @@
             font-size: 14px;
         }
 
-        /* chat header actions */
         .chat-head .who {
             flex: 1 1 auto;
             min-width: 0;
@@ -1759,7 +1747,6 @@
             text-overflow: ellipsis;
         }
 
-        /* system message (group created / member added) */
         .sys-msg {
             text-align: center;
             margin: 12px 0;
@@ -1777,7 +1764,6 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
         }
 
-        /* toast */
         .wa-toast {
             position: fixed;
             left: 50%;
@@ -1793,6 +1779,8 @@
             pointer-events: none;
             transition: opacity .22s ease, transform .22s ease;
             z-index: 2900;
+            max-width: 90vw;
+            text-align: center;
         }
 
         .wa-toast.show {
@@ -1804,6 +1792,73 @@
             .msg-menu-btn {
                 opacity: .55;
             }
+        }
+
+        /* ===== file / document / upload additions ===== */
+        a.doc-card {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        a.doc-card:hover {
+            background: rgba(0, 0, 0, .08);
+        }
+
+        .doc-card>div {
+            min-width: 0;
+        }
+
+        .doc-card .dl {
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .upload-bar {
+            flex-shrink: 0;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 18px;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .upload-bar.show {
+            display: flex;
+        }
+
+        .upload-bar .track {
+            flex: 1;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .upload-bar .track i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: var(--primary);
+            transition: width .15s ease;
+        }
+
+        .btn-send-chat:disabled {
+            opacity: .5;
+            pointer-events: none;
+        }
+
+        .chat-footer .tool.disabled {
+            opacity: .5;
+            pointer-events: none;
+        }
+
+        .preview-top .spacer {
+            margin-left: auto;
+            color: #dc2626;
         }
 
         /* ================= Responsive ================= */
@@ -1894,10 +1949,7 @@
 
             <div class="chat-app" id="chatApp">
 
-                <!-- ====================================================
-                     LEFT : chat names (scrollable)
-                     {{-- Laravel: wrap one .contact in @foreach ($chats as $chat) --}}
-                     ==================================================== -->
+                <!-- LEFT : chat names -->
                 <aside class="chat-list">
 
                     <div class="chat-list-head">
@@ -1908,163 +1960,42 @@
                         </button>
                     </div>
 
-                    <div class="contacts" id="contacts">
-                        {{-- @foreach ($users as $user)
-                        <div class="contact {{ $loop->iteration == 1 ? 'active' : '' }} has-unread"
-                            data-user-id="{{ $user->id }}" data-target="pane-{{ $loop->iteration }}"
-                            data-conversation-id="{{ $user->conversationParticipants->first()?->conversation_id }}"
-                            data-name="{{ $user->employee?->full_name }}">
-
-                            <img class="avatar online" src="{{ $user->employee?->profile_url }}"
-                                style="background:#2563eb">
-
-                            <div class="contact-info">
-                                <div class="contact-top">
-                                    <strong>{{ $user->employee?->full_name }}</strong>
-                                    <small></small>
-                                </div>
-
-                                <div class="contact-bottom">
-                                    <span class="preview"></span>
-                                    <em class="unread">2</em>
-                                </div>
-                            </div>
+                    <div class="chat-search">
+                        <div class="box">
+                            <i class="fas fa-magnifying-glass"></i>
+                            <input type="text" id="searchContact" placeholder="Search chats">
                         </div>
-                        @endforeach --}}
-                        {{-- <div class="contact has-unread" data-target="pane-3" data-name="Site Engineers"
-                            data-group="1">
-                            <div class="avatar" style="background:#ea580c"><i class="fas fa-users"></i></div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Site Engineers</strong><small>4:30 PM</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview">Amit: AC unit installation done at site 4.</span>
-                                    <em class="unread">5</em>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-2" data-name="HR Team">
-                            <div class="avatar online" style="background:#059669">HR</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>HR Team</strong><small>4:17 PM</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview"><i class="fas fa-check-double"></i>Thank you so much!</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact has-unread" data-target="pane-7" data-name="Karan Mehta">
-                            <div class="avatar" style="background:#ca8a04">KM</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Karan Mehta</strong><small>11:30 AM</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview">Is this the correct connection?</span>
-                                    <em class="unread">1</em>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-4" data-name="Priya Patel">
-                            <div class="avatar" style="background:#db2777">PP</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Priya Patel</strong><small>3:10 PM</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview"><i class="fas fa-check-double"></i>Thanks! See you
-                                        tomorrow.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-5" data-name="Manager - Vikram">
-                            <div class="avatar" style="background:#7c3aed">VM</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Manager - Vikram</strong><small>Yesterday</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview"><i class="fas fa-check-double"></i>Received, thank you.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-8" data-name="Warehouse" data-group="1">
-                            <div class="avatar" style="background:#0d9488"><i class="fas fa-users"></i></div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Warehouse</strong><small>Yesterday</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview"><i class="fas fa-check-double"></i>Please keep 5 aside for
-                                        Site 4.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-6" data-name="Neha Joshi">
-                            <div class="avatar online" style="background:#0891b2">NJ</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Neha Joshi</strong><small>Sunday</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview">Ok, noted.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-9" data-name="Accounts Dept">
-                            <div class="avatar" style="background:#dc2626">AD</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Accounts Dept</strong><small>Saturday</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview"><i class="fas fa-check-double"></i>Received, thank
-                                        you.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="contact" data-target="pane-10" data-name="Amit Verma">
-                            <div class="avatar" style="background:#4f46e5">AV</div>
-                            <div class="contact-info">
-                                <div class="contact-top"><strong>Amit Verma</strong><small>Friday</small></div>
-                                <div class="contact-bottom">
-                                    <span class="preview">Almost done, will send in 10 minutes.</span>
-                                </div>
-                            </div>
-                        </div> --}}
-
                     </div>
+
+                    <div class="chat-filters" id="chatFilters">
+                        <button type="button" class="active" data-filter="all">All</button>
+                        <button type="button" data-filter="unread">Unread</button>
+                        <button type="button" data-filter="groups">Groups</button>
+                    </div>
+
+                    <div class="contacts" id="contacts"></div>
+
+                    <div class="no-result" id="noResult">No chats found</div>
                 </aside>
 
-                <!-- ====================================================
-                     RIGHT : conversation (scrollable history)
-                     {{-- Laravel: wrap one .chat-pane in @foreach ($chats as $chat) --}}
-                     ==================================================== -->
+                <!-- RIGHT : conversation -->
                 <section class="chat-window" id="chatWindow">
 
                     <div class="panes">
 
-                        <!-- Welcome screen: shown when no chat is selected -->
+                        <!-- Welcome screen -->
                         <div class="chat-pane active" id="welcomeScreen">
-
                             <div class="chat-body">
-
                                 <div
                                     style="height:100%; display:flex; align-items:center; justify-content:center; text-align:center;">
-
                                     <div>
-
                                         <h2>Welcome to Employee Chat</h2>
-
                                         <p>Select a contact to start your conversation.</p>
-
-                                        <small>
-                                            <i class="fas fa-lock"></i>
-                                            Your conversations are private.
-                                        </small>
+                                        <small><i class="fas fa-lock"></i> Your conversations are private.</small>
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
-
-                        <!-- Your dynamically loaded chat panes will appear here -->
 
                         <button type="button" class="scroll-down" id="scrollDown" aria-label="Scroll to latest">
                             <i class="fas fa-chevron-down"></i>
@@ -2075,7 +2006,20 @@
 
                     <div class="emoji-panel" id="emojiPanel"></div>
 
-                    <div class="attach-menu" id="attachMenu" style="display: none;"></div>
+                    <div class="attach-menu" id="attachMenu">
+                        <label for="imgInput">
+                            <span class="ic" style="background:#a855f7"><i class="fas fa-image"></i></span>
+                            Photo
+                        </label>
+                        <label for="docInput">
+                            <span class="ic" style="background:#2563eb"><i class="fas fa-file-lines"></i></span>
+                            Document
+                        </label>
+                    </div>
+
+                    <input type="file" id="imgInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+                    <input type="file" id="docInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                        hidden>
 
                     <div class="reply-bar" id="replyBar">
                         <span class="bar-line"></span>
@@ -2088,7 +2032,11 @@
                         </button>
                     </div>
 
-                    <!-- Keep your textbox outside panes -->
+                    <div class="upload-bar" id="uploadBar">
+                        <span id="uploadText">Uploading…</span>
+                        <div class="track"><i id="uploadFill"></i></div>
+                    </div>
+
                     <form class="chat-footer" id="chatForm" autocomplete="off" style="display: none;">
                         <button type="button" class="tool" id="emojiBtn" aria-label="Emoji">
                             <i class="far fa-face-smile"></i>
@@ -2105,7 +2053,20 @@
                         </button>
                     </form>
 
-                    <!-- Keep your existing preview-screen HTML here -->
+                    <!-- Image preview screen -->
+                    <div class="preview-screen" id="previewScreen">
+                        <div class="preview-top">
+                            <i class="fas fa-xmark" id="previewClose" title="Close"></i>
+                            <span>Send photo</span>
+                        </div>
+                        <div class="preview-main"><img id="previewImg" alt=""></div>
+                        <div class="preview-foot">
+                            <input type="text" id="previewCaption" placeholder="Add a caption" maxlength="500">
+                            <button type="button" class="btn-send-chat" id="previewSend" aria-label="Send">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
 
                 </section>
 
@@ -2125,28 +2086,254 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         window.authUserId = @json(auth()->id());
-
-        console.log('Logged-in User ID:', window.authUserId);
     </script>
 
     @vite(['resources/js/app.js'])
+
     <script>
+        /* ===================== shared media helper ===================== */
+        window.ChatMedia = (function() {
+            var IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            var IMAGE_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            var DOC_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'];
+
+            var LIMITS = {
+                imageBytes: 5 * 1024 * 1024, // 5 MB per image
+                docBytes: 10 * 1024 * 1024, // 10 MB per document
+                maxImages: 1 // one image per send
+            };
+
+            function ext(name) {
+                var p = String(name || '').split('.');
+                return p.length > 1 ? p.pop().toLowerCase() : '';
+            }
+
+            function esc(v) {
+                return String(v == null ? '' : v)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function sizeText(bytes) {
+                bytes = Number(bytes) || 0;
+                if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+                return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+            }
+
+            /* returns '' when valid, otherwise an error message */
+            function validateImage(file) {
+                if (!file) return 'no file selected';
+                if (IMAGE_EXT.indexOf(ext(file.name)) === -1 ||
+                    (file.type && IMAGE_MIME.indexOf(file.type) === -1)) {
+                    return 'only JPG, PNG, GIF or WEBP images are allowed';
+                }
+                if (file.size === 0) return 'the file is empty';
+                if (file.size > LIMITS.imageBytes) return 'image is larger than 5 MB (' + sizeText(file.size) + ')';
+                return '';
+            }
+
+            function validateDoc(file) {
+                if (!file) return 'no file selected';
+                if (DOC_EXT.indexOf(ext(file.name)) === -1) {
+                    return 'allowed types: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, CSV';
+                }
+                if (file.size === 0) return 'the file is empty';
+                if (file.size > LIMITS.docBytes) return 'document is larger than 10 MB (' + sizeText(file.size) +
+                    ')';
+                return '';
+            }
+
+            /* makes sure a renamed / corrupt file is really an image */
+            function checkImageReadable(file) {
+                return new Promise(function(resolve) {
+                    var u = URL.createObjectURL(file);
+                    var img = new Image();
+                    img.onload = function() {
+                        URL.revokeObjectURL(u);
+                        resolve(true);
+                    };
+                    img.onerror = function() {
+                        URL.revokeObjectURL(u);
+                        resolve(false);
+                    };
+                    img.src = u;
+                });
+            }
+
+            function fileUrl(m) {
+                var u = m.file_url || m.file_path || '';
+                if (!u) return '';
+                if (/^(https?:)?\/\//.test(u) || u.charAt(0) === '/') return u;
+                return '/storage/' + u; // change if your files are served from somewhere else
+            }
+
+            function docStyle(e) {
+                if (e === 'pdf') return {
+                    icon: 'fa-file-pdf',
+                    color: '#ef4444'
+                };
+                if (e === 'doc' || e === 'docx') return {
+                    icon: 'fa-file-word',
+                    color: '#2563eb'
+                };
+                if (e === 'xls' || e === 'xlsx' || e === 'csv') return {
+                    icon: 'fa-file-excel',
+                    color: '#16a34a'
+                };
+                if (e === 'ppt' || e === 'pptx') return {
+                    icon: 'fa-file-powerpoint',
+                    color: '#ea580c'
+                };
+                return {
+                    icon: 'fa-file-lines',
+                    color: '#64748b'
+                };
+            }
+
+            /* builds the inside of a bubble. metaInner = trusted html (time + ticks) */
+
+            function render(m, metaInner) {
+
+                var text = m.message == null ? '' : String(m.message);
+
+                // Support database response and Reverb event formats
+                var file = null;
+
+                if (Array.isArray(m.attachments) && m.attachments.length > 0) {
+
+                    file = m.attachments[0];
+
+                } else if (m.file_path) {
+
+                    file = {
+                        file_type: m.file_type,
+                        file_path: m.file_path,
+                        file_name: m.file_name
+                    };
+
+                }
+
+                // Image or document message
+                if (file && file.file_path) {
+
+                    var url = "{{ asset('storage') }}/" + file.file_path;
+
+                    var name = file.file_name ||
+                        file.file_path.split('/').pop();
+
+                    var html = '';
+
+                    // Image: display image only
+                    if (file.file_type === 'image') {
+
+                        html += `
+                <div class="img-wrap" data-caption="">
+                    <img src="${esc(url)}"
+                         alt="image"
+                         loading="lazy">
+                </div>
+            `;
+
+                        html += `<span class="meta">${metaInner}</span>`;
+
+                        return {
+                            cls: 'bubble has-img',
+                            html: html
+                        };
+                    }
+
+                    // Document: display document only
+                    if (file.file_type === 'document') {
+
+                        var e = ext(name);
+                        var st = docStyle(e);
+                        var info = e ? e.toUpperCase() : 'FILE';
+
+                        html += `
+                <a class="doc-card"
+                   href="${esc(url)}"
+                   target="_blank"
+                   rel="noopener"
+                   download="${esc(name)}">
+
+                    <i class="fas ${st.icon} ico"
+                       style="color:${st.color}"></i>
+
+                    <div>
+                        <div class="name">${esc(name)}</div>
+                        <small>${esc(info)}</small>
+                    </div>
+
+                    <i class="fas fa-download dl"></i>
+                </a>
+            `;
+
+                        html += `<span class="meta">${metaInner}</span>`;
+
+                        return {
+                            cls: 'bubble',
+                            html: html
+                        };
+                    }
+                }
+
+                // Text-only message
+                if (text.trim() !== '') {
+
+                    return {
+                        cls: 'bubble',
+                        html: esc(text) + `<span class="meta">${metaInner}</span>`
+                    };
+                }
+
+                // No text and no attachment: do not create a bubble
+                return null;
+            }
+
+            return {
+                LIMITS: LIMITS,
+                ext: ext,
+                esc: esc,
+                sizeText: sizeText,
+                validateImage: validateImage,
+                validateDoc: validateDoc,
+                checkImageReadable: checkImageReadable,
+                render: render
+            };
+        })();
+
+        /* ===================== real-time listener ===================== */
+
+
+
         $(document).ready(function() {
 
-
-            // display message when chat is open  and that read
             window.Echo.private(`users.${window.authUserId}`)
 
                 .listen('.message.sent', function(event) {
 
-                    if (event.sender_id == window.authUserId) {
+
+                    if (Number(event.sender_id) === Number(window.authUserId)) {
                         return;
                     }
+
+
                     let pane = $('.chat-pane').filter(function() {
-                        return $(this).data('conversation-id') == event.conversation_id;
+
+                        return Number($(this).data('conversation-id')) ===
+                            Number(event.conversation_id);
+
                     });
 
+
+                    if (!pane.length) {
+                        console.log('Conversation pane not found.');
+                        return;
+                    }
+
+
                     if (pane.hasClass('active')) {
+
 
                         let time = new Date(event.created_at).toLocaleTimeString([], {
                             hour: '2-digit',
@@ -2154,49 +2341,48 @@
                             hour12: true
                         });
 
-                        pane.find('.chat-body').append(`
-                    <div class="msg in">
-                        <div class="bubble">
-                            ${$('<div>').text(event.message).html()}
-                            <span class="meta">${time}</span>
-                        </div>
-                    </div>
-                `);
+
+                        let body = pane.find('.chat-body');
+
+                        body.find('.empty-chat').remove();
+
+                        let hasAttachment =
+                            (event.file_type === 'image' || event.file_type === 'document') &&
+                            event.file_path;
+
+                        let messageEvent = {
+                            ...event,
+                            message: hasAttachment ? '' : (event.message || '')
+                        };
+
+                        let rendered = ChatMedia.render(messageEvent, time);
+
+                        // Append only one message wrapper
+                        if (rendered.html.trim()) {
+                            body.append(`
+        <div class="msg in">
+            <div class="${rendered.cls}">
+                ${rendered.html}
+            </div>
+        </div>
+    `);
+                        }
 
                         MessageRead(event.conversation_id, event.sender_id);
 
-                        let body = pane.find('.chat-body');
                         body.scrollTop(body[0].scrollHeight);
-
                     } else {
+
                         console.log('Message received. Chat is not open.');
+
                     }
 
                 });
 
         });
 
-        // window.addEventListener('echo-ready', function() {
-        //     window.Echo.private(`users.${window.authUserId}`).listen('.message.read', function(event) {
-        //         let pane = $('.chat-pane').filter(function() {
-        //             return $(this).data('conversation-id') == event.conversation_id;
-        //         });
-        //         console.log("pane value is ", pane);
-
-        //         pane.find('.msg.out .message-status')
-        //             .removeClass('single-tick')
-        //             .addClass('read-tick')
-        //             .html('<i class="fas fa-check-double"></i>');
-        //     });
-        // });
-
-
-
-
-
 
         function MessageRead(conversation_id, sender_id) {
-
             $.ajax({
                 url: "{{ route('messageRead') }}",
                 type: "GET",
@@ -2205,9 +2391,7 @@
                     sender_id: sender_id,
                 },
                 success: function(response) {
-
                     if (response.status) {
-
                         let pane = $('.chat-pane').filter(function() {
                             return $(this).data('conversation-id') == conversation_id;
                         });
@@ -2244,7 +2428,6 @@
 
             var previewScreen = document.getElementById('previewScreen');
             var previewImg = document.getElementById('previewImg');
-            var previewThumbs = document.getElementById('previewThumbs');
             var previewCaption = document.getElementById('previewCaption');
 
             var lightbox = document.getElementById('lightbox');
@@ -2275,9 +2458,8 @@
                 });
             }
 
-            function sizeText(bytes) {
-                if (bytes > 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
-                return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+            function cleanId(v) {
+                return (v === undefined || v === null || v === 'undefined' || v === 'null' || v === '') ? '' : v;
             }
 
             function activePane() {
@@ -2285,13 +2467,8 @@
             }
 
             function activeBody() {
-                const activePane = document.querySelector('.chat-pane.active');
-
-                if (!activePane) {
-                    return null;
-                }
-
-                return activePane.querySelector('.chat-body');
+                var p = document.querySelector('.chat-pane.active');
+                return p ? p.querySelector('.chat-body') : null;
             }
 
             function activeContact() {
@@ -2302,13 +2479,10 @@
                 return body.scrollHeight - body.scrollTop - body.clientHeight < 120;
             }
 
-            function scrollBottom(body, smooth = false) {
-
+            function scrollBottom(body, smooth) {
                 if (!body) return;
-
                 body.style.scrollBehavior = smooth ? 'smooth' : 'auto';
                 body.scrollTop = body.scrollHeight;
-
             }
 
             function resetNew() {
@@ -2322,6 +2496,11 @@
                 attachMenu.classList.remove('show');
             }
 
+            function escapeHtml(value) {
+                return $('<div>').text(value ?? '').html();
+            }
+
+            /* ---------- contacts ---------- */
             function loadContacts() {
 
                 $.ajax({
@@ -2337,16 +2516,11 @@
                             let name = user.employee?.full_name ?? '';
                             let profile = user.employee?.profile_url ?? '';
 
-                            // Get latest message time from sender/receiver relationships
                             let latestMessage = null;
-
-                            let sentTime = user.last_sent_message ?
-                                new Date(user.last_sent_message) :
-                                null;
-
-                            let receivedTime = user.last_received_message ?
-                                new Date(user.last_received_message) :
-                                null;
+                            let sentTime = user.last_sent_message ? new Date(user
+                                .last_sent_message) : null;
+                            let receivedTime = user.last_received_message ? new Date(user
+                                .last_received_message) : null;
 
                             if (sentTime && receivedTime) {
                                 latestMessage = sentTime > receivedTime ? sentTime : receivedTime;
@@ -2358,46 +2532,44 @@
                                 latestMessage.toLocaleTimeString([], {
                                     hour: '2-digit',
                                     minute: '2-digit'
-                                }) :
-                                '';
+                                }) : '';
 
-                            // No conversation yet: conversation ID will be empty
-                            let conversationId = user.conversation_id;
-
-                            // Latest message preview (if provided by backend)
-                            let messageText = user.latest_message ?? 'No messages yet';
+                            let convId = cleanId(user.conversation_id);
+                            let messageText = user.latest_message ?? '';
                             let unreadCount = user.unread_messages_count;
 
                             html += `
-            <div class="contact"
-                data-user-id="${user.id}"
-                data-conversation-id="${conversationId}"
-                data-name="${escapeHtml(name)}">
+                                <div class="contact"
+                                    data-user-id="${user.id}"
+                                    data-conversation-id="${convId}"
+                                    data-name="${escapeHtml(name)}">
 
-                <img class="avatar online"
-                    src="${escapeHtml(profile)}"
-                    style="background:#2563eb">
+                                    <img class="avatar online"
+                                        src="${escapeHtml(profile)}"
+                                        style="background:#2563eb">
 
-                <div class="contact-info">
-                    <div class="contact-top">
-                        <strong>${escapeHtml(name)}</strong>
-                        <small>${time}</small>
-                    </div>
+                                    <div class="contact-info">
+                                        <div class="contact-top">
+                                            <strong>${escapeHtml(name)}</strong>
+                                            <small>${time}</small>
+                                        </div>
 
-                    <div class="contact-bottom">
-                        <span class="preview">${escapeHtml(messageText)}</span>
-                                        ${unreadCount > 0 ? `<em class="unread">${unreadCount}</em>` : ''}
-
-                    </div>
-                </div>
-            </div>
-        `;
+                                        <div class="contact-bottom">
+                                            <span class="preview">${escapeHtml(messageText)}</span>
+                                            ${unreadCount > 0 ? `<em class="unread">${unreadCount}</em>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                         });
 
                         $('#contacts').html(html);
 
-                        // Automatically open first contact
-
+                        // keep the currently open chat highlighted after reload
+                        if (receiverId) {
+                            $('#contacts .contact[data-user-id="' + receiverId + '"]').addClass('active');
+                        }
+                        applyFilters();
                     },
                     error: function(xhr) {
                         console.log(xhr.responseJSON || xhr.responseText);
@@ -2405,26 +2577,18 @@
                 });
             }
 
-            function escapeHtml(value) {
-                return $('<div>').text(value ?? '').html();
-            }
-
-
-            //load chat
-
             $(document).ready(function() {
                 loadContacts();
             });
 
-
-
+            /* ---------- open / load chat ---------- */
             function openChat(contact) {
 
                 $('.contact').removeClass('active');
                 $(contact).addClass('active');
 
                 receiverId = $(contact).data('user-id');
-                conversationId = $(contact).data('conversation-id');
+                conversationId = cleanId($(contact).attr('data-conversation-id'));
 
                 closePanels();
                 resetNew();
@@ -2432,8 +2596,6 @@
                 app.classList.add('open');
 
                 $('#welcomeScreen').removeClass('active');
-
-                // Show message textbox after selecting a contact
                 $('#chatForm').show();
 
                 $(contact).removeClass('has-unread');
@@ -2444,8 +2606,6 @@
 
             function loadChat(conversationId, receiverId, target) {
 
-                let chatContent = $('.panes');
-                console.log("Reciver id", receiverId);
                 $.ajax({
                     url: "{{ route('loadChat') }}",
                     type: "GET",
@@ -2456,89 +2616,75 @@
 
                     success: function(response) {
 
-
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
 
-
-
-                        // Get user details even if there are no messages
                         let userName = response.user?.employee?.full_name || '';
                         let profileUrl = response.user?.employee?.profile_url || '';
 
-                        // Create chat header and body first
                         let html = `
-        <div class="chat-pane active" data-user-id="${receiverId}"
-        data-conversation-id="${conversationId}"
-        >
+                            <div class="chat-pane active" data-user-id="${receiverId}"
+                                data-conversation-id="${conversationId}">
 
-            <div class="chat-head">
-                <i class="fas fa-arrow-left back"></i>
+                                <div class="chat-head">
+                                    <i class="fas fa-arrow-left back"></i>
 
-                <img class="avatar online"
-                    src="${profileUrl}"
-                    style="background:#2563eb">
+                                    <img class="avatar online"
+                                        src="${escapeHtml(profileUrl)}"
+                                        style="background:#2563eb">
 
-                <div class="who">
-                    <strong>${$('<div>').text(userName).html()}</strong>
+                                    <div class="who">
+                                        <strong>${escapeHtml(userName)}</strong>
+                                    </div>
+                                </div>
 
-                </div>
-            </div>
+                                <div class="chat-body"></div>
 
-            <div class="chat-body"></div>
-
-        </div>
-    `;
-
-                        chatContent.find('.chat-pane').remove();
+                            </div>
+                        `;
 
                         chatContent.prepend(html);
 
                         let body = chatContent.find('.chat-body');
 
-                        // Display empty message if no messages exist
                         if (response.status === false || !response.data?.length) {
 
                             body.html(`
-            <div class="empty-chat">
-                <i class="far fa-comments"></i>
-                <strong>No messages yet</strong>
-                <span>Start a conversation!</span>
-            </div>
-        `);
+                                <div class="empty-chat">
+                                    <i class="far fa-comments"></i>
+                                    <strong>No messages yet</strong>
+                                    <span>Start a conversation!</span>
+                                </div>
+                            `);
 
                             return;
                         }
 
                         let messages = response.data[0].conversation.messages;
-
                         let previousDate = '';
+                        let myId = {{ Auth::id() }};
+
+                        console.log(response);
+
 
                         $.each(messages, function(index, message) {
 
                             let messageDate = new Date(message.created_at);
-
                             let dateKey = messageDate.toLocaleDateString('en-CA');
 
                             if (previousDate !== dateKey) {
 
                                 let today = new Date();
                                 let yesterday = new Date();
-
                                 yesterday.setDate(today.getDate() - 1);
 
                                 let displayDate;
 
                                 if (dateKey === today.toLocaleDateString('en-CA')) {
-
                                     displayDate = 'Today';
-
                                 } else if (dateKey === yesterday.toLocaleDateString('en-CA')) {
-
                                     displayDate = 'Yesterday';
-
                                 } else {
-
                                     displayDate = messageDate.toLocaleDateString('en-IN', {
                                         weekday: 'long',
                                         day: 'numeric',
@@ -2548,23 +2694,21 @@
                                 }
 
                                 body.append(`
-                <div class="day-chip">
-                    <span>${displayDate}</span>
-                </div>
-            `);
+            <div class="day-chip">
+                <span>${displayDate}</span>
+            </div>
+        `);
 
                                 previousDate = dateKey;
                             }
 
-                            let messageType =
-                                Number(message.sender_id) === {{ Auth::id() }} ?
-                                'out' :
-                                'in';
+                            let messageType = Number(message.sender_id) === myId ? 'out' : 'in';
 
                             let time = messageDate.toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit'
                             });
+
                             let ticks = '';
 
                             if (messageType === 'out') {
@@ -2572,27 +2716,27 @@
                                     '<i class="fas fa-check-double read-tick"></i>' :
                                     '<i class="fas fa-check single-tick"></i>';
                             }
-                            let messageText = $('<div>')
-                                .text(message.message ?? '')
-                                .html();
 
-                            let messageHtml = `
-            <div class="msg ${messageType}">
-                <div class="bubble">
-                    ${messageText}
 
-                    <span class="meta">
-                        ${time} ${ticks}
-                    </span>
-                </div>
+                            let rendered = ChatMedia.render(message, time + ' ' + ticks);
+
+                            body.append(`
+        <div class="msg ${messageType}">
+            <div class="${rendered.cls}">
+                ${rendered.html}
             </div>
-        `;
+        </div>
+    `);
+                        });
 
-                            body.append(messageHtml);
+
+                        body.find('.img-wrap img').each(function() {
+                            this.addEventListener('load', function() {
+                                scrollBottom(body[0], false);
+                            });
                         });
 
                         scrollBottom(body[0], false);
-
                     },
 
                     error: function(xhr) {
@@ -2600,54 +2744,15 @@
                     }
                 });
             }
+
             $('#contacts').on('click', '.contact', function() {
                 openChat(this);
             });
 
-
-            /* ---------- add a new outgoing message ---------- */
-            function ensureToday(body) {
-                var chips = body.querySelectorAll('.day-chip span');
-                var last = chips.length ? chips[chips.length - 1].textContent : '';
-                if (last !== 'Today') {
-                    var chip = el('div', 'day-chip');
-                    chip.appendChild(el('span', '', 'Today'));
-                    body.appendChild(chip);
-                }
-            }
-
-            function outRow(body) {
-                var lastEl = body.lastElementChild;
-                var first = !(lastEl && lastEl.classList.contains('msg') && lastEl.classList.contains('out'));
-                return el('div', 'msg out' + (first ? ' first' : ''));
-            }
-
-
-            function appendRow(row) {
-                var body = activeBody();
-                body.appendChild(row);
-                scrollBottom(body, true);
-                resetNew();
-            }
-
-            function updateContact(previewNode) {
-                var c = activeContact();
-                c.querySelector('.contact-top small').textContent = nowTime();
-
-                var pv = c.querySelector('.preview');
-                pv.innerHTML = '';
-                pv.appendChild(el('i', 'fas fa-check-double'));
-                pv.appendChild(previewNode);
-
-                // newest chat goes to the top (like WhatsApp)
-                contactsEl.insertBefore(c, contactsEl.firstChild);
-            }
-
+            /* ---------- send text ---------- */
             function sendText(text) {
 
                 if (!receiverId) return;
-                console.log("conversation id ", conversationId);
-                console.log("reciver id", receiverId);
 
                 $.ajax({
                     url: "{{ route('chatSend') }}",
@@ -2655,97 +2760,22 @@
                     data: {
                         conversation_id: conversationId || null,
                         reciver_id: receiverId,
+                        type: 'text',
                         message: text,
                         _token: "{{ csrf_token() }}"
                     },
                     success: function(response) {
                         if (response.status === true) {
+                            conversationId = response.conversation.id;
                             loadChat(response.conversation.id, receiverId);
                             loadContacts();
                         }
+                    },
+                    error: function(xhr) {
+                        toast(errorText(xhr));
                     }
-                })
-                // var body = activeBody();
-                // ensureToday(body);
-
-                // var row = outRow(body);
-                // var bubble = el('div', 'bubble');
-                // if (replyTo) bubble.appendChild(buildQuote(replyTo));
-                // bubble.appendChild(document.createTextNode(text));
-                // bubble.appendChild(tickMeta('meta'));
-                // row.appendChild(bubble);
-
-                // appendRow(row);
-                // watchTicks(row);
-                // updateContact(document.createTextNode(text));
-                // cancelReply();
-
-                // TODO (Laravel): post the message to the server here, e.g. fetch('/chat/send', {...})
+                });
             }
-
-            // function sendImages(list, caption) {
-            //     var body = activeBody();
-            //     ensureToday(body);
-
-            //     list.forEach(function(p, i) {
-            //         var cap = i === 0 ? caption : '';
-            //         var row = outRow(body);
-            //         var bubble = el('div', 'bubble has-img');
-
-            //         var wrap = el('div', 'img-wrap' + (cap ? '' : ' shade'));
-            //         wrap.dataset.caption = cap;
-            //         var img = document.createElement('img');
-            //         img.src = p.url;
-            //         img.alt = p.name;
-            //         wrap.appendChild(img);
-
-            //         if (!cap) wrap.appendChild(tickMeta('meta-over'));
-            //         bubble.appendChild(wrap);
-
-            //         if (cap) {
-            //             var c = el('div', 'img-caption', cap);
-            //             c.appendChild(tickMeta('meta'));
-            //             bubble.appendChild(c);
-            //         }
-
-            //         row.appendChild(bubble);
-            //         appendRow(row);
-            //         watchTicks(row);
-            //         body = activeBody();
-            //     });
-
-            //     var pv = document.createElement('span');
-            //     pv.appendChild(el('i', 'fas fa-camera'));
-            //     pv.appendChild(document.createTextNode(caption || 'Photo'));
-            //     updateContact(pv);
-            // }
-
-            // function sendDoc(file) {
-            //     var body = activeBody();
-            //     ensureToday(body);
-
-            //     var row = outRow(body);
-            //     var bubble = el('div', 'bubble');
-
-            //     var card = el('div', 'doc-card');
-            //     card.appendChild(el('i', 'fas fa-file-lines ico'));
-            //     var t = el('div');
-            //     t.appendChild(el('div', 'name', file.name));
-            //     t.appendChild(el('small', '', sizeText(file.size)));
-            //     card.appendChild(t);
-
-            //     bubble.appendChild(card);
-            //     bubble.appendChild(tickMeta('meta'));
-            //     row.appendChild(bubble);
-
-            //     appendRow(row);
-            //     watchTicks(row);
-
-            //     var pv = document.createElement('span');
-            //     pv.appendChild(el('i', 'fas fa-file-lines'));
-            //     pv.appendChild(document.createTextNode(file.name));
-            //     updateContact(pv);
-            // }
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -2757,21 +2787,23 @@
             });
 
             /* ---------- scroll-down button ---------- */
-            document.querySelectorAll('.chat-body').forEach(function(b) {
-                b.addEventListener('scroll', function() {
-                    if (b !== activeBody()) return;
-                    if (isNearBottom(b)) {
-                        resetNew();
-                    } else {
-                        scrollBtn.classList.add('show');
-                    }
-                });
-            });
-
             scrollBtn.addEventListener('click', function() {
                 scrollBottom(activeBody(), true);
                 resetNew();
             });
+
+        
+            document.addEventListener('scroll', function(e) {
+                var b = e.target;
+                if (!b || !b.classList || !b.classList.contains('chat-body')) return;
+                if (b !== activeBody()) return;
+                if (isNearBottom(b)) {
+                    resetNew();
+                } else {
+                    scrollBtn.classList.add('show');
+                }
+                closeMsgMenu();
+            }, true);
 
             /* ---------- emoji + attach ---------- */
             EMOJIS.forEach(function(e) {
@@ -2798,67 +2830,205 @@
                 if (!attachMenu.contains(e.target)) attachMenu.classList.remove('show');
             });
 
-            /* ---------- image pick, preview, send ---------- */
+            /* ============================================================
+               IMAGE + DOCUMENT SENDING (with validation)
+               ============================================================ */
+            var uploadBar = document.getElementById('uploadBar');
+            var uploadText = document.getElementById('uploadText');
+            var uploadFill = document.getElementById('uploadFill');
+            var isUploading = false;
+
+            function setUploading(on, text, pct) {
+                isUploading = on;
+                uploadBar.classList.toggle('show', on);
+                if (on) {
+                    uploadText.textContent = text || 'Uploading…';
+                    uploadFill.style.width = (pct || 0) + '%';
+                }
+                form.querySelector('.btn-send-chat').disabled = on;
+                document.getElementById('attachBtn').classList.toggle('disabled', on);
+            }
+
+            function showErrors(title, errors) {
+                if (errors.length === 1) {
+                    toast(errors[0]);
+                    return;
+                }
+                showModal({
+                    title: title,
+                    text: errors.slice(0, 8).join('\n') + (errors.length > 8 ? '\n…and ' + (errors.length - 8) +
+                        ' more' : ''),
+                    actions: [{
+                        icon: 'fas fa-xmark',
+                        label: 'OK',
+                        onClick: closeModal
+                    }]
+                });
+            }
+
+            function errorText(xhr) {
+                var j = xhr.responseJSON;
+                if (j && j.errors) {
+                    var k = Object.keys(j.errors)[0];
+                    return j.errors[k][0];
+                }
+                if (j && j.message) return j.message;
+                if (xhr.status === 413) return 'File is too large for the server';
+                if (xhr.status === 419) return 'Session expired. Please refresh the page';
+                if (xhr.status === 0) return 'Network error. Check your connection';
+                return 'Request failed. Please try again';
+            }
+
+            function uploadOne(item, type, caption, conversationId, receiverId) {
+
+                var fd = new FormData();
+
+                fd.append('conversation_id', conversationId);
+                fd.append('reciver_id', receiverId);
+                fd.append('type', type);
+                fd.append('message', caption || '');
+                fd.append('file', item.file);
+                fd.append('_token', "{{ csrf_token() }}");
+
+                return $.ajax({
+                    url: "{{ route('chatSend') }}",
+                    type: 'POST',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.status === true) {
+                            conversationId = response.conversation.id;
+                            loadChat(response.conversation.id, receiverId);
+                            loadContacts();
+                        }
+                    }
+                });
+            }
+
+            /* sends one file (one message) */
+            async function sendQueue(items, type, caption) {
+                if (isUploading) {
+                    toast('Please wait for the current upload to finish');
+                    return;
+                }
+                if (!receiverId) {
+                    toast('Select a chat first');
+                    return;
+                }
+
+                var rId = receiverId;
+                var convId = cleanId(conversationId);
+                var sent = 0;
+
+                setUploading(true, 'Preparing…', 0);
+
+                try {
+                    for (let i = 0; i < items.length; i++) {
+                        var label = items.length > 1 ? 'Sending ' + (i + 1) + ' of ' + items.length : 'Sending';
+                        setUploading(true, label, 0);
+
+                        var res = await uploadOne(items[i], type, i === 0 ? caption : '', convId, rId, function(p) {
+                            setUploading(true, label + ' · ' + p + '%', p);
+                        });
+
+                        if (res.conversation && res.conversation.id) convId = res.conversation.id;
+                        sent++;
+                    }
+                } catch (err) {
+                    toast((err && err.message) || 'Upload failed');
+                } finally {
+                    setUploading(false);
+                    items.forEach(function(it) {
+                        if (it.url) URL.revokeObjectURL(it.url);
+                    });
+
+                    if (sent) {
+                        if (receiverId === rId) {
+                            conversationId = convId;
+                            loadChat(convId, rId);
+                        }
+                        loadContacts();
+                    }
+                }
+            }
+
+            /* ---------- image preview screen (one image) ---------- */
             function showPreview() {
                 if (!pending.length) {
                     previewScreen.classList.remove('show');
                     return;
                 }
-                previewImg.src = pending[pendingIndex].url;
-
-                previewThumbs.innerHTML = '';
-                pending.forEach(function(p, i) {
-                    var t = document.createElement('img');
-                    t.src = p.url;
-                    t.alt = p.name;
-                    if (i === pendingIndex) t.className = 'active';
-                    t.addEventListener('click', function() {
-                        pendingIndex = i;
-                        showPreview();
-                    });
-                    previewThumbs.appendChild(t);
-                });
+                previewImg.src = pending[0].url;
                 previewScreen.classList.add('show');
             }
 
             function closePreview() {
+                pending.forEach(function(p) {
+                    URL.revokeObjectURL(p.url);
+                });
                 pending = [];
+                pendingIndex = 0;
                 previewScreen.classList.remove('show');
             }
 
-            imgInput.addEventListener('change', function() {
-                pending = [];
-                pendingIndex = 0;
-
-                Array.prototype.forEach.call(imgInput.files, function(f) {
-                    if (f.type.indexOf('image/') === 0) {
-                        pending.push({
-                            url: URL.createObjectURL(f),
-                            name: f.name
-                        });
-                    }
-                });
-
+            /* ---------- pick one image ---------- */
+            imgInput.addEventListener('change', async function() {
+                var files = Array.prototype.slice.call(imgInput.files);
                 imgInput.value = '';
                 attachMenu.classList.remove('show');
+
+                if (!files.length) return;
+                if (!receiverId) {
+                    toast('Select a chat first');
+                    return;
+                }
+                if (isUploading) {
+                    toast('Please wait for the current upload to finish');
+                    return;
+                }
+
+                var f = files[0];
+                var err = ChatMedia.validateImage(f);
+
+                if (!err) {
+                    var ok = await ChatMedia.checkImageReadable(f);
+                    if (!ok) err = 'this file is not a valid image';
+                }
+
+                if (err) {
+                    toast(f.name + ': ' + err);
+                    return;
+                }
+
+                closePreview();
+                pending = [{
+                    file: f,
+                    url: URL.createObjectURL(f),
+                    name: f.name
+                }];
                 previewCaption.value = '';
                 showPreview();
                 previewCaption.focus();
-            });
-
-            docInput.addEventListener('change', function() {
-                if (!docInput.files.length) return;
-                sendDoc(docInput.files[0]);
-                docInput.value = '';
-                attachMenu.classList.remove('show');
             });
 
             document.getElementById('previewClose').addEventListener('click', closePreview);
 
             document.getElementById('previewSend').addEventListener('click', function() {
                 if (!pending.length) return;
-                sendImages(pending, previewCaption.value.trim());
-                closePreview();
+
+                var caption = previewCaption.value.trim();
+                if (caption.length > 500) {
+                    toast('Caption can be at most 500 characters');
+                    return;
+                }
+
+                var list = pending.slice();
+                pending = [];
+                pendingIndex = 0;
+                previewScreen.classList.remove('show');
+
+                sendQueue(list, 'image', caption);
             });
 
             previewCaption.addEventListener('keydown', function(e) {
@@ -2868,7 +3038,32 @@
                 }
             });
 
-            /* ---------- lightbox (works for server-rendered images too) ---------- */
+            /* ---------- pick document ---------- */
+            docInput.addEventListener('change', function() {
+                var file = docInput.files[0];
+                docInput.value = '';
+                attachMenu.classList.remove('show');
+
+                if (!file) return;
+                if (!receiverId) {
+                    toast('Select a chat first');
+                    return;
+                }
+
+                var err = ChatMedia.validateDoc(file);
+                if (err) {
+                    toast(file.name + ': ' + err);
+                    return;
+                }
+
+                sendQueue([{
+                    file: file,
+                    url: null,
+                    name: file.name
+                }], 'document', '');
+            });
+
+            /* ---------- lightbox ---------- */
             document.addEventListener('click', function(e) {
                 var wrap = e.target.closest('.img-wrap');
                 if (!wrap) return;
@@ -2896,14 +3091,14 @@
                 var shown = 0;
 
                 contactsEl.querySelectorAll('.contact').forEach(function(c) {
-                    var ok = c.dataset.name.toLowerCase().indexOf(q) > -1;
+                    var ok = (c.dataset.name || '').toLowerCase().indexOf(q) > -1;
                     if (filter === 'unread' && !c.querySelector('.unread')) ok = false;
                     if (filter === 'groups' && !c.dataset.group) ok = false;
                     c.style.display = ok ? '' : 'none';
                     if (ok) shown++;
                 });
 
-                noResult.style.display = shown ? 'none' : 'block';
+                noResult.style.display = (shown || !contactsEl.querySelector('.contact')) ? 'none' : 'block';
             }
 
             searchEl.addEventListener('input', applyFilters);
@@ -2918,17 +3113,8 @@
                 applyFilters();
             });
 
-            /* ---------- init ---------- */
-            var first = document.querySelector('.contact.active');
-            if (first) {
-                var badge = first.querySelector('.unread');
-                if (badge) badge.remove();
-                first.classList.remove('has-unread');
-            }
-            scrollBottom(activeBody(), false);
-
             /* ============================================================
-               WhatsApp-style message & chat actions (static front-end only)
+               WhatsApp-style message & chat actions (front-end only)
                ============================================================ */
 
             var menuEl = document.createElement('div');
@@ -2946,14 +3132,13 @@
             var toastTimer = null;
             var currentMenuRow = null;
 
-            /* ---------- tiny helpers ---------- */
             function toast(msg) {
                 toastEl.textContent = msg;
                 toastEl.classList.add('show');
                 clearTimeout(toastTimer);
                 toastTimer = setTimeout(function() {
                     toastEl.classList.remove('show');
-                }, 2200);
+                }, 2600);
             }
 
             function bubbleOf(row) {
@@ -3245,7 +3430,7 @@
             }
 
             function forwardTo(row, targetId) {
-                var pane = document.getElementById(targetId);
+                var pane = targetId ? document.getElementById(targetId) : null;
                 if (!pane) return;
                 var body = pane.querySelector('.chat-body');
                 var source = bubbleOf(row);
@@ -3276,7 +3461,6 @@
                 newRow.appendChild(bubble);
                 body.appendChild(newRow);
                 decorateAll();
-                watchTicks(newRow);
                 scrollBottom(body, true);
             }
 
@@ -3368,13 +3552,17 @@
                 var meta = row.querySelector('.meta, .meta-over');
                 var time = meta ? cleanText(meta).replace(/\s*$/, '') : '';
                 var isOut = row.classList.contains('out');
-                var tick = meta ? meta.querySelector('.tick') : null;
-                var status = tick ? (tick.dataset.status || (tick.classList.contains('read') ? 'read' : 'sent')) : (
-                    isOut ? 'read' : 'received');
+                var tick = meta ? meta.querySelector('.tick, .read-tick, .single-tick') : null;
+                var status;
+                if (tick) {
+                    status = tick.dataset.status || (tick.classList.contains('read') || tick.classList.contains(
+                        'read-tick') ? 'read' : 'sent');
+                } else {
+                    status = isOut ? 'read' : 'received';
+                }
 
                 var statusText = status === 'sent' ? 'Sent' :
-                    (status === 'delivered' ? 'Delivered' :
-                        (isOut ? 'Read' : 'Received'));
+                    (status === 'delivered' ? 'Delivered' : (isOut ? 'Read' : 'Received'));
 
                 showModal({
                     title: 'Message info',
@@ -3415,38 +3603,6 @@
             function cancelReply() {
                 replyTo = null;
                 replyBar.classList.remove('show');
-            }
-
-            function buildQuote(ref) {
-                var q = document.createElement('div');
-                q.className = 'quote';
-                q.innerHTML = '<i class="fas fa-reply q-ico"></i>';
-
-                var t = document.createElement('div');
-                t.className = 'q-txt';
-                var who = document.createElement('span');
-                who.className = 'q-who';
-                who.textContent = ref.who;
-                var bodyTxt = document.createElement('span');
-                bodyTxt.className = 'q-body';
-                bodyTxt.textContent = ref.text;
-                t.appendChild(who);
-                t.appendChild(bodyTxt);
-                q.appendChild(t);
-
-                q.addEventListener('click', function() {
-                    if (ref.row && document.body.contains(ref.row)) {
-                        ref.row.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                        ref.row.classList.add('flash');
-                        setTimeout(function() {
-                            ref.row.classList.remove('flash');
-                        }, 1300);
-                    }
-                });
-                return q;
             }
 
             /* ---------- edit ---------- */
@@ -3500,11 +3656,8 @@
                     box.remove();
                     var anchor = b.querySelector('.meta');
                     removed.forEach(function(n) {
-                        if (anchor) {
-                            b.insertBefore(n, anchor);
-                        } else {
-                            b.appendChild(n);
-                        }
+                        if (anchor) b.insertBefore(n, anchor);
+                        else b.appendChild(n);
                     });
                 }
 
@@ -3517,11 +3670,8 @@
                     box.remove();
                     var anchor = b.querySelector('.meta');
                     var textNode = document.createTextNode(val);
-                    if (anchor) {
-                        b.insertBefore(textNode, anchor);
-                    } else {
-                        b.appendChild(textNode);
-                    }
+                    if (anchor) b.insertBefore(textNode, anchor);
+                    else b.appendChild(textNode);
                     row.dataset.edited = '1';
                     if (anchor && !anchor.querySelector('.edited-label')) {
                         var lbl = document.createElement('span');
@@ -3529,7 +3679,6 @@
                         lbl.textContent = 'edited · ';
                         anchor.insertBefore(lbl, anchor.firstChild);
                     }
-                    pruneRow(row);
                     toast('Message edited');
                 }
 
@@ -3613,6 +3762,7 @@
                 row.dataset.deleted = '1';
                 row.classList.remove('starred', 'pinned', 'has-reaction');
 
+                b.className = 'bubble';
                 b.innerHTML = '';
                 var ic = document.createElement('i');
                 ic.className = 'fas fa-ban';
@@ -3629,10 +3779,6 @@
                 var pane = row.closest('.chat-pane');
                 if (pane) updatePinnedBar(pane);
                 toast('Message deleted for everyone');
-            }
-
-            function pruneRow() {
-                /* no-op, kept for readability */
             }
 
             /* ---------- modal ---------- */
@@ -3724,7 +3870,7 @@
                         openGroupInfo(pane);
                     });
                     addMenuItem('fas fa-user-plus', 'Add participants', function() {
-                        openAddParticipants(pane);
+                        openGroupInfo(pane, 'add');
                     });
                 } else {
                     addMenuItem('fas fa-circle-info', 'Contact info', function() {
@@ -3733,7 +3879,7 @@
                 }
 
                 addMenuItem('fas fa-list-check', 'Select messages', function() {
-                    toast('Select messages — static demo');
+                    toast('Select messages — demo');
                 });
                 addMenuItem('fas fa-bell-slash', 'Mute notifications', function() {
                     toast('Notifications muted for ' + name);
@@ -3816,20 +3962,22 @@
 
             function deleteChat(pane) {
                 if (!pane) return;
-                var contact = document.querySelector('.contact[data-target="' + pane.id + '"]');
-                var wasActive = pane.classList.contains('active');
+                var contact = pane.id ? document.querySelector('.contact[data-target="' + pane.id + '"]') :
+                    activeContact();
                 pane.remove();
                 if (contact) contact.remove();
                 closePanels();
                 toast('Chat deleted');
 
-                if (wasActive) {
-                    var next = document.querySelector('.contact');
-                    if (next) openChat(next);
-                }
+                // back to the welcome screen
+                receiverId = null;
+                conversationId = null;
+                $('#welcomeScreen').addClass('active');
+                $('#chatForm').hide();
+                app.classList.remove('open');
             }
 
-            /* ---------- employees & groups (static) ---------- */
+            /* ---------- employees & groups (front-end demo) ---------- */
             var EMPLOYEES = [{
                     name: 'Rahul Sharma',
                     initials: 'RS',
@@ -3902,45 +4050,7 @@
 
             function getGroup(pane) {
                 if (!pane) return null;
-                if (pane._group) return pane._group;
-
-                var contact = document.querySelector('.contact[data-target="' + pane.id + '"]');
-                if (!contact || contact.dataset.group !== '1') return null;
-
-                var sub = pane.querySelector('.chat-head .who small');
-                var members = [];
-                (sub ? sub.textContent : '').split(',').forEach(function(n) {
-                    n = n.trim();
-                    if (!n) return;
-
-                    /* the static groups list first names — map them to full employee names */
-                    var full = n;
-                    EMPLOYEES.forEach(function(e) {
-                        if (full !== e.name &&
-                            (e.name.toLowerCase() === n.toLowerCase() ||
-                                e.name.split(' ')[0].toLowerCase() === n.toLowerCase())) {
-                            full = e.name;
-                        }
-                    });
-
-                    if (members.filter(function(m) {
-                            return m.name === full;
-                        }).length) return;
-
-                    members.push(makeMember(full, full === 'You'));
-                });
-                if (!members.filter(function(m) {
-                        return m.name === 'You';
-                    }).length) {
-                    members.push(makeMember('You', true));
-                }
-
-                var title = pane.querySelector('.chat-head .who strong');
-                pane._group = {
-                    name: title ? title.textContent.trim() : 'Group',
-                    members: members
-                };
-                return pane._group;
+                return pane._group || null;
             }
 
             function syncGroup(pane) {
@@ -4171,25 +4281,22 @@
 
                 var panes = document.querySelector('.panes');
                 var scrollBtnEl = panes.querySelector('.scroll-down');
-                if (scrollBtnEl) {
-                    panes.insertBefore(pane, scrollBtnEl);
-                } else {
-                    panes.appendChild(pane);
-                }
-
-                body.addEventListener('scroll', function() {
-                    if (!pane.classList.contains('active')) return;
-                    if (isNearBottom(body)) {
-                        resetNew();
-                    } else {
-                        scrollBtn.classList.add('show');
-                    }
-                });
+                if (scrollBtnEl) panes.insertBefore(pane, scrollBtnEl);
+                else panes.appendChild(pane);
 
                 decorateAll();
-                openChat(contact);
-                addSystemMessage(pane, 'You created group "' + name + '"');
 
+                // show this group (it has no server conversation yet)
+                $('.contact').removeClass('active');
+                contact.classList.add('active');
+                receiverId = null;
+                conversationId = null;
+                $('.chat-pane').removeClass('active');
+                pane.classList.add('active');
+                $('#chatForm').hide();
+                app.classList.add('open');
+
+                addSystemMessage(pane, 'You created group "' + name + '"');
                 applyFilters();
                 toast('Group "' + name + '" created');
             }
@@ -4325,6 +4432,11 @@
                 var checks = [];
                 var actions = [];
                 var built;
+                var closeBtn = {
+                    icon: 'fas fa-xmark',
+                    label: 'Close',
+                    onClick: closeModal
+                };
 
                 if (mode === 'info') {
                     hint.textContent = 'Participants';
@@ -4335,11 +4447,7 @@
                     });
                     wrap.appendChild(list);
 
-                    actions = [{
-                        icon: 'fas fa-xmark',
-                        label: 'Close',
-                        onClick: closeModal
-                    }];
+                    actions = [closeBtn];
                 } else if (mode === 'add') {
                     var available = availableMembers(g);
 
@@ -4353,36 +4461,30 @@
                     }
 
                     actions = [{
-                            icon: 'fas fa-user-plus',
-                            label: 'Add selected',
-                            onClick: function() {
-                                var picked = available.filter(function(e, i) {
-                                    return checks[i] && checks[i].checked;
-                                });
+                        icon: 'fas fa-user-plus',
+                        label: 'Add selected',
+                        onClick: function() {
+                            var picked = available.filter(function(e, i) {
+                                return checks[i] && checks[i].checked;
+                            });
 
-                                if (!picked.length) {
-                                    toast('Select at least one employee');
-                                    return;
-                                }
-
-                                picked.forEach(function(e) {
-                                    g.members.push(makeMember(e.name, false));
-                                });
-
-                                addSystemMessage(pane, 'You added ' + picked.map(function(e) {
-                                    return e.name;
-                                }).join(', '));
-                                syncGroup(pane);
-                                toast(picked.length + ' member(s) added');
-                                openGroupInfo(pane, 'add');
+                            if (!picked.length) {
+                                toast('Select at least one employee');
+                                return;
                             }
-                        },
-                        {
-                            icon: 'fas fa-xmark',
-                            label: 'Close',
-                            onClick: closeModal
+
+                            picked.forEach(function(e) {
+                                g.members.push(makeMember(e.name, false));
+                            });
+
+                            addSystemMessage(pane, 'You added ' + picked.map(function(e) {
+                                return e.name;
+                            }).join(', '));
+                            syncGroup(pane);
+                            toast(picked.length + ' member(s) added');
+                            openGroupInfo(pane, 'add');
                         }
-                    ];
+                    }, closeBtn];
                 } else if (mode === 'remove') {
                     var removable = g.members.filter(function(m) {
                         return m.name !== 'You';
@@ -4400,38 +4502,32 @@
                     }
 
                     actions = [{
-                            icon: 'fas fa-user-minus',
-                            label: 'Remove selected',
-                            onClick: function() {
-                                var removed = removable.filter(function(m, i) {
-                                    return checks[i] && !checks[i].checked;
-                                });
+                        icon: 'fas fa-user-minus',
+                        label: 'Remove selected',
+                        onClick: function() {
+                            var removed = removable.filter(function(m, i) {
+                                return checks[i] && !checks[i].checked;
+                            });
 
-                                if (!removed.length) {
-                                    toast('Uncheck at least one employee');
-                                    return;
-                                }
-
-                                var names = removed.map(function(m) {
-                                    return m.name;
-                                });
-
-                                g.members = g.members.filter(function(m) {
-                                    return names.indexOf(m.name) === -1;
-                                });
-
-                                addSystemMessage(pane, 'You removed ' + names.join(', '));
-                                syncGroup(pane);
-                                toast(removed.length + ' member(s) removed');
-                                openGroupInfo(pane, 'remove');
+                            if (!removed.length) {
+                                toast('Uncheck at least one employee');
+                                return;
                             }
-                        },
-                        {
-                            icon: 'fas fa-xmark',
-                            label: 'Close',
-                            onClick: closeModal
+
+                            var names = removed.map(function(m) {
+                                return m.name;
+                            });
+
+                            g.members = g.members.filter(function(m) {
+                                return names.indexOf(m.name) === -1;
+                            });
+
+                            addSystemMessage(pane, 'You removed ' + names.join(', '));
+                            syncGroup(pane);
+                            toast(removed.length + ' member(s) removed');
+                            openGroupInfo(pane, 'remove');
                         }
-                    ];
+                    }, closeBtn];
                 } else {
                     hint.textContent = 'Tick employees to make them group admin';
 
@@ -4448,45 +4544,39 @@
                     wrap.appendChild(built.el);
 
                     actions = [{
-                            icon: 'fas fa-user-shield',
-                            label: 'Save admins',
-                            onClick: function() {
-                                var made = [];
-                                var dismissed = [];
+                        icon: 'fas fa-user-shield',
+                        label: 'Save admins',
+                        onClick: function() {
+                            var made = [];
+                            var dismissed = [];
 
-                                g.members.forEach(function(m, i) {
-                                    if (m.name === 'You') return;
-                                    var wantsAdmin = checks[i].checked;
-                                    if (wantsAdmin && !m.admin) {
-                                        m.admin = true;
-                                        made.push(m.name);
-                                    } else if (!wantsAdmin && m.admin) {
-                                        m.admin = false;
-                                        dismissed.push(m.name);
-                                    }
-                                });
-
-                                if (!made.length && !dismissed.length) {
-                                    toast('No admin changes');
-                                    return;
+                            g.members.forEach(function(m, i) {
+                                if (m.name === 'You') return;
+                                var wantsAdmin = checks[i].checked;
+                                if (wantsAdmin && !m.admin) {
+                                    m.admin = true;
+                                    made.push(m.name);
+                                } else if (!wantsAdmin && m.admin) {
+                                    m.admin = false;
+                                    dismissed.push(m.name);
                                 }
+                            });
 
-                                if (made.length) addSystemMessage(pane, 'You made ' + made.join(', ') +
-                                    ' group admin(s)');
-                                if (dismissed.length) addSystemMessage(pane, 'You dismissed ' +
-                                    dismissed.join(', ') + ' as group admin(s)');
-
-                                syncGroup(pane);
-                                toast('Admin changes saved');
-                                openGroupInfo(pane, 'admins');
+                            if (!made.length && !dismissed.length) {
+                                toast('No admin changes');
+                                return;
                             }
-                        },
-                        {
-                            icon: 'fas fa-xmark',
-                            label: 'Close',
-                            onClick: closeModal
+
+                            if (made.length) addSystemMessage(pane, 'You made ' + made.join(', ') +
+                                ' group admin(s)');
+                            if (dismissed.length) addSystemMessage(pane, 'You dismissed ' + dismissed.join(
+                                ', ') + ' as group admin(s)');
+
+                            syncGroup(pane);
+                            toast('Admin changes saved');
+                            openGroupInfo(pane, 'admins');
                         }
-                    ];
+                    }, closeBtn];
                 }
 
                 showModal({
@@ -4499,17 +4589,12 @@
                 });
             }
 
-            function openAddParticipants(pane) {
-                openGroupInfo(pane, 'add');
-            }
             document.getElementById('newGroupBtn').addEventListener('click', openNewGroup);
 
             /* ---------- decorate messages & headers ---------- */
             function decorateRow(row) {
                 var b = bubbleOf(row);
                 if (!b) return;
-
-                // normalizeTick(row);
 
                 var tick = row.querySelector('.meta .tick, .meta-over .tick');
                 if (tick && tick.dataset.bound !== '1') {
@@ -4545,18 +4630,14 @@
                 var actions = document.createElement('div');
                 actions.className = 'head-actions';
 
-                [
-                    ['fas fa-magnifying-glass', 'Search in chat']
-                ].forEach(function(item) {
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.title = item[1];
-                    btn.innerHTML = '<i class="' + item[0] + '"></i>';
-                    btn.addEventListener('click', function() {
-                        toast(item[1] + ' — static demo');
-                    });
-                    actions.appendChild(btn);
+                var search = document.createElement('button');
+                search.type = 'button';
+                search.title = 'Search in chat';
+                search.innerHTML = '<i class="fas fa-magnifying-glass"></i>';
+                search.addEventListener('click', function() {
+                    toast('Search in chat — demo');
                 });
+                actions.appendChild(search);
 
                 var more = document.createElement('button');
                 more.type = 'button';
@@ -4613,9 +4694,6 @@
                 }
             });
 
-            document.querySelectorAll('.chat-body').forEach(function(b) {
-                b.addEventListener('scroll', closeMsgMenu);
-            });
             window.addEventListener('resize', closeMsgMenu);
 
         })();
