@@ -510,6 +510,18 @@
             box-shadow: 0 10px 28px rgba(220, 38, 38, .35);
         }
 
+        /* Form validation */
+        .validation-error {
+            display: none;
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+
         @media (max-width: 992px) {
             :root {
                 --sidebar-w: 78px;
@@ -612,21 +624,22 @@
                         </div>
 
                         <div class="leave-content">
+
                             <h6>
                                 {{ \Carbon\Carbon::parse($leave->from_date)->format('d M Y') }}
                                 &rarr;
                                 {{ \Carbon\Carbon::parse($leave->to_date)->format('d M Y') }}
                             </h6>
 
-                            <p>Rason:{{ $leave->reason }}</p>
+                            <p>Reason: {{ $leave->reason }}</p>
 
                             <div class="leave-meta">
-
                                 <span>
                                     <i class="far fa-clock"></i>
                                     Applied {{ $leave->created_at->diffForHumans() }}
                                 </span>
                             </div>
+
                         </div>
 
                         <span class="status-pill pill-{{ $status }}">
@@ -646,6 +659,7 @@
             </div>
 
         </div>
+
     </main>
 
     <!-- Apply Leave Modal -->
@@ -659,6 +673,7 @@
                 <div class="modal-header-custom">
 
                     <div class="title-wrap">
+
                         <div class="title-icon">
                             <i class="fas fa-calendar-plus"></i>
                         </div>
@@ -667,6 +682,7 @@
                             <h5 id="applyLeaveLabel">Apply Leave</h5>
                             <small>Select your leave dates and write the reason.</small>
                         </div>
+
                     </div>
 
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
@@ -682,6 +698,8 @@
 
                         <div class="row g-3 mb-3">
 
+                            <!-- From Date -->
+
                             <div class="col-md-6">
 
                                 <label for="fromDate" class="form-label">
@@ -689,17 +707,25 @@
                                 </label>
 
                                 <div class="input-icon">
+
                                     <i class="far fa-calendar-alt"></i>
 
-                                    <input type="date" class="form-control" id="fromDate" name="from_date"
-                                        value="{{ old('from_date') }}">
+                                    <input type="date" class="form-control @error('from_date') is-invalid @enderror"
+                                        id="fromDate" name="from_date" value="{{ old('from_date') }}">
+
                                 </div>
 
-                                <div class="invalid-feedback">
-                                    Please select a valid start date.
+                                <div class="validation-error" id="fromDateError">
+                                    @error('from_date')
+                                        {{ $message }}
+                                    @else
+                                        Please select a valid start date.
+                                    @enderror
                                 </div>
 
                             </div>
+
+                            <!-- To Date -->
 
                             <div class="col-md-6">
 
@@ -708,19 +734,27 @@
                                 </label>
 
                                 <div class="input-icon">
+
                                     <i class="far fa-calendar-check"></i>
 
-                                    <input type="date" class="form-control" id="toDate" name="to_date"
-                                        value="{{ old('to_date') }}">
+                                    <input type="date" class="form-control @error('to_date') is-invalid @enderror"
+                                        id="toDate" name="to_date" value="{{ old('to_date') }}">
+
                                 </div>
 
-                                <div class="invalid-feedback" id="toDateError">
-                                    Please select an end date.
+                                <div class="validation-error" id="toDateError">
+                                    @error('to_date')
+                                        {{ $message }}
+                                    @else
+                                        Please select an end date.
+                                    @enderror
                                 </div>
 
                             </div>
 
                         </div>
+
+                        <!-- Total Days -->
 
                         <div class="days-summary">
 
@@ -728,10 +762,15 @@
 
                             <div>
                                 <strong>Total Leave Days</strong>
-                                <small id="daysText">Select both dates to see the duration.</small>
+
+                                <small id="daysText">
+                                    Select both dates to see the duration.
+                                </small>
                             </div>
 
                         </div>
+
+                        <!-- Reason -->
 
                         <div>
 
@@ -739,15 +778,19 @@
                                 Reason <span class="text-danger">*</span>
                             </label>
 
-                            <textarea class="form-control" id="reason" name="reason" rows="4" maxlength="300"
-                                placeholder="Write the reason for your leave...">{{ old('reason') }}</textarea>
+                            <textarea class="form-control @error('reason') is-invalid @enderror" id="reason" name="reason" rows="4"
+                                minlength="3" maxlength="300" placeholder="Write the reason for your leave...">{{ old('reason') }}</textarea>
 
                             <div class="char-count">
                                 <span id="reasonCount">0</span>/300
                             </div>
 
-                            <div class="invalid-feedback">
-                                Please enter a reason.
+                            <div class="validation-error" id="reasonError">
+                                @error('reason')
+                                    {{ $message }}
+                                @else
+                                    Please enter a valid reason.
+                                @enderror
                             </div>
 
                         </div>
@@ -760,7 +803,7 @@
                             Cancel
                         </button>
 
-                        <button type="submit" class="btn-send">
+                        <button type="submit" class="btn-send" id="submitLeave">
                             <i class="fas fa-paper-plane"></i>
                             Submit Request
                         </button>
@@ -775,7 +818,7 @@
 
     </div>
 
-    <!-- Toast -->
+    <!-- Toast: Laravel messages only -->
 
     <div class="toast-wrap">
 
@@ -803,187 +846,363 @@
     <script>
         (function() {
 
-            var modalEl = document.getElementById('applyLeaveModal');
-            var form = document.getElementById('leaveForm');
+            const modalEl = document.getElementById('applyLeaveModal');
+            const form = document.getElementById('leaveForm');
 
-            var fromDate = document.getElementById('fromDate');
-            var toDate = document.getElementById('toDate');
-            var reason = document.getElementById('reason');
+            const fromDate = document.getElementById('fromDate');
+            const toDate = document.getElementById('toDate');
+            const reason = document.getElementById('reason');
 
-            var reasonCount = document.getElementById('reasonCount');
-            var totalDays = document.getElementById('totalDays');
-            var daysText = document.getElementById('daysText');
-            var toDateError = document.getElementById('toDateError');
+            const reasonCount = document.getElementById('reasonCount');
+            const totalDays = document.getElementById('totalDays');
+            const daysText = document.getElementById('daysText');
 
-            var toastElement = document.getElementById('messageToast');
-            var toastMessage = document.getElementById('toastMessage');
-            var toastIcon = document.getElementById('toastIcon');
+            const fromDateError = document.getElementById('fromDateError');
+            const toDateError = document.getElementById('toDateError');
+            const reasonError = document.getElementById('reasonError');
 
-            // Toast function
+            const submitButton = document.getElementById('submitLeave');
 
-            function showToast(message, type) {
+            // Today's date
+
+            function getToday() {
+
+                const now = new Date();
+
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+
+                return `${year}-${month}-${day}`;
+            }
+
+            const today = getToday();
+
+            fromDate.min = today;
+            toDate.min = today;
+
+
+            // Toast function for Laravel messages only
+
+            function showToast(message, type = 'success') {
+
+                const toastElement = document.getElementById('messageToast');
+                const toastMessage = document.getElementById('toastMessage');
+                const toastIcon = document.getElementById('toastIcon');
 
                 toastMessage.textContent = message;
 
                 toastElement.classList.remove('toast-success', 'toast-error');
 
                 if (type === 'success') {
+
                     toastElement.classList.add('toast-success');
                     toastIcon.className = 'fas fa-check-circle me-2';
+
                 } else {
+
                     toastElement.classList.add('toast-error');
                     toastIcon.className = 'fas fa-exclamation-circle me-2';
+
                 }
 
                 bootstrap.Toast.getOrCreateInstance(toastElement).show();
             }
 
-            // Today's date
 
-            var now = new Date();
+            // Display error below the input
 
-            var today = [
-                now.getFullYear(),
-                String(now.getMonth() + 1).padStart(2, '0'),
-                String(now.getDate()).padStart(2, '0')
-            ].join('-');
+            function showError(field, errorElement, message) {
 
-            fromDate.min = today;
-            toDate.min = today;
+                field.classList.add('is-invalid');
+
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+
+            // Remove error from the input
+
+            function clearError(field, errorElement) {
+
+                field.classList.remove('is-invalid');
+
+                errorElement.style.display = 'none';
+            }
+
+
+            // Clear all errors
+
+            function clearAllErrors() {
+
+                clearError(fromDate, fromDateError);
+                clearError(toDate, toDateError);
+                clearError(reason, reasonError);
+            }
+
 
             // Character counter
 
-            reason.addEventListener('input', function() {
+            function updateReasonCount() {
+
                 reasonCount.textContent = reason.value.length;
+            }
+
+            reason.addEventListener('input', function() {
+
+                updateReasonCount();
+
+                const value = reason.value.trim();
+
+                if (value.length >= 3 && reason.value.length <= 300) {
+
+                    clearError(reason, reasonError);
+
+                } else if (value.length > 0) {
+
+                    showError(
+                        reason,
+                        reasonError,
+                        'Reason must contain at least 3 characters.'
+                    );
+
+                } else {
+
+                    clearError(reason, reasonError);
+
+                }
             });
 
-            reasonCount.textContent = reason.value.length;
+            updateReasonCount();
 
-            // Calculate total days
+
+            // Calculate total leave days
 
             function calcDays() {
 
                 toDate.min = fromDate.value || today;
 
-                if (fromDate.value && toDate.value && toDate.value >= fromDate.value) {
+                if (
+                    fromDate.value &&
+                    toDate.value &&
+                    toDate.value >= fromDate.value
+                ) {
 
-                    var start = new Date(fromDate.value + 'T00:00:00');
-                    var end = new Date(toDate.value + 'T00:00:00');
+                    const start = new Date(fromDate.value + 'T00:00:00');
+                    const end = new Date(toDate.value + 'T00:00:00');
 
-                    var diff = Math.round((end - start) / 86400000) + 1;
+                    const diff = Math.round(
+                        (end - start) / 86400000
+                    ) + 1;
 
                     totalDays.textContent = diff;
 
-                    daysText.textContent = diff +
-                        (diff === 1 ? ' day' : ' days') +
+                    daysText.textContent =
+                        diff + (diff === 1 ? ' day' : ' days') +
                         ' of leave selected.';
 
                     return diff;
                 }
 
                 totalDays.textContent = '0';
-                daysText.textContent = 'Select both dates to see the duration.';
+
+                daysText.textContent =
+                    'Select both dates to see the duration.';
 
                 return 0;
             }
 
-            fromDate.addEventListener('change', function() {
 
-                if (toDate.value && toDate.value < fromDate.value) {
-                    toDate.value = '';
-                }
+            // Validate From Date
 
-                calcDays();
-
-            });
-
-            toDate.addEventListener('change', calcDays);
-
-            calcDays();
-
-            // Form validation
-
-            form.addEventListener('submit', function(e) {
-
-                var valid = true;
-                var errorMessage = '';
-
-                [fromDate, toDate, reason].forEach(function(field) {
-                    field.classList.remove('is-invalid');
-                });
-
-                // Validate start date
+            function validateFromDate() {
 
                 if (!fromDate.value) {
 
-                    fromDate.classList.add('is-invalid');
-                    valid = false;
-                    errorMessage = 'Please select your start date.';
+                    showError(
+                        fromDate,
+                        fromDateError,
+                        'Please select your start date.'
+                    );
 
-                } else if (fromDate.value < today) {
-
-                    fromDate.classList.add('is-invalid');
-                    valid = false;
-                    errorMessage = 'Past dates are not allowed.';
-
+                    return false;
                 }
 
-                // Validate end date
+                if (fromDate.value < today) {
+
+                    showError(
+                        fromDate,
+                        fromDateError,
+                        'Past dates are not allowed.'
+                    );
+
+                    return false;
+                }
+
+                clearError(fromDate, fromDateError);
+
+                return true;
+            }
+
+
+            // Validate To Date
+
+            function validateToDate() {
 
                 if (!toDate.value) {
 
-                    toDateError.textContent = 'Please select an end date.';
-                    toDate.classList.add('is-invalid');
-                    valid = false;
+                    showError(
+                        toDate,
+                        toDateError,
+                        'Please select your end date.'
+                    );
 
-                    if (!errorMessage) {
-                        errorMessage = 'Please select your end date.';
-                    }
-
-                } else if (fromDate.value && toDate.value < fromDate.value) {
-
-                    toDateError.textContent = 'End date cannot be before start date.';
-                    toDate.classList.add('is-invalid');
-                    valid = false;
-
-                    if (!errorMessage) {
-                        errorMessage = 'End date cannot be before start date.';
-                    }
-
-                } else if (toDate.value < today) {
-
-                    toDateError.textContent = 'Past dates are not allowed.';
-                    toDate.classList.add('is-invalid');
-                    valid = false;
-
-                    if (!errorMessage) {
-                        errorMessage = 'Past dates are not allowed.';
-                    }
-
+                    return false;
                 }
 
-                // Validate reason
+                if (toDate.value < today) {
 
-                if (!reason.value.trim()) {
+                    showError(
+                        toDate,
+                        toDateError,
+                        'Past dates are not allowed.'
+                    );
 
-                    reason.classList.add('is-invalid');
-                    valid = false;
-
-                    if (!errorMessage) {
-                        errorMessage = 'Please enter your leave reason.';
-                    }
-
+                    return false;
                 }
 
-                // Stop submission if invalid
+                if (fromDate.value && toDate.value < fromDate.value) {
 
-                if (!valid) {
+                    showError(
+                        toDate,
+                        toDateError,
+                        'End date cannot be before start date.'
+                    );
+
+                    return false;
+                }
+
+                clearError(toDate, toDateError);
+
+                return true;
+            }
+
+
+            // Validate Reason
+
+            function validateReason() {
+
+                const trimmedReason = reason.value.trim();
+
+                if (!trimmedReason) {
+
+                    showError(
+                        reason,
+                        reasonError,
+                        'Please enter your leave reason.'
+                    );
+
+                    return false;
+                }
+
+                if (trimmedReason.length < 3) {
+
+                    showError(
+                        reason,
+                        reasonError,
+                        'Reason must contain at least 3 characters.'
+                    );
+
+                    return false;
+                }
+
+                if (reason.value.length > 300) {
+
+                    showError(
+                        reason,
+                        reasonError,
+                        'Reason cannot exceed 300 characters.'
+                    );
+
+                    return false;
+                }
+
+                clearError(reason, reasonError);
+
+                return true;
+            }
+
+
+            // From Date Change
+
+            fromDate.addEventListener('change', function() {
+
+                validateFromDate();
+
+                if (toDate.value && toDate.value < fromDate.value) {
+
+                    toDate.value = '';
+
+                    showError(
+                        toDate,
+                        toDateError,
+                        'End date cannot be before start date.'
+                    );
+
+                } else if (toDate.value) {
+
+                    validateToDate();
+                }
+
+                calcDays();
+            });
+
+
+            // To Date Change
+
+            toDate.addEventListener('change', function() {
+
+                validateToDate();
+
+                calcDays();
+            });
+
+
+            // Form Submit
+
+            form.addEventListener('submit', function(e) {
+
+                clearAllErrors();
+
+                const fromValid = validateFromDate();
+                const toValid = validateToDate();
+                const reasonValid = validateReason();
+
+                const daysValid = calcDays() > 0;
+
+                if (!daysValid && fromValid && toValid) {
+
+                    showError(
+                        toDate,
+                        toDateError,
+                        'Please select valid leave dates.'
+                    );
+                }
+
+                const isValid =
+                    fromValid &&
+                    toValid &&
+                    reasonValid &&
+                    daysValid;
+
+                // If invalid, stop submission.
+                // Validation messages appear below the fields.
+
+                if (!isValid) {
 
                     e.preventDefault();
 
-                    showToast(errorMessage, 'error');
-
-                    var firstInvalid = form.querySelector('.is-invalid');
+                    const firstInvalid = form.querySelector('.is-invalid');
 
                     if (firstInvalid) {
                         firstInvalid.focus();
@@ -992,9 +1211,14 @@
                     return;
                 }
 
-                // Valid form will submit to Laravel
+                // Prevent multiple submissions
 
+                submitButton.disabled = true;
+
+                submitButton.innerHTML =
+                    '<i class="fas fa-spinner fa-spin"></i> Submitting...';
             });
+
 
             // Reset modal after closing
 
@@ -1002,30 +1226,78 @@
 
                 form.reset();
 
-                reasonCount.textContent = '0';
+                clearAllErrors();
 
-                [fromDate, toDate, reason].forEach(function(field) {
-                    field.classList.remove('is-invalid');
-                });
+                updateReasonCount();
 
-                toDateError.textContent = 'Please select an end date.';
+                totalDays.textContent = '0';
 
-                calcDays();
+                daysText.textContent =
+                    'Select both dates to see the duration.';
 
+                fromDate.min = today;
+                toDate.min = today;
+
+                submitButton.disabled = false;
+
+                submitButton.innerHTML =
+                    '<i class="fas fa-paper-plane"></i> Submit Request';
             });
 
-            // Laravel success and error messages
+
+            // Initial calculation
+
+            calcDays();
+
+
+            // Laravel success message
 
             @if (session('success'))
                 showToast(@json(session('success')), 'success');
             @endif
 
+
+            // Laravel general error message
+
             @if (session('error'))
                 showToast(@json(session('error')), 'error');
             @endif
 
-            // Reopen modal if Laravel validation fails
 
+            // Laravel validation errors
+
+            @if ($errors->any())
+
+                // Reopen modal when server-side validation fails
+
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
+                // Display server-side errors below the correct fields
+
+                @if ($errors->has('from_date'))
+                    showError(
+                        fromDate,
+                        fromDateError,
+                        @json($errors->first('from_date'))
+                    );
+                @endif
+
+                @if ($errors->has('to_date'))
+                    showError(
+                        toDate,
+                        toDateError,
+                        @json($errors->first('to_date'))
+                    );
+                @endif
+
+                @if ($errors->has('reason'))
+                    showError(
+                        reason,
+                        reasonError,
+                        @json($errors->first('reason'))
+                    );
+                @endif
+            @endif
 
         })();
     </script>

@@ -8,6 +8,29 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .online-dot {
+            width: 9px;
+            height: 9px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+            box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+        }
+
+        .online-dot[hidden] {
+            display: none;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .user-status.is-online {
+            color: #22c55e;
+        }
+
         .message-status.read-tick {
             color: #34b7f1;
         }
@@ -2311,7 +2334,17 @@
 
         window.addEventListener('echo-ready', function() {
 
+            if (!window.Echo || !window.authUserId) {
+                console.error('Echo or authenticated user ID is missing.');
+                return;
+            }
+
+            // Private channel for the logged-in user
             const channel = window.Echo.private(`users.${window.authUserId}`);
+
+            // ------------------------------------
+            // 1. Receive new messages
+            // ------------------------------------
 
             channel.listen('.message.sent', function(event) {
 
@@ -2324,7 +2357,7 @@
                         Number(event.conversation_id);
                 });
 
-                if (pane.hasClass('active')) {
+                if (pane.length && pane.hasClass('active')) {
 
                     let time = new Date(event.created_at).toLocaleTimeString([], {
                         hour: '2-digit',
@@ -2363,13 +2396,15 @@
                     body.scrollTop(body[0].scrollHeight);
 
                 } else {
-
                     console.log('Message received. Chat is not open.');
-
                 }
 
             });
 
+
+            // ------------------------------------
+            // 2. Update unread message count
+            // ------------------------------------
 
             channel.listen('.message.count', function(event) {
 
@@ -2387,8 +2422,7 @@
 
                 let badge = contact.find('.unread');
 
-
-                if (pane.hasClass('active')) {
+                if (pane.length && pane.hasClass('active')) {
                     badge.hide();
                     return;
                 }
@@ -2404,16 +2438,16 @@
             });
 
 
+            // ------------------------------------
+            // 3. Update latest message preview
+            // ------------------------------------
 
             channel.listen('.message.latestmessage', function(event) {
-
 
                 let contact = $('.contact').filter(function() {
                     return Number($(this).data('conversation-id')) ===
                         Number(event.conversation_id);
                 });
-
-
 
                 if (contact.length === 0) {
                     console.log('Contact not found for conversation:', event.conversation_id);
@@ -2426,6 +2460,11 @@
                 preview.show();
 
             });
+
+
+            // ------------------------------------
+            // 4. Update message read ticks
+            // ------------------------------------
 
             channel.listen('.message.read', function(event) {
 
@@ -2442,11 +2481,95 @@
                     .html('<i class="fas fa-check-double"></i>');
 
             });
+
+
+            // ------------------------------------
+            // 5. Online / Offline presence channel
+            // ------------------------------------
+
+            window.Echo.join('online')
+
+                .here(function(users) {
+
+                    console.log('Currently online users:', users);
+
+                    onlineUsers = users.map(user => Number(user.id));
+
+                    updateAllContactStatuses();
+
+                })
+
+                .joining(function(user) {
+
+                    console.log('Joining:', user);
+
+                    let id = Number(user.id);
+
+                    if (!onlineUsers.includes(id)) {
+                        onlineUsers.push(id);
+                    }
+
+                    setUserStatus(id, true);
+
+                })
+
+                .leaving(function(user) {
+
+                    console.log('Leaving:', user);
+
+                    let id = Number(user.id);
+
+                    onlineUsers = onlineUsers.filter(userId => userId !== id);
+
+                    setUserStatus(id, false);
+
+                })
+
+                .error(function(error) {
+                    console.error('Presence error:', error);
+                });
+
         });
 
+        // ------------------------------------
+        // Update user online/offline status
+        // ------------------------------------
+
+        function updateAllContactStatuses() {
+
+            $('.contact[data-user-id]').each(function() {
+
+                let userId = Number($(this).attr('data-user-id'));
+
+                setUserStatus(userId, onlineUsers.includes(userId));
+
+            });
+
+        }
 
 
+        function setUserStatus(userId, isOnline) {
 
+            let contact = $('.contact').filter(function() {
+
+                return Number($(this).attr('data-user-id')) === Number(userId);
+
+            });
+
+            if (!contact.length) {
+                console.log('Contact not found:', userId);
+                return;
+            }
+
+            contact.find('.online-dot').toggle(isOnline);
+
+            contact.find('.user-status').contents().filter(function() {
+                return this.nodeType === 3;
+            }).last().replaceWith(isOnline ? ' Online' : ' Offline');
+
+            contact.find('.user-status').toggleClass('is-online', isOnline);
+
+        }
 
         function MessageRead(conversation_id, sender_id) {
             $.ajax({
@@ -2601,6 +2724,8 @@
                                     <div class="contact-info">
                                         <div class="contact-top">
                                             <strong>${escapeHtml(name)}</strong>
+
+                                            <span class="user-status">Offline</span>
 
                                         </div>
 
