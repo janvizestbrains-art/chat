@@ -8,6 +8,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .edited-label {
+            font-size: 10px;
+            color: #777;
+            margin-right: 3px;
+        }
+
         .online-dot {
             width: 9px;
             height: 9px;
@@ -2483,6 +2489,54 @@
             });
 
 
+            // channel.listen('.message.updated', function(event) {
+
+            //     console.log('Message update received:', event);
+
+            //     let activePane = $('.chat-pane.active');
+
+            //     if (!activePane.length) return;
+
+            //     let activeConversation = Number(activePane.attr('data-conversation-id'));
+
+            //     if (activeConversation !== Number(event.conversation_id)) {
+            //         return;
+            //     }
+
+            //     let row = activePane.find('.msg').filter(function() {
+            //         return Number($(this).attr('data-message-id')) ===
+            //             Number(event.message_id);
+            //     });
+
+            //     if (!row.length) {
+            //         console.log('Message not found in receiver chat');
+            //         return;
+            //     }
+
+            //     let bubble = row.find('.bubble');
+
+            //     if (!bubble.length) return;
+
+            //     let meta = bubble.find('.meta').detach();
+
+            //     bubble.empty().append(
+            //         document.createTextNode(event.message)
+            //     );
+
+            //     bubble.append(meta);
+
+            //     row.attr('data-edited', '1');
+
+            //     if (!meta.find('.edited-label').length) {
+            //         $('<span>', {
+            //             class: 'edited-label',
+            //             text: 'edited · '
+            //         }).insertBefore(meta.contents().first());
+            //     }
+
+            // });
+
+
             // ------------------------------------
             // 5. Online / Offline presence channel
             // ------------------------------------
@@ -2530,6 +2584,7 @@
                 });
 
         });
+
 
         // ------------------------------------
         // Update user online/offline status
@@ -2800,25 +2855,26 @@
                         let profileUrl = response.user?.employee?.profile_url || '';
 
                         let html = `
-                            <div class="chat-pane active" data-user-id="${receiverId}"
-                                data-conversation-id="${conversationId}">
+                <div class="chat-pane active"
+                    data-user-id="${receiverId}"
+                    data-conversation-id="${conversationId}">
 
-                                <div class="chat-head">
-                                    <i class="fas fa-arrow-left back"></i>
+                    <div class="chat-head">
+                        <i class="fas fa-arrow-left back"></i>
 
-                                    <img class="avatar online"
-                                        src="${escapeHtml(profileUrl)}"
-                                        style="background:#2563eb">
+                        <img class="avatar online"
+                            src="${escapeHtml(profileUrl)}"
+                            style="background:#2563eb">
 
-                                    <div class="who">
-                                        <strong>${escapeHtml(userName)}</strong>
-                                    </div>
-                                </div>
+                        <div class="who">
+                            <strong>${escapeHtml(userName)}</strong>
+                        </div>
+                    </div>
 
-                                <div class="chat-body"></div>
+                    <div class="chat-body"></div>
 
-                            </div>
-                        `;
+                </div>
+            `;
 
                         chatContent.prepend(html);
 
@@ -2827,12 +2883,12 @@
                         if (response.status === false || !response.data?.length) {
 
                             body.html(`
-                                <div class="empty-chat">
-                                    <i class="far fa-comments"></i>
-                                    <strong>No messages yet</strong>
-                                    <span>Start a conversation!</span>
-                                </div>
-                            `);
+                    <div class="empty-chat">
+                        <i class="far fa-comments"></i>
+                        <strong>No messages yet</strong>
+                        <span>Start a conversation!</span>
+                    </div>
+                `);
 
                             return;
                         }
@@ -2843,7 +2899,6 @@
 
                         console.log(response);
 
-
                         $.each(messages, function(index, message) {
 
                             let messageDate = new Date(message.created_at);
@@ -2853,75 +2908,104 @@
 
                                 let today = new Date();
                                 let yesterday = new Date();
+
                                 yesterday.setDate(today.getDate() - 1);
 
                                 let displayDate;
 
                                 if (dateKey === today.toLocaleDateString('en-CA')) {
+
                                     displayDate = 'Today';
+
                                 } else if (dateKey === yesterday.toLocaleDateString('en-CA')) {
+
                                     displayDate = 'Yesterday';
+
                                 } else {
+
                                     displayDate = messageDate.toLocaleDateString('en-IN', {
                                         weekday: 'long',
                                         day: 'numeric',
                                         month: 'long',
                                         year: 'numeric'
                                     });
+
                                 }
 
                                 body.append(`
-            <div class="day-chip">
-                <span>${displayDate}</span>
-            </div>
-        `);
+                        <div class="day-chip">
+                            <span>${displayDate}</span>
+                        </div>
+                    `);
 
                                 previousDate = dateKey;
                             }
 
-                            let messageType = Number(message.sender_id) === myId ? 'out' : 'in';
+                            let messageType =
+                                Number(message.sender_id) === myId ? 'out' : 'in';
 
                             let time = messageDate.toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit'
                             });
 
+                            // Edited label
                             let ticks = '';
-
                             if (messageType === 'out') {
-                                ticks = message.is_read ?
-                                    '<span class="message-status read-tick"><i class="fas fa-check-double"></i></span>' :
-                                    '<span class="message-status single-tick"><i class="fas fa-check"></i></span>';
+
+                                if (Number(message.is_edited) === 1 || message.is_edited === true) {
+                                    ticks += '<span class="edited-label">edited · </span>';
+                                }
                             }
 
+                            // Read receipts
+                            if (messageType === 'out') {
 
+                                ticks += message.is_read ?
+                                    '<span class="message-status read-tick"><i class="fas fa-check-double"></i></span>' :
+                                    '<span class="message-status single-tick"><i class="fas fa-check"></i></span>';
 
+                            }
+
+                            // Render message using existing ChatMedia
                             let rendered = ChatMedia.render(message, time + ' ' + ticks);
 
                             body.append(`
-        <div class="msg ${messageType}">
-            <div class="${rendered.cls}">
-                ${rendered.html}
-            </div>
-        </div>
-    `);
+                    <div class="msg ${messageType}"
+                        data-message-id="${message.id}"
+                        data-edited="${message.is_edited ? 1 : 0}">
+
+                        <div class="${rendered.cls}">
+                            ${rendered.html}
+                        </div>
+
+                    </div>
+                `);
+
                         });
 
-
+                        // Image loading
                         body.find('.img-wrap img').each(function() {
+
                             this.addEventListener('load', function() {
                                 scrollBottom(body[0], false);
                             });
+
                         });
 
+                        // Scroll to bottom
                         scrollBottom(body[0], false);
+
                     },
 
                     error: function(xhr) {
+
                         console.log(xhr.responseJSON || xhr.responseText);
+
                     }
                 });
             }
+
 
             $('#contacts').on('click', '.contact', function() {
                 openChat(this);
@@ -3845,19 +3929,50 @@
                         toast('Message cannot be empty');
                         return;
                     }
-                    box.remove();
-                    var anchor = b.querySelector('.meta');
-                    var textNode = document.createTextNode(val);
-                    if (anchor) b.insertBefore(textNode, anchor);
-                    else b.appendChild(textNode);
-                    row.dataset.edited = '1';
-                    if (anchor && !anchor.querySelector('.edited-label')) {
-                        var lbl = document.createElement('span');
-                        lbl.className = 'edited-label';
-                        lbl.textContent = 'edited · ';
-                        anchor.insertBefore(lbl, anchor.firstChild);
-                    }
-                    toast('Message edited');
+                    $.ajax({
+                        url: "{{ route('messageUpdate', ':id') }}".replace(':id', row.dataset.messageId),
+                        type: "GET",
+                        data: {
+                            message: val,
+                            _token: "{{ csrf_token() }}",
+
+                        },
+                        success: function(response) {
+
+                            box.remove();
+
+                            var anchor = b.querySelector('.meta');
+
+                            var textNode = document.createTextNode(val);
+
+                            if (anchor) {
+                                b.insertBefore(textNode, anchor);
+                            } else {
+                                b.appendChild(textNode);
+                            }
+
+                            row.dataset.edited = '1';
+
+                            if (anchor && !anchor.querySelector('.edited-label')) {
+
+                                var lbl = document.createElement('span');
+
+                                lbl.className = 'edited-label';
+                                lbl.textContent = ' edited · ';
+
+                                var tick = anchor.querySelector('.message-status');
+
+                                if (tick) {
+                                    anchor.insertBefore(lbl, tick);
+                                } else {
+                                    anchor.appendChild(lbl);
+                                }
+                            }
+
+                            toast('Message edited');
+                        },
+                    })
+
                 }
 
                 cancelBtn.addEventListener('click', restore);

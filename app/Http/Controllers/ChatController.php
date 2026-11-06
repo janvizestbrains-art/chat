@@ -6,6 +6,7 @@ use App\Events\MessageCount;
 use App\Events\MessageLatest;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
+use App\Events\MessageUpdate;
 use App\Events\NotificationCreated;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
@@ -272,4 +273,27 @@ class ChatController extends Controller
             'messages' => $messages,
         ]);
     }
+   public function messageUpdate(Request $request, $id)
+{
+    $message = Message::where("id", $id)->firstOrFail();
+
+    $message->update([
+        "message" => $request->message,
+        "is_edited" => true,
+    ]);
+
+    MessageUpdate::dispatch(
+        $message->id,
+        $message->conversation_id,
+       $message->receiver_id,
+        $message->sender_id,
+        $message->message,
+        $message->updated_at,
+        (bool) $message->is_edited,
+    );
+
+    return response()->json([
+        "success" => true,
+    ]);
+}
 }

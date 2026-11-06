@@ -14,6 +14,7 @@ class Message extends Model
         'message',
         'is_read',
         'read_at',
+        'is_edited',
     ];
     protected function casts(): array
 {
