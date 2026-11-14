@@ -50,5 +50,24 @@ if ($checkLeave) {
         $leaves=Leave::latest()->get();
         return view("approveleave",compact('leaves'));
     }
- 
+
+
+public function updateStatus(Request $request, Leave $leave)
+{
+
+
+    $leave->status = $request->status;
+
+    if ($request->status == 'rejected') {
+        $leave->reject_reason = $request->reject_reason;
+    }
+
+    $leave->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Leave ' . $request->status . ' successfully.',
+    ]);
+}
+
 }

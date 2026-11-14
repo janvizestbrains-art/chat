@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Approve Leaves | HVAC Employee Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -556,14 +557,15 @@
             <!-- Leave Requests -->
             <div id="leaveList">
 
-                @forelse ($leaves as $leave)
+                @foreach ($leaves as $leave)
                     @php
                         $employee = $leave->user->employee ?? null;
                         $status = strtolower($leave->status);
                     @endphp
 
-                    <div class="leave-card {{ $status }}" data-name="{{ strtolower($employee->full_name ?? '') }}"
-                        data-status="{{ $status }}">
+                    <div class="leave-card {{ $status }}" data-id="{{ $leave->id }}"
+                        data-url="{{ route('leave.updateStatus', $leave->id) }}"
+                        data-name="{{ strtolower($employee->full_name ?? '') }}" data-status="{{ $status }}">
 
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
 
@@ -614,33 +616,22 @@
                             <div class="action-buttons">
 
                                 <button type="button" class="btn-approve" onclick="approveLeave(this)">
-
                                     <i class="fas fa-check me-1"></i>
                                     Approve
-
                                 </button>
 
                                 <button type="button" class="btn-reject" onclick="openRejectModal(this)">
-
                                     <i class="fas fa-xmark me-1"></i>
                                     Reject
-
                                 </button>
 
                             </div>
                         @endif
 
                     </div>
+                @endforeach
 
-                @empty
-
-                    <div id="emptyState" class="text-center text-muted py-5">
-                        <i class="fas fa-calendar-xmark fa-2x mb-3"></i>
-                        <p>No leave requests found.</p>
-                    </div>
-                @endforelse
-
-                <div id="emptyState" class="text-center text-muted py-5 d-none">
+                <div id="emptyState" class="text-center text-muted py-5 {{ $leaves->isEmpty() ? '' : 'd-none' }}">
                     <i class="fas fa-calendar-xmark fa-2x mb-3"></i>
                     <p>No leave requests found.</p>
                 </div>
@@ -679,8 +670,7 @@
                     </label>
 
                     <textarea class="form-control" id="rejectReason" rows="4" maxlength="300" minlength="3"
-                        placeholder="Enter the reason for rejecting this leave..." aria-describedby="rejectError">
-                    </textarea>
+                        placeholder="Enter the reason for rejecting this leave..." aria-describedby="rejectError"></textarea>
 
                     <div class="text-end text-muted small mt-1">
                         <span id="rejectCount">0</span>/300
@@ -699,10 +689,8 @@
                     </button>
 
                     <button type="button" class="btn-confirm-reject" id="confirmReject">
-
                         <i class="fas fa-xmark me-1"></i>
                         Reject Leave
-
                     </button>
 
                 </div>
@@ -848,8 +836,120 @@
         }
 
 
+        // Update leave status using AJAX
+        async function updateLeaveStatus(card, status, reason = '') {
+
+            const buttons = card.querySelectorAll('.btn-approve, .btn-reject');
+
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+
+            try {
+
+                const response = await fetch(card.dataset.url, {
+
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+
+                    body: JSON.stringify({
+                        status: status,
+                        rejection_reason: reason
+                    })
+
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+
+                    let message = data.message || 'Something went wrong.';
+
+                    if (data.errors) {
+                        message = Object.values(data.errors).flat().join('\n');
+                    }
+
+                    throw new Error(message);
+
+                }
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Unable to update leave status.');
+                }
+
+                // Update card status after successful AJAX
+                card.dataset.status = status;
+
+                card.classList.remove('pending', 'approved', 'rejected');
+
+                card.classList.add(status);
+
+                const pill = card.querySelector('.status-pill');
+
+                pill.className = 'status-pill pill-' + status;
+
+                pill.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+
+                // Update rejection reason
+                if (status === 'rejected') {
+
+                    const reasonBox = card.querySelector('.reason-text');
+
+                    const separator = document.createElement('hr');
+
+                    const rejectionLabel = document.createElement('strong');
+
+                    rejectionLabel.className = 'text-danger';
+
+                    rejectionLabel.textContent = 'Rejection Reason: ';
+
+                    const rejectionText = document.createTextNode(reason);
+
+                    reasonBox.appendChild(separator);
+
+                    reasonBox.appendChild(rejectionLabel);
+
+                    reasonBox.appendChild(rejectionText);
+
+                }
+
+                // Remove action buttons
+                const actionButtons = card.querySelector('.action-buttons');
+
+                if (actionButtons) {
+                    actionButtons.remove();
+                }
+
+                updateCounts();
+
+                filterLeaves();
+
+                showToast(data.message || 'Leave status updated successfully.');
+
+                return true;
+
+            } catch (error) {
+
+                showToast(error.message || 'Unable to update leave status.', 'error');
+
+                buttons.forEach(button => {
+                    button.disabled = false;
+                });
+
+                return false;
+
+            }
+
+        }
+
+
         // Approve leave
-        function approveLeave(button) {
+        async function approveLeave(button) {
 
             const card = button.closest('.leave-card');
 
@@ -861,30 +961,7 @@
                 return;
             }
 
-            card.dataset.status = 'approved';
-
-            card.classList.remove('pending');
-
-            card.classList.add('approved');
-
-            const pill = card.querySelector('.status-pill');
-
-            pill.className = 'status-pill pill-approved';
-
-            pill.textContent = 'Approved';
-
-            card.querySelector('.action-buttons').innerHTML = `
-                <small class="text-success fw-semibold">
-                    <i class="fas fa-check-circle me-1"></i>
-                    Leave approved
-                </small>
-            `;
-
-            updateCounts();
-
-            filterLeaves();
-
-            showToast('Leave request approved successfully.');
+            await updateLeaveStatus(card, 'approved');
 
         }
 
@@ -907,6 +984,9 @@
             clearRejectValidation();
 
             confirmReject.disabled = false;
+
+            confirmReject.innerHTML =
+                '<i class="fas fa-xmark me-1"></i> Reject Leave';
 
             rejectModal.show();
 
@@ -992,7 +1072,7 @@
 
 
         // Confirm rejection
-        confirmReject.addEventListener('click', function() {
+        confirmReject.addEventListener('click', async function() {
 
             if (!selectedLeaveCard) {
                 return;
@@ -1013,67 +1093,30 @@
 
             const reason = rejectReason.value.trim();
 
-            // Prevent multiple clicks
             confirmReject.disabled = true;
 
             confirmReject.textContent = 'Processing...';
 
-            // Update card status
-            selectedLeaveCard.dataset.status = 'rejected';
+            const success = await updateLeaveStatus(
+                selectedLeaveCard,
+                'rejected',
+                reason
+            );
 
-            selectedLeaveCard.classList.remove('pending');
+            if (success) {
 
-            selectedLeaveCard.classList.add('rejected');
+                rejectModal.hide();
 
-            const pill = selectedLeaveCard.querySelector('.status-pill');
+                selectedLeaveCard = null;
 
-            pill.className = 'status-pill pill-rejected';
+            } else {
 
-            pill.textContent = 'Rejected';
+                confirmReject.disabled = false;
 
-            // Add rejection reason safely
-            const reasonBox = selectedLeaveCard.querySelector('.reason-text');
+                confirmReject.innerHTML =
+                    '<i class="fas fa-xmark me-1"></i> Reject Leave';
 
-            const separator = document.createElement('hr');
-
-            const rejectionLabel = document.createElement('strong');
-
-            rejectionLabel.className = 'text-danger';
-
-            rejectionLabel.textContent = 'Rejection Reason: ';
-
-            const rejectionText = document.createTextNode(reason);
-
-            reasonBox.appendChild(separator);
-
-            reasonBox.appendChild(rejectionLabel);
-
-            reasonBox.appendChild(rejectionText);
-
-            // Remove action buttons
-            const actionButtons = selectedLeaveCard.querySelector('.action-buttons');
-
-            if (actionButtons) {
-                actionButtons.remove();
             }
-
-            // Close modal
-            rejectModal.hide();
-
-            // Update statistics and filters
-            updateCounts();
-
-            filterLeaves();
-
-            showToast('Leave request rejected successfully.');
-
-            selectedLeaveCard = null;
-
-            // Reset modal button
-            confirmReject.disabled = false;
-
-            confirmReject.innerHTML =
-                '<i class="fas fa-xmark me-1"></i> Reject Leave';
 
         });
 

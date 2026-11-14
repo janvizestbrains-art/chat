@@ -24,4 +24,6 @@ Route::post('/chat-send', [ChatController::class, 'chatSend'])->name('chatSend')
 Route::get('/load-chat', [ChatController::class, 'loadChat'])->name('loadChat');
 Route::get('/message-read', [ChatController::class, 'messageRead'])->name('messageRead');
 Route::get('/message-edit/{id}', [ChatController::class, 'messageUpdate'])->name('messageUpdate');
+Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
+    ->name('leave.updateStatus');
 });
