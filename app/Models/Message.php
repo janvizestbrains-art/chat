@@ -15,12 +15,20 @@ class Message extends Model
         'is_read',
         'read_at',
         'is_edited',
+        'delete_for_me',
+        'delete_for_everyone',
+        'clear_for_sender',
+        'clear_for_receiver',
     ];
     protected function casts(): array
 {
     return [
         'is_read' => 'boolean',
+        'delete_for_me'=>'boolean',
+        'delete_for_everyone'=>'boolean',
         'read_at' => 'datetime',
+        'clear_for_sender'=>'boolean',
+        'clear_for_receiver'=>'boolean',
     ];
 }
 

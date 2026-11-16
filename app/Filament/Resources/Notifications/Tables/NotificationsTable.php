@@ -32,6 +32,7 @@ class NotificationsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort("created_at","desc")
             ->filters([
                 //
             ])
@@ -44,5 +45,6 @@ class NotificationsTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
+
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Override;
 
 class ConversationParticipant extends Model
 {
@@ -12,7 +13,11 @@ class ConversationParticipant extends Model
     protected $fillable = [
         'conversation_id',
         'user_id',
+
     ];
+
+
+
 
     public function conversation(): BelongsTo
     {

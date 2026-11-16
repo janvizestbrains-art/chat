@@ -24,6 +24,9 @@ Route::post('/chat-send', [ChatController::class, 'chatSend'])->name('chatSend')
 Route::get('/load-chat', [ChatController::class, 'loadChat'])->name('loadChat');
 Route::get('/message-read', [ChatController::class, 'messageRead'])->name('messageRead');
 Route::get('/message-edit/{id}', [ChatController::class, 'messageUpdate'])->name('messageUpdate');
+Route::Post('/message-delete-for-me',[ChatController::class,'messageDeleteForMe'])->name('messageDeleteForMe');
+Route::POST('/message-delete-for-everyone',[ChatController::class,'messageDeleteForEveryone'])->name('messageDeleteForEverone');
+Route::POST('/clear-chat',[ChatController::class,'clearChat'])->name('clearChat');
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');
 });

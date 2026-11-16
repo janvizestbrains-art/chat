@@ -2488,6 +2488,30 @@
 
             });
 
+            channel.listen('.message.delete.everyone', function(event) {
+
+                console.log("delete event", event);
+
+                let message = $('.msg[data-message-id="' + event.message_id + '"]');
+
+                console.log(message);
+
+                if (message.length) {
+
+                    let deletedText = message.hasClass('out') ?
+                        'You deleted this message' :
+                        'This message was deleted';
+
+                    message.attr('data-deleted', 1);
+
+                    message.find('.bubble').html(`
+            <i class="fas fa-ban"></i>
+            ${deletedText}
+        `);
+
+                }
+            });
+
 
             // channel.listen('.message.updated', function(event) {
 
@@ -2541,47 +2565,47 @@
             // 5. Online / Offline presence channel
             // ------------------------------------
 
-            window.Echo.join('online')
+            // window.Echo.join('online')
 
-                .here(function(users) {
+            //     .here(function(users) {
 
-                    console.log('Currently online users:', users);
+            //         console.log('Currently online users:', users);
 
-                    onlineUsers = users.map(user => Number(user.id));
+            //         onlineUsers = users.map(user => Number(user.id));
 
-                    updateAllContactStatuses();
+            //         updateAllContactStatuses();
 
-                })
+            //     })
 
-                .joining(function(user) {
+            //     .joining(function(user) {
 
-                    console.log('Joining:', user);
+            //         console.log('Joining:', user);
 
-                    let id = Number(user.id);
+            //         let id = Number(user.id);
 
-                    if (!onlineUsers.includes(id)) {
-                        onlineUsers.push(id);
-                    }
+            //         if (!onlineUsers.includes(id)) {
+            //             onlineUsers.push(id);
+            //         }
 
-                    setUserStatus(id, true);
+            //         setUserStatus(id, true);
 
-                })
+            //     })
 
-                .leaving(function(user) {
+            //     .leaving(function(user) {
 
-                    console.log('Leaving:', user);
+            //         console.log('Leaving:', user);
 
-                    let id = Number(user.id);
+            //         let id = Number(user.id);
 
-                    onlineUsers = onlineUsers.filter(userId => userId !== id);
+            //         onlineUsers = onlineUsers.filter(userId => userId !== id);
 
-                    setUserStatus(id, false);
+            //         setUserStatus(id, false);
 
-                })
+            //     })
 
-                .error(function(error) {
-                    console.error('Presence error:', error);
-                });
+            //     .error(function(error) {
+            //         console.error('Presence error:', error);
+            //     });
 
         });
 
@@ -2968,7 +2992,25 @@
                             }
 
                             // Render message using existing ChatMedia
-                            let rendered = ChatMedia.render(message, time + ' ' + ticks);
+
+                            let rendered;
+
+                            if (Number(message.delete_for_everyone) === 1) {
+                                let deletedText = messageType === 'out' ?
+                                    'You deleted this message' :
+                                    'This message was deleted';
+
+                                rendered = {
+                                    cls: 'bubble',
+                                    html: `<i class="fas fa-ban" style="margin-right:6px;font-size:12px;"></i>${deletedText}`
+                                };
+
+                            } else {
+
+                                rendered = ChatMedia.render(message, time + ' ' + ticks);
+
+                            }
+
 
                             body.append(`
                     <div class="msg ${messageType}"
@@ -4043,35 +4085,46 @@
             }
 
             function removeMessage(row) {
-                row.remove();
-                toast('Message deleted');
+
+                console.log(row);
+                let messageId = $(row).attr('data-message-id');
+                console.log(messageId);
+                $.ajax({
+                    "url": "{{ route('messageDeleteForMe') }}",
+                    "type": "POST",
+                    "data": {
+                        messageId: messageId,
+                        _token: "{{ csrf_token() }}"
+
+                    },
+                    success: function(response) {
+                        row.remove();
+                        toast('Message deleted');
+                        loadChat(response.conversation_id, response.reciver_id);
+                    }
+
+                });
+
             }
 
             function deleteForEveryone(row) {
-                var b = bubbleOf(row);
-                if (!b) return;
 
-                row.classList.add('deleted');
-                row.dataset.deleted = '1';
-                row.classList.remove('starred', 'pinned', 'has-reaction');
+                let messageId = $(row).attr('data-message-id');
+                $.ajax({
+                    "url": "{{ route('messageDeleteForEverone') }}",
+                    "type": "POST",
+                    "data": {
+                        messageId: messageId,
+                        _token: "{{ csrf_token() }}"
 
-                b.className = 'bubble';
-                b.innerHTML = '';
-                var ic = document.createElement('i');
-                ic.className = 'fas fa-ban';
-                ic.style.marginRight = '6px';
-                ic.style.fontSize = '12px';
-                b.appendChild(ic);
-                b.appendChild(document.createTextNode('This message was deleted'));
+                    },
+                    success: function(response) {
+                        loadChat(response.conversation_id, response.receiver_id);
 
-                var m = document.createElement('span');
-                m.className = 'meta';
-                m.textContent = nowTime() + ' ';
-                b.appendChild(m);
+                        toast('Message deleted for everyone');
+                    }
+                });
 
-                var pane = row.closest('.chat-pane');
-                if (pane) updatePinnedBar(pane);
-                toast('Message deleted for everyone');
             }
 
             /* ---------- modal ---------- */
@@ -4171,9 +4224,7 @@
                     });
                 }
 
-                addMenuItem('fas fa-list-check', 'Select messages', function() {
-                    toast('Select messages — demo');
-                });
+
                 addMenuItem('fas fa-bell-slash', 'Mute notifications', function() {
                     toast('Notifications muted for ' + name);
                 });
@@ -4203,13 +4254,13 @@
                     }, 'danger');
                 }
 
-                addMenuItem('fas fa-trash-can', 'Delete chat', function() {
-                    confirmAction('Delete chat?', 'The conversation with "' + name + '" will be removed.',
-                        'Delete chat',
-                        function() {
-                            deleteChat(pane);
-                        });
-                }, 'danger');
+                // addMenuItem('fas fa-trash-can', 'Delete chat', function() {
+                //     confirmAction('Delete chat?', 'The conversation with "' + name + '" will be removed.',
+                //         'Delete chat',
+                //         function() {
+                //             deleteChat(pane);
+                //         });
+                // }, 'danger');
 
                 menuEl.classList.add('show');
                 placeMenu(anchor, 'right');
@@ -4244,16 +4295,30 @@
             }
 
             function clearChat(pane) {
-                if (!pane) return;
-                var body = pane.querySelector('.chat-body');
-                if (!body) return;
-                body.innerHTML = '';
-                body.appendChild(emptyState());
-                updatePinnedBar(pane);
-                toast('Chat cleared');
+
+
+                let conversation_id = $('.chat-pane.active').attr('data-conversation-id');
+                let receiver_id = $('.chat-pane.active').attr('data-user-id');
+                console.log(conversation_id);
+                $.ajax({
+                    "url": "{{ route('clearChat') }}",
+                    "type": "POST",
+                    'data': {
+                        conversation_id: conversation_id,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        loadChat(conversation_id, receiver_id);
+                        toast('Chat cleared');
+                    }
+                });
+
             }
 
             function deleteChat(pane) {
+
+
+                console.log(pane)
                 if (!pane) return;
                 var contact = pane.id ? document.querySelector('.contact[data-target="' + pane.id + '"]') :
                     activeContact();
@@ -4923,14 +4988,7 @@
                 var actions = document.createElement('div');
                 actions.className = 'head-actions';
 
-                var search = document.createElement('button');
-                search.type = 'button';
-                search.title = 'Search in chat';
-                search.innerHTML = '<i class="fas fa-magnifying-glass"></i>';
-                search.addEventListener('click', function() {
-                    toast('Search in chat — demo');
-                });
-                actions.appendChild(search);
+
 
                 var more = document.createElement('button');
                 more.type = 'button';

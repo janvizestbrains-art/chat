@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageCount;
+use App\Events\MessageDeleteEveryone;
 use App\Events\MessageLatest;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
@@ -77,7 +78,6 @@ class ChatController extends Controller
 
         if ($request->conversation_id) {
             $conversation = Conversation::where('id', $request->conversation_id)->first();
-
         } else {
             $conversation = Conversation::create([
                 'type' => 'Private',
@@ -97,43 +97,41 @@ class ChatController extends Controller
             'conversation_id' => $conversation->id,
             'sender_id' => Auth::id(),
             'receiver_id' => $request->reciver_id,
-            'message' => $request->message??null,
+            'message' => $request->message ?? null,
             'is_read' => 0,
 
         ]);
-       if ($request->hasFile('file')) {
+        if ($request->hasFile('file')) {
 
-    $file = $request->file('file');
+            $file = $request->file('file');
 
-    if ($file->isValid()) {
+            if ($file->isValid()) {
 
-        $path = $file->store('attachments', 'public');
-       $attachment= MessageAttachment::create(
-            [
-            "message_id"=>$message->id,
-            "file_type"=>$request->type,
-            "file_path"=>$path,
-        ]);
-
-
-
-    }
-}
-        $unread_count=Message::where("conversation_id",$conversation->id)->where("receiver_id",$request->reciver_id)->where("is_read",false)->count();
+                $path = $file->store('attachments', 'public');
+                $attachment = MessageAttachment::create(
+                    [
+                        "message_id" => $message->id,
+                        "file_type" => $request->type,
+                        "file_path" => $path,
+                    ]
+                );
+            }
+        }
+        $unread_count = Message::where("conversation_id", $conversation->id)->where("receiver_id", $request->reciver_id)->where("is_read", false)->count();
         //dd($unread_count);
 
 
-    MessageCount::dispatch(
-    $conversation->id,
-    $request->reciver_id,
-    $unread_count
-);
+        MessageCount::dispatch(
+            $conversation->id,
+            $request->reciver_id,
+            $unread_count
+        );
 
-            MessageLatest::dispatch(
-                $conversation->id,
-                $request->reciver_id,
-                $message->message??'Sent a File',
-            );
+        MessageLatest::dispatch(
+            $conversation->id,
+            $request->reciver_id,
+            $message->message ?? 'Sent a File',
+        );
 
 
         MessageSent::dispatch(
@@ -143,8 +141,8 @@ class ChatController extends Controller
             $request->message,
             0,
             $message->created_at,
-            $attachment->file_type??null,
-            $attachment->file_path??null ,
+            $attachment->file_type ?? null,
+            $attachment->file_path ?? null,
 
         );
 
@@ -161,7 +159,39 @@ class ChatController extends Controller
     public function loadChat(Request $request)
     {
 
-        $chat = ConversationParticipant::with('user.employee', 'conversation.messages','conversation.messages.attachments')->where('conversation_id', $request->conversationId)->get();
+       $chat = ConversationParticipant::with([
+    'user.employee',
+
+    'conversation.messages' => function ($query) {
+
+        $query->where(function ($q) {
+            $q->where('delete_for_me', false)
+                ->orWhere('sender_id', '!=', Auth::id());
+        })
+
+        ->where(function ($q) {
+            $q->where(function ($q1) {
+                $q1->where('clear_for_sender', false)
+                    ->where('sender_id', Auth::id());
+            })
+
+            ->orWhere(function ($q2) {
+                $q2->where('clear_for_receiver', false)
+                    ->where('receiver_id', Auth::id());
+            });
+        })
+
+        ->where('delete_for_everyone', false)
+        ->orderBy('created_at', 'asc');
+    },
+
+    'conversation.messages.attachments',
+
+])
+->where('conversation_id', $request->conversationId)
+->where('user_id', Auth::id())
+->get();
+
 
         if ($request->conversationId) {
 
@@ -174,9 +204,9 @@ class ChatController extends Controller
                     'read_at' => now(),
                 ]);
             MessageRead::dispatch(
-            $request->conversationId,
-            $request->receiverId,
-        );
+                $request->conversationId,
+                $request->receiverId,
+            );
         }
 
         $user = User::with('employee')
@@ -218,13 +248,20 @@ class ChatController extends Controller
 
             $latestMessage = Message::where(function ($query) use ($authId, $user) {
 
-                $query->where('sender_id', $user->id)
-                    ->where('receiver_id', $authId);
-            })->orWhere(function ($query) use ($authId, $user) {
-
-                $query->where('sender_id', $authId)
-                    ->where('receiver_id', $user->id);
+                $query->where(function ($q) use ($authId, $user) {
+                    $q->where('sender_id', $user->id)
+                        ->where('receiver_id', $authId);
+                })
+                    ->orWhere(function ($q) use ($authId, $user) {
+                        $q->where('sender_id', $authId)
+                            ->where('receiver_id', $user->id);
+                    });
             })
+                ->where(function ($query) use ($authId) {
+                    $query->where('delete_for_me', false)
+                        ->orWhere('sender_id', '!=', $authId);
+                })
+                ->where('delete_for_everyone', false)
                 ->latest('created_at')
                 ->first();
 
@@ -273,27 +310,116 @@ class ChatController extends Controller
             'messages' => $messages,
         ]);
     }
-   public function messageUpdate(Request $request, $id)
-{
-    $message = Message::where("id", $id)->firstOrFail();
+    public function messageUpdate(Request $request, $id)
+    {
+        $message = Message::where("id", $id)->firstOrFail();
 
-    $message->update([
-        "message" => $request->message,
-        "is_edited" => true,
-    ]);
+        $message->update([
+            "message" => $request->message,
+            "is_edited" => true,
+        ]);
 
-    MessageUpdate::dispatch(
-        $message->id,
-        $message->conversation_id,
-       $message->receiver_id,
-        $message->sender_id,
-        $message->message,
-        $message->updated_at,
-        (bool) $message->is_edited,
-    );
+        MessageUpdate::dispatch(
+            $message->id,
+            $message->conversation_id,
+            $message->receiver_id,
+            $message->sender_id,
+            $message->message,
+            $message->updated_at,
+            (bool) $message->is_edited,
+        );
 
-    return response()->json([
-        "success" => true,
-    ]);
-}
+        return response()->json([
+            "success" => true,
+        ]);
+    }
+
+    public function messageDeleteForMe(Request $request)
+    {
+        $message = Message::where("id", $request->messageId)->first();
+        Message::where("id", $request->messageId)->update([
+            "delete_for_me" => true,
+        ]);
+
+        $latestMessage = Message::where("conversation_id", $message->conversation_id)->where("delete_for_everyone", false)
+            ->where(function ($query) {
+                $query->where("delete_for_me", false)
+                    ->orWhere("sender_id", '!=', auth::id());
+            })
+            ->latest()->first();
+
+
+        if ($latestMessage) {
+            MessageLatest::dispatch(
+                $latestMessage->conversation_id,
+                auth::id(),
+                $latestMessage->message,
+            );
+
+
+        }
+        return response()->json([
+            "success" => true,
+            "conversation_id" => $message->conversation_id,
+            "receiver_id" => $message->receiver_id,
+
+        ]);
+    }
+
+    public function messageDeleteForEveryone(Request $request)
+    {
+        $message = Message::where("id", $request->messageId)->first();
+        Message::where("id", $request->messageId)->update([
+            "delete_for_everyone" => true
+
+        ]);
+        $latestMessage = Message::where("conversation_id", $message->conversation_id)->where("delete_for_everyone", false)
+            ->where(function ($query) {
+                $query->where("delete_for_me", false)
+                    ->orWhere("sender_id", '!=', auth::id());
+            })
+            ->latest()->first();
+
+      MessageDeleteEveryone::dispatch(
+            $request->messageId,
+            auth::id(),
+            $message->receiver_id,
+        );
+
+        MessageLatest::dispatch(
+            $latestMessage->conversation_id,
+            auth::id(),
+            $latestMessage->message,
+        );
+
+        MessageLatest::dispatch(
+            $latestMessage->conversation_id,
+            $latestMessage->receiver_id,
+            $latestMessage->message,
+        );
+        //  MessageLatest::dispatch(
+        //     $latestMessage->conversation_id,
+        //     $latestMessage->receiver_id,
+        //     $latestMessage->message,
+        // );
+
+        return response()->json([
+            "success" => true,
+            "conversation_id" => $message->conversation_id,
+            "receiver_id" => $message->receiver_id,
+        ]);
+    }
+
+    public function clearChat(Request $request)
+    {
+        Message::where("conversation_id",$request->conversation_id)->where("sender_id",auth::id())->update([
+            "clear_for_sender"=>true,
+        ]);
+        Message::where("conversation_id",$request->conversation_id)->where("receiver_id",auth::id())->update([
+            "clear_for_receiver"=>true,
+        ]);
+        return response()->json([
+            "success"=>true,
+        ]);
+    }
 }
