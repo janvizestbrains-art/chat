@@ -8,6 +8,29 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .message-reactions {
+            display: flex;
+            gap: 4px;
+            min-height: 28px;
+            margin-top: 4px;
+            align-items: center;
+        }
+
+        .reaction-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f1f1;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .reaction-item:hover {
+            background: #ddd;
+        }
+
         .edited-label {
             font-size: 10px;
             color: #777;
@@ -2388,7 +2411,7 @@
 
                     if (rendered.html.trim()) {
                         body.append(`
-                    <div class="msg in">
+                    <div class="msg in" data-message-id="${event.message_id}">
                         <div class="${rendered.cls}">
                             ${rendered.html}
                         </div>
@@ -2512,7 +2535,45 @@
                 }
             });
 
+            channel.listen('.message.react', function(event) {
 
+
+                let message = $('.msg[data-message-id="' + event.message_id + '"]');
+
+                console.log('Message HTML during event:', message.html());
+
+                console.log(
+                    'All reaction containers:',
+                    $('.message-reactions').length
+                );
+
+
+                if (!message.length) {
+                    console.log('Message not found');
+                    return;
+                }
+
+                let box = message.children('.message-reactions');
+
+                console.log('Reaction box:', box.length);
+
+                let reactionHtml = '';
+
+                $.each(event.reactions, function(index, reaction) {
+
+                    reactionHtml += `
+            <span class="reaction-item">
+                ${reaction.reaction}
+            </span>
+        `;
+
+                });
+
+                box.html(reactionHtml);
+
+                console.log('Updated HTML:', box.html());
+
+            });
             // channel.listen('.message.updated', function(event) {
 
             //     console.log('Message update received:', event);
@@ -2660,14 +2721,7 @@
                 },
                 success: function(response) {
                     if (response.status) {
-                        let pane = $('.chat-pane').filter(function() {
-                            return $(this).data('conversation-id') == conversation_id;
-                        });
-
-                        pane.find('.msg.out .message-status')
-                            .removeClass('single-tick')
-                            .addClass('read-tick')
-                            .html('<i class="fas fa-check-double"></i>');
+                        loadChat(conversation_id, sender_id);
                     }
                 }
             });
@@ -2787,7 +2841,7 @@
                             let latestMessage = null;
 
                             let convId = user.conversation_id;
-                            let messageText = user.latest_message ?? '';
+                            let messageText = user.latest_message_text ?? 'No Messages Yet';
                             let unreadCount = user.unread_messages_count;
 
                             html += `
@@ -2871,6 +2925,8 @@
                     },
 
                     success: function(response) {
+
+                        console.log(response.data);
 
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
@@ -3010,19 +3066,49 @@
                                 rendered = ChatMedia.render(message, time + ' ' + ticks);
 
                             }
+                            let reactionHtml = '<div class="message-reactions">';
+
+                            if (message.reactions && message.reactions.length > 0) {
+
+                                $.each(message.reactions, function(index, reaction) {
+                                    reactionHtml += `
+            <span class="reaction-item">
+                ${reaction.reaction}
+            </span>
+        `;
+                                });
+
+                            }
+
+                            reactionHtml += '</div>';
 
 
-                            body.append(`
-                    <div class="msg ${messageType}"
-                        data-message-id="${message.id}"
-                        data-edited="${message.is_edited ? 1 : 0}">
 
-                        <div class="${rendered.cls}">
-                            ${rendered.html}
-                        </div>
+                            let addedMessage = body.find(
+                                '.msg[data-message-id="' + message.id + '"]'
+                            );
 
-                    </div>
-                `);
+
+                            let messageHtml = `
+    <div class="msg ${messageType}"
+        data-message-id="${message.id}">
+
+        <div class="${rendered.cls}">
+            ${rendered.html}
+        </div>
+
+        ${reactionHtml}
+
+    </div>
+`;
+
+                            body.append(messageHtml);
+
+                            console.log('Last message:', body.children('.msg').last()[0]
+                                ?.outerHTML);
+                            console.log('All message IDs:', body.find('.msg').map(function() {
+                                return $(this).attr('data-message-id');
+                            }).get());
 
                         });
 
@@ -3604,31 +3690,21 @@
             }
 
             function reactTo(row, emo) {
-                var box = row.querySelector('.reactions');
-                if (!box) {
-                    box = document.createElement('div');
-                    box.className = 'reactions';
-                    row.appendChild(box);
-                }
-                var existing = null;
-                Array.prototype.forEach.call(box.children, function(c) {
-                    if (c.dataset.emoji === emo) existing = c;
+                let messageId = $(row).attr('data-message-id');
+
+                $.ajax({
+                    url: "{{ route('messageReact') }}",
+                    type: "POST",
+                    data: {
+                        messageId: messageId,
+                        emo: emo,
+
+                    },
+                    success: function(response) {
+                        loadChat(response.conversation_id, response.receiver_id);
+                    }
                 });
-                if (existing) {
-                    existing.remove();
-                } else {
-                    var chip = document.createElement('span');
-                    chip.className = 'rx';
-                    chip.dataset.emoji = emo;
-                    chip.textContent = emo;
-                    chip.title = 'Remove reaction';
-                    chip.addEventListener('click', function() {
-                        chip.remove();
-                        updateReactionSpace(row);
-                    });
-                    box.appendChild(chip);
-                }
-                updateReactionSpace(row);
+
             }
 
             /* ---------- copy ---------- */

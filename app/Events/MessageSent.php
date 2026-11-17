@@ -20,7 +20,7 @@ class MessageSent implements ShouldBroadcastNow
      * Create a new event instance.
      */
     public function __construct(
-
+        public int $message_id,
        public int $conversation_id,
        public int $sender_id,
        public int $receiver_id,
@@ -49,6 +49,7 @@ class MessageSent implements ShouldBroadcastNow
     public function broadCastWith():array
     {
             return[
+                "message_id" =>$this->message_id,
                 "conversation_id" =>$this->conversation_id,
                 "sender_id" =>$this->sender_id,
                 "receiver_id" =>$this->receiver_id,
