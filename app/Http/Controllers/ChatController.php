@@ -455,4 +455,33 @@ class ChatController extends Controller
             "receiver_id" => $receiverId,
         ]);
     }
+
+    public function messageRemoveReact(Request $request)
+    {
+        $message=MessageReaction::where("message_id",$request->messageId)->where("user_id",auth::id())->first();
+        if($message)
+        {
+                $message->delete();
+
+        }
+    $message = Message::findOrFail($request->messageId);
+
+    $receiverId = $message->sender_id == auth::id()
+        ? $message->receiver_id
+        : $message->sender_id;
+
+    MessageReact::dispatch(
+        $message->id,
+     auth::id(),
+        $receiverId,
+        ''
+    );
+
+
+        return response()->json([
+            "success"=>true,
+             "conversation_id" => $message->conversation_id,
+            "receiver_id" => $receiverId,
+        ]);
+    }
 }

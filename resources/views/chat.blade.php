@@ -8,27 +8,58 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        /* ===== WhatsApp-style reactions ===== */
+        .msg:has(.reaction-item) {
+            margin-bottom: 20px;
+        }
+
         .message-reactions {
+            position: absolute;
+            bottom: -14px;
             display: flex;
-            gap: 4px;
-            min-height: 28px;
-            margin-top: 4px;
-            align-items: center;
+            gap: 3px;
+            margin: 0;
+            min-height: 0;
+            z-index: 2;
+        }
+
+        .msg.out .message-reactions {
+            right: 10px;
+        }
+
+        .msg.in .message-reactions {
+            left: 10px;
+        }
+
+        .message-reactions:empty {
+            display: none;
         }
 
         .reaction-item {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            background: #f1f1f1;
-            border-radius: 20px;
-            padding: 5px 10px;
-            font-size: 15px;
-            cursor: pointer;
+            background: #fff;
+            border: 1px solid #e9edef;
+            border-radius: 14px;
+            padding: 1px 7px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+            cursor: default;
         }
 
         .reaction-item:hover {
-            background: #ddd;
+            background: #fff;
+        }
+
+        .reaction-item.mine {
+            background: #e7f8e9;
+            border-color: #b6e8bd;
+            cursor: pointer;
+        }
+
+        .reaction-item.mine:hover {
+            transform: scale(1.1);
         }
 
         .edited-label {
@@ -1993,6 +2024,27 @@
                 padding: 10px;
             }
         }
+
+        /* ===== WhatsApp-style reaction picker ===== */
+        .msg-menu .reaction-row {
+            background: #fff;
+            border: 0;
+            border-radius: 30px;
+            padding: 5px 6px;
+            margin: 2px 0 8px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, .22);
+            justify-content: space-between;
+        }
+
+        .msg-menu .reaction-row span {
+            width: 36px;
+            height: 36px;
+            font-size: 22px;
+        }
+
+        .msg-menu .reaction-row span.selected {
+            background: #e7f8e9;
+        }
     </style>
 </head>
 
@@ -2538,40 +2590,34 @@
             channel.listen('.message.react', function(event) {
 
 
+
                 let message = $('.msg[data-message-id="' + event.message_id + '"]');
 
-                console.log('Message HTML during event:', message.html());
-
-                console.log(
-                    'All reaction containers:',
-                    $('.message-reactions').length
-                );
-
-
-                if (!message.length) {
-                    console.log('Message not found');
-                    return;
-                }
-
-                let box = message.children('.message-reactions');
-
-                console.log('Reaction box:', box.length);
+                if (!message.length) return;
 
                 let reactionHtml = '';
 
                 $.each(event.reactions, function(index, reaction) {
 
+                    let mine = Number(reaction.user_id) === Number(window.authUserId);
+
                     reactionHtml += `
-            <span class="reaction-item">
+            <span class="reaction-item ${mine ? 'mine' : ''}"
+                data-emo="${reaction.reaction}"
+                ${mine ? 'title="Click to remove"' : ''}>
                 ${reaction.reaction}
             </span>
         `;
-
                 });
 
-                box.html(reactionHtml);
+                let box = message.find('.message-reactions');
 
-                console.log('Updated HTML:', box.html());
+                if (!box.length) {
+                    box = $('<div class="message-reactions"></div>');
+                    message.append(box);
+                }
+
+                box.html(reactionHtml);
 
             });
             // channel.listen('.message.updated', function(event) {
@@ -2914,6 +2960,30 @@
                 loadChat(conversationId, receiverId);
             }
 
+
+
+            $(document).on('click', '.reaction-item.mine', function() {
+                let messageId = $(this).closest('.msg').attr('data-message-id');
+                console.log(messageId);
+                $.ajax({
+                    url: "{{ route('messageRemoveReact') }}",
+                    type: "POST",
+                    data: {
+                        "messageId": messageId,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        loadChat(response.conversation_id, response.receiver_id);
+                    }
+
+                });
+
+
+            });
+
+
+
+
             function loadChat(conversationId, receiverId, target) {
 
                 $.ajax({
@@ -3066,18 +3136,16 @@
                                 rendered = ChatMedia.render(message, time + ' ' + ticks);
 
                             }
+
                             let reactionHtml = '<div class="message-reactions">';
 
                             if (message.reactions && message.reactions.length > 0) {
-
                                 $.each(message.reactions, function(index, reaction) {
-                                    reactionHtml += `
-            <span class="reaction-item">
-                ${reaction.reaction}
-            </span>
-        `;
+                                    let mine = Number(reaction.user_id) === myId;
+                                    reactionHtml += `<span class="reaction-item ${mine ? 'mine' : ''}"
+                                        data-emo="${reaction.reaction}"
+                                        ${mine ? 'title="Click to remove"' : ''}>${reaction.reaction}</span>`;
                                 });
-
                             }
 
                             reactionHtml += '</div>';
@@ -3104,11 +3172,6 @@
 
                             body.append(messageHtml);
 
-                            console.log('Last message:', body.children('.msg').last()[0]
-                                ?.outerHTML);
-                            console.log('All message IDs:', body.find('.msg').map(function() {
-                                return $(this).attr('data-message-id');
-                            }).get());
 
                         });
 
@@ -3628,10 +3691,15 @@
                 if (!deleted) {
                     var rx = document.createElement('div');
                     rx.className = 'reaction-row';
+
+                    // my current reaction (if any) is marked with the "mine" class
+                    var mineEmo = $(row).find('.reaction-item.mine').attr('data-emo');
+
                     ['👍', '❤️', '😂', '😮', '😢', '🙏'].forEach(function(emo) {
                         var s = document.createElement('span');
                         s.textContent = emo;
                         s.title = 'React ' + emo;
+                        if (emo === mineEmo) s.classList.add('selected');
                         s.addEventListener('click', function() {
                             reactTo(row, emo);
                             closeMsgMenu();
@@ -3639,6 +3707,13 @@
                         rx.appendChild(s);
                     });
                     menuEl.appendChild(rx);
+
+                    // remove option: sends my same emoji again through your existing reactTo()
+                    if (mineEmo) {
+                        addMenuItem('fas fa-face-frown', 'Remove reaction', function() {
+                            reactTo(row, mineEmo);
+                        });
+                    }
 
                     addMenuItem('fas fa-reply', 'Reply', function() {
                         startReply(row);
@@ -5119,6 +5194,12 @@
                     closeModal();
                     cancelReply();
                 }
+            });
+
+            // click my own reaction pill = remove it (same emoji sent again via your reactTo())
+            $(document).on('click', '.reaction-item.mine', function(e) {
+                e.stopPropagation();
+                reactTo($(this).closest('.msg')[0], $(this).attr('data-emo'));
             });
 
             window.addEventListener('resize', closeMsgMenu);

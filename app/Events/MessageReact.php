@@ -42,11 +42,11 @@ class MessageReact implements ShouldBroadcastNow
             new PrivateChannel('users.'.$this->receiver_id),
         ];
     }
-    public function broadCastAs():string
+    public function broadcastAs():string
     {
         return 'message.react';
     }
-    public function broadCastWith():array
+    public function broadcastWith():array
     {
       $message = Message::with('reactions')->find($this->message_id);
        $reactions=[];
