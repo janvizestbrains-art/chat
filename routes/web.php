@@ -29,6 +29,10 @@ Route::POST('/message-delete-for-everyone',[ChatController::class,'messageDelete
 Route::POST('/clear-chat',[ChatController::class,'clearChat'])->name('clearChat');
 Route::POST('/message-react',[ChatController::class,'messageReact'])->name("messageReact");
 Route::POST('/message-remove-react',[ChatController::class,'messageRemoveReact'])->name('messageRemoveReact');
+Route::POST('/message-star',[ChatController::class,'messageStar'])->name('messageStar');
+
+
+
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');
 });

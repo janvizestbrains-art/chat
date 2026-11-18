@@ -95,4 +95,8 @@ public function getLatestMessageAttribute()
     {
         return $this->hasMany(MessageReaction::class);
     }
+    public function mssagestar()
+    {
+        return $this->hasMany(MessageStar::class);
+    }
 }

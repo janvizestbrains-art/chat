@@ -16,6 +16,7 @@ use App\Models\Employee;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\MessageReaction;
+use App\Models\MessageStar;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -166,6 +167,7 @@ class ChatController extends Controller
         $chat = ConversationParticipant::with([
             'user.employee',
             'conversation.messages.reactions',
+            'conversation.messages.messagestar',
 
             'conversation.messages' => function ($query) {
 
@@ -482,6 +484,36 @@ class ChatController extends Controller
             "success"=>true,
              "conversation_id" => $message->conversation_id,
             "receiver_id" => $receiverId,
+        ]);
+    }
+
+    public function messageStar(Request $request)
+    {
+        $message=MessageStar::where("message_id",$request->message_id)->where("user_id",auth::id())->first();
+        if($message)
+            {
+                $message->delete();
+
+            }
+        else
+        {
+            MessageStar::create([
+                "message_id"=>$request->message_id,
+                "user_id" =>auth::id(),
+            ]);
+
+        }
+
+         $message = Message::findOrFail($request->message_id);
+
+    $receiverId = $message->sender_id == auth::id()
+        ? $message->receiver_id
+        : $message->sender_id;
+
+        return response()->json([
+            "success" =>true,
+            "conversation_id" =>$message->conversation_id,
+            "receiver_id" =>$receiverId,
         ]);
     }
 }

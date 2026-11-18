@@ -3047,9 +3047,12 @@
                         let previousDate = '';
                         let myId = {{ Auth::id() }};
 
-                        console.log(response);
+
+
+
 
                         $.each(messages, function(index, message) {
+
 
                             let messageDate = new Date(message.created_at);
                             let dateKey = messageDate.toLocaleDateString('en-CA');
@@ -3156,9 +3159,13 @@
                                 '.msg[data-message-id="' + message.id + '"]'
                             );
 
+                            let isStarred = message.messagestar &&
+                                Number(message.messagestar.user_id) === Number(myId);
+
+
 
                             let messageHtml = `
-    <div class="msg ${messageType}"
+    <div class="msg ${messageType} ${isStarred ? 'starred' : ''}"
         data-message-id="${message.id}">
 
         <div class="${rendered.cls}">
@@ -3171,6 +3178,11 @@
 `;
 
                             body.append(messageHtml);
+
+                            let row = body.find(`.msg[data-message-id="${message.id}"]`)[0];
+
+                            syncBadges(row);
+
 
 
                         });
@@ -3942,9 +3954,24 @@
             }
 
             function toggleStar(row) {
-                row.classList.toggle('starred');
-                syncBadges(row);
-                toast(row.classList.contains('starred') ? 'Message starred' : 'Star removed');
+
+                let message = $(row).attr('data-message-id');
+                $.ajax({
+                    url: "{{ route('messageStar') }}",
+                    type: "POST",
+                    data: {
+                        message_id: message,
+                        _token: "{{ csrf_token() }}",
+                    },
+                    success: function(response) {
+
+
+                        row.classList.toggle('starred');
+
+                        loadChat(response.conversation_id, response.receiver_id);
+                    }
+                });
+
             }
 
             function togglePin(row) {

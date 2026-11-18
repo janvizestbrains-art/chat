@@ -53,5 +53,8 @@ public function reactions()
 {
         return $this->hasMany(MessageReaction::class);
 }
-
+public function messagestar()
+{
+    return $this->hasOne(MessageStar::class);
+}
 }
