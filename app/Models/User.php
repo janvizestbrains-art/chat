@@ -99,4 +99,8 @@ public function getLatestMessageAttribute()
     {
         return $this->hasMany(MessageStar::class);
     }
+    public function messagePin()
+    {
+        return $this->hasOne(MessagePin::class);
+    }
 }

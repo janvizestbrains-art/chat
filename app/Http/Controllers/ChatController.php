@@ -15,6 +15,7 @@ use App\Models\ConversationParticipant;
 use App\Models\Employee;
 use App\Models\Message;
 use App\Models\MessageAttachment;
+use App\Models\MessagePin;
 use App\Models\MessageReaction;
 use App\Models\MessageStar;
 use App\Models\Notification;
@@ -168,6 +169,7 @@ class ChatController extends Controller
             'user.employee',
             'conversation.messages.reactions',
             'conversation.messages.messagestar',
+
 
             'conversation.messages' => function ($query) {
 
@@ -515,5 +517,25 @@ class ChatController extends Controller
             "conversation_id" =>$message->conversation_id,
             "receiver_id" =>$receiverId,
         ]);
+    }
+
+    public function messagePin(Request $request)
+    {
+        $message=MessagePin::where("message_id",$request->message_id)->where("user_id",auth::id())->first();
+        if($message)
+        {
+            $message->delete();
+        }
+        else
+            {
+                MessagePin::create([
+                    "message_id"=>$request->message_id,
+                    "user_id"=>auth::id(),
+                ]);
+
+            }
+            return response()->json([
+                "success"=>true,
+            ]);
     }
 }

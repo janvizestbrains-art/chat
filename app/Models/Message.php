@@ -57,4 +57,9 @@ public function messagestar()
 {
     return $this->hasOne(MessageStar::class);
 }
+
+public function messagepin()
+{
+    return $this->hasOne(MessagePin::class);
+}
 }

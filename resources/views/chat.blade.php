@@ -2997,7 +2997,7 @@
                     success: function(response) {
 
                         console.log(response.data);
-
+                        //console.log(response.messages.message_pin);
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
 
@@ -3975,6 +3975,24 @@
             }
 
             function togglePin(row) {
+
+
+                // let message = $(row).attr('data-message-id');
+
+
+                // $.ajax({
+
+                //     url: "{{ route('messagePin') }}",
+                //     type: "POST",
+                //     data: {
+                //         message_id: message,
+                //         _toekn: "{{ csrf_token() }}",
+                //     },
+                //     success: function(response) {
+
+                //     }
+
+                // });
                 var pane = row.closest('.chat-pane');
                 if (!pane) return;
                 var willPin = !row.classList.contains('pinned');
