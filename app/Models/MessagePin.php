@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MessagePin extends Model
 {
     protected $fillable = [
+        "conversation_id",
         "message_id",
         "user_id",
     ];
@@ -18,5 +19,9 @@ class MessagePin extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function conversation()
+    {
+            return $this->belongsTo(Conversation::class);
     }
 }

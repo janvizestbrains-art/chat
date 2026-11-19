@@ -101,6 +101,6 @@ public function getLatestMessageAttribute()
     }
     public function messagePin()
     {
-        return $this->hasOne(MessagePin::class);
+        return $this->hasMany(MessagePin::class);
     }
 }

@@ -165,10 +165,17 @@ class ChatController extends Controller
     public function loadChat(Request $request)
     {
 
+        $messagePin=MessagePin::with([
+            "message",
+            "user"
+        ])
+        ->where("conversation_id",$request->conversationId)->first();
+
         $chat = ConversationParticipant::with([
             'user.employee',
             'conversation.messages.reactions',
             'conversation.messages.messagestar',
+            'conversation.messages.messagepin',
 
 
             'conversation.messages' => function ($query) {
@@ -233,6 +240,7 @@ class ChatController extends Controller
                     'status' => true,
                     'data' => $chat,
                     'user' => $user,
+                    'messagepin' =>$messagePin,
                 ]
             );
         } else {
@@ -522,20 +530,30 @@ class ChatController extends Controller
     public function messagePin(Request $request)
     {
         $message=MessagePin::where("message_id",$request->message_id)->where("user_id",auth::id())->first();
+          $conversation = Message::findOrFail($request->message_id);
+
         if($message)
         {
             $message->delete();
         }
         else
             {
+
+                //dd($conversation);
                 MessagePin::create([
+                    "conversation_id" =>$conversation->conversation_id,
                     "message_id"=>$request->message_id,
                     "user_id"=>auth::id(),
                 ]);
 
             }
+             $receiverId = $conversation->sender_id == auth::id()
+        ? $conversation->receiver_id
+        : $conversation->sender_id;
             return response()->json([
                 "success"=>true,
+                "conversation_id"=>$conversation->conversation_id,
+                "receiver_id" =>$receiverId,
             ]);
     }
 }

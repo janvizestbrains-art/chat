@@ -28,4 +28,9 @@ class Conversation extends Model
 {
     return $this->hasOne(Message::class)->latestOfMany();
 }
+
+    public function messagepin()
+    {
+            return $this->hasOne(MessagePin::class);
+    }
 }

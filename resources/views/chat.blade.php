@@ -2982,6 +2982,23 @@
             });
 
 
+            $(document).on('click', '.unpin', function() {
+                let messageId = $(this).closest('.pinned-bar.show').attr('data-message-id');
+                $.ajax({
+                    url: "{{ route('messagePin') }}",
+                    type: "POST",
+                    data: {
+                        "message_id": messageId,
+                        _token: "{{ csrf_token() }}",
+
+                    },
+                    success: function(response) {
+                        loadChat(response.conversation_id, response.receiver_id);
+                    }
+                })
+            });
+
+
 
 
             function loadChat(conversationId, receiverId, target) {
@@ -3003,6 +3020,26 @@
 
                         let userName = response.user?.employee?.full_name || '';
                         let profileUrl = response.user?.employee?.profile_url || '';
+                        let messagePin = response.messagepin;
+                        console.log("pin message is", messagePin);
+
+                        let pinchat;
+                        if (messagePin !== null) {
+
+                            pinchat = `<div class="pinned-bar show"
+                            data-message-id="${messagePin.message.id}"
+                            >
+                    <i class="fas fa-thumbtack">
+                    </i><div class="txt">
+                    <strong>${messagePin.user.name}: </strong>${messagePin.message.message}</div>
+                    <button type="button" title="Unpin" class="unpin">
+                    <i class="fas fa-xmark"></i>
+                    </button>
+                    </div>`;
+                        } else {
+                            pinchat = '';
+                        }
+
 
                         let html = `
                 <div class="chat-pane active"
@@ -3020,6 +3057,8 @@
                             <strong>${escapeHtml(userName)}</strong>
                         </div>
                     </div>
+                    ${pinchat}
+
 
                     <div class="chat-body"></div>
 
@@ -3035,7 +3074,7 @@
                             body.html(`
                     <div class="empty-chat">
                         <i class="far fa-comments"></i>
-                        <strong>No messages yet</strong>
+                        <strong>No messages yet</strong></div>
                         <span>Start a conversation!</span>
                     </div>
                 `);
@@ -3046,7 +3085,6 @@
                         let messages = response.data[0].conversation.messages;
                         let previousDate = '';
                         let myId = {{ Auth::id() }};
-
 
 
 
@@ -3162,10 +3200,13 @@
                             let isStarred = message.messagestar &&
                                 Number(message.messagestar.user_id) === Number(myId);
 
+                            let isPinned = message.messagepin && Number(message.messagepin
+                                .user_id) === Number(myId);
+
 
 
                             let messageHtml = `
-    <div class="msg ${messageType} ${isStarred ? 'starred' : ''}"
+    <div class="msg ${messageType} ${isStarred ? 'starred' : ''}   ${isPinned ?'pinned':''}"
         data-message-id="${message.id}">
 
         <div class="${rendered.cls}">
@@ -3977,34 +4018,35 @@
             function togglePin(row) {
 
 
-                // let message = $(row).attr('data-message-id');
+                let message = $(row).attr('data-message-id');
 
 
-                // $.ajax({
+                $.ajax({
 
-                //     url: "{{ route('messagePin') }}",
-                //     type: "POST",
-                //     data: {
-                //         message_id: message,
-                //         _toekn: "{{ csrf_token() }}",
-                //     },
-                //     success: function(response) {
+                    url: "{{ route('messagePin') }}",
+                    type: "POST",
+                    data: {
+                        message_id: message,
+                        _toekn: "{{ csrf_token() }}",
+                    },
+                    success: function(response) {
+                        row.classList.toggle('pinned');
+                        loadChat(response.conversation_id, response.receiver_id);
+                    }
 
-                //     }
-
-                // });
-                var pane = row.closest('.chat-pane');
-                if (!pane) return;
-                var willPin = !row.classList.contains('pinned');
-
-                pane.querySelectorAll('.msg.pinned').forEach(function(r) {
-                    r.classList.remove('pinned');
-                    syncBadges(r);
                 });
-                if (willPin) row.classList.add('pinned');
-                syncBadges(row);
-                updatePinnedBar(pane);
-                toast(willPin ? 'Message pinned' : 'Message unpinned');
+                // var pane = row.closest('.chat-pane');
+                // if (!pane) return;
+                // var willPin = !row.classList.contains('pinned');
+
+                // pane.querySelectorAll('.msg.pinned').forEach(function(r) {
+                //     r.classList.remove('pinned');
+                //     syncBadges(r);
+                // });
+                // if (willPin) row.classList.add('pinned');
+                // syncBadges(row);
+                // updatePinnedBar(pane);
+                // toast(willPin ? 'Message pinned' : 'Message unpinned');
             }
 
             function updatePinnedBar(pane) {
