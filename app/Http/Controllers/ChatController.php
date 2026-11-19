@@ -169,7 +169,7 @@ class ChatController extends Controller
             "message",
             "user"
         ])
-        ->where("conversation_id",$request->conversationId)->first();
+        ->where("conversation_id",$request->conversationId)->where("user_id",auth::id())->first();
 
         $chat = ConversationParticipant::with([
             'user.employee',
@@ -461,10 +461,22 @@ class ChatController extends Controller
             $request->emo
         );
 
+
+     $message = Message::with('reactions')->where("id",$message->id)->first();
+       $reactions=[];
+       foreach($message->reactions as $reaction)
+        {
+            $reactions[]=
+            [
+            'user_id' =>$reaction->user_id,
+            'reaction'=>$reaction->reaction,
+            ];
+        }
+
         return response()->json([
             "success" => true,
-            "conversation_id" => $message->conversation_id,
-            "receiver_id" => $receiverId,
+            'message_id' =>$message->id,
+            "reactions" =>$reactions,
         ]);
     }
 
@@ -490,14 +502,26 @@ class ChatController extends Controller
     );
 
 
+     $message = Message::with('reactions')->where("id",$message->id)->first();
+       $reactions=[];
+       foreach($message->reactions as $reaction)
+        {
+            $reactions[]=
+            [
+            'user_id' =>$reaction->user_id,
+            'reaction'=>$reaction->reaction,
+            ];
+        }
+
+
         return response()->json([
             "success"=>true,
-             "conversation_id" => $message->conversation_id,
-            "receiver_id" => $receiverId,
+           "message_id"=>$message->id,
+           "reactions"=>$reactions,
         ]);
     }
 
-    public function messageStar(Request $request)
+  public function messageStar(Request $request)
     {
         $message=MessageStar::where("message_id",$request->message_id)->where("user_id",auth::id())->first();
         if($message)
@@ -529,8 +553,9 @@ class ChatController extends Controller
 
     public function messagePin(Request $request)
     {
-        $message=MessagePin::where("message_id",$request->message_id)->where("user_id",auth::id())->first();
-          $conversation = Message::findOrFail($request->message_id);
+         $conversation = Message::findOrFail($request->message_id);
+        $message=MessagePin::where("conversation_id",$conversation->conversation_id)->where("message_id",$conversation->id)->where("user_id",auth::id())->first();
+
 
         if($message)
         {
@@ -538,6 +563,12 @@ class ChatController extends Controller
         }
         else
             {
+
+                $conversation_data=MessagePin::where("conversation_id",$conversation->conversation_id)->where("user_id",auth::id())->first();
+                if($conversation_data)
+                    {
+                        $conversation_data->delete();
+                    }
 
                 //dd($conversation);
                 MessagePin::create([
@@ -555,5 +586,94 @@ class ChatController extends Controller
                 "conversation_id"=>$conversation->conversation_id,
                 "receiver_id" =>$receiverId,
             ]);
+    }
+
+    public function getUsers()
+    {
+       $users=User::with(['employee'])->whereNot("id",auth::id())
+        ->whereHas('employee')
+        ->get();
+        return response()->json([
+            "success"=>true,
+            "users"=>$users,
+        ]);
+    }
+
+
+    public function messageForward(Request $request)
+    {
+        foreach($request->users as $user)
+        {
+        $conversation=ConversationParticipant::wherein("user_id",[auth::id(),$user])
+        ->groupBy("conversation_id")
+        ->havingRaw('count(distinct user_id)=2')
+        ->value('conversation_id');
+
+
+        $message=Message::where("id",$request->message_id)->first();
+        $message_attach=MessageAttachment::where("message_id",$message->id)->first();
+
+       if($conversation)
+        {
+
+           $message_data= Message::create([
+                "conversation_id" =>$conversation,
+                "sender_id"=>auth::id(),
+                "receiver_id" =>$user,
+                "message" =>$message->message,
+
+            ]);
+            if($message_attach)
+                {
+                    MessageAttachment::create([
+                        "message_id"=>$message_data->id,
+                        "file_type"=>$message_attach->file_type,
+                        "file_path" =>$message_attach->file_path,
+
+                    ]);
+                }
+
+        }
+        else
+            {
+                $conversation_data=Conversation::create(
+                    [
+                        "type"=>"Private",
+                    ]
+                );
+                    ConversationParticipant::create([
+                        "conversation_id"=>$conversation_data->id,
+                        "user_id"=>auth::id(),
+                    ]);
+                    ConversationParticipant::create([
+                        "conversation_id"=>$conversation_data->id,
+                        "user_id"=>$user,
+                    ]);
+                    $message_data=Message::create([
+                        "conversation_id"=>$conversation_data->id,
+                        "sender_id"=>auth::id(),
+                        "receiver_id"=>$user,
+                        "message"=>$message->message,
+                    ]);
+                    if($message_attach)
+                        {
+                            MessageAttachment::create([
+                                "message_id" =>$message_data->message_id,
+                                "file_type" =>$message_attach->file_type,
+                                "file_path" =>$message_attach->file_path,
+                            ]);
+                        }
+            }
+
+        }
+
+
+        return response()->json(
+            [
+                "success"=>true,
+
+
+            ]
+        );
     }
 }

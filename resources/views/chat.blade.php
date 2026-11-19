@@ -2190,6 +2190,32 @@
         <div class="cap" id="lightboxCap"></div>
     </div>
 
+    <div id="forwardContent" style="display:none;">
+        <div class="panel">
+            <div class="panel-head">
+                Forward to...
+            </div>
+
+            <div class="panel-body">
+                Select one or more chats to forward this message to.
+            </div>
+
+            <div class="panel-content">
+                <div class="pick-list" id="forwardUserList"></div>
+            </div>
+
+            <div class="panel-foot">
+                <button type="button" id="forwardBtn">
+                    <i class="fas fa-share"></i> Forward
+                </button>
+
+                <button type="button" id="cancelForward">
+                    <i class="fas fa-xmark"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
@@ -2973,7 +2999,7 @@
                         _token: "{{ csrf_token() }}"
                     },
                     success: function(response) {
-                        loadChat(response.conversation_id, response.receiver_id);
+                        updateReact(response.message_id, response.reactions);
                     }
 
                 });
@@ -3024,7 +3050,7 @@
                         console.log("pin message is", messagePin);
 
                         let pinchat;
-                        if (messagePin !== null) {
+                        if (messagePin !== null && response.data) {
 
                             pinchat = `<div class="pinned-bar show"
                             data-message-id="${messagePin.message.id}"
@@ -3074,7 +3100,7 @@
                             body.html(`
                     <div class="empty-chat">
                         <i class="far fa-comments"></i>
-                        <strong>No messages yet</strong></div>
+                        <strong>No messages yet</strong>
                         <span>Start a conversation!</span>
                     </div>
                 `);
@@ -3762,11 +3788,11 @@
                     menuEl.appendChild(rx);
 
                     // remove option: sends my same emoji again through your existing reactTo()
-                    if (mineEmo) {
-                        addMenuItem('fas fa-face-frown', 'Remove reaction', function() {
-                            reactTo(row, mineEmo);
-                        });
-                    }
+                    // if (mineEmo) {
+                    //     addMenuItem('fas fa-face-frown', 'Remove reaction', function() {
+                    //         reactTo(row, mineEmo);
+                    //     });
+                    // }
 
                     addMenuItem('fas fa-reply', 'Reply', function() {
                         startReply(row);
@@ -3835,6 +3861,50 @@
 
             }
 
+
+
+
+            function updateStar(message_id, isstar) {
+
+                let message = $(`.msg[data-message-id="${message_id}"]`);
+
+                if (!message.length) return;
+
+                message.toggleClass('starred', isstar);
+            }
+
+            function updateReact(message_id, reactions) {
+                let message = $('.msg[data-message-id="' + message_id + '"]');
+
+                if (!message.length) return;
+
+                let reactionHtml = '';
+
+                $.each(reactions, function(index, reaction) {
+
+                    let mine = Number(reaction.user_id) === Number(window.authUserId);
+
+                    reactionHtml += `
+            <span class="reaction-item ${mine ? 'mine' : ''}"
+                data-emo="${reaction.reaction}"
+                ${mine ? 'title="Click to remove"' : ''}>
+                ${reaction.reaction}
+            </span>
+        `;
+                });
+
+                let box = message.find('.message-reactions');
+
+                if (!box.length) {
+                    box = $('<div class="message-reactions"></div>');
+                    message.append(box);
+                }
+
+                box.html(reactionHtml);
+            }
+
+
+
             /* ---------- copy ---------- */
             function copyMessage(row) {
                 var text = messageText(row);
@@ -3864,112 +3934,142 @@
 
             /* ---------- forward (multi-select) ---------- */
             function openForward(row) {
-                var targets = [];
-                var checks = [];
 
-                var wrap = document.createElement('div');
-                wrap.className = 'panel-content';
-                var list = document.createElement('div');
-                list.className = 'pick-list';
+                $.ajax({
+                    url: "{{ route('getUsers') }}",
+                    type: "GET",
 
-                document.querySelectorAll('.contact').forEach(function(c) {
-                    var item = document.createElement('label');
-                    item.className = 'emp-row';
+                    success: function(response) {
 
-                    var av = c.querySelector('.avatar').cloneNode(true);
-                    av.classList.remove('online');
-                    item.appendChild(av);
+                        var wrap = document.createElement('div');
+                        wrap.className = 'panel-content';
 
-                    var nm = document.createElement('span');
-                    nm.className = 'emp-name';
-                    nm.textContent = c.dataset.name + (c.dataset.group ? ' (group)' : '');
-                    item.appendChild(nm);
+                        var list = document.createElement('div');
+                        list.className = 'pick-list';
 
-                    var cb = document.createElement('input');
-                    cb.type = 'checkbox';
-                    item.appendChild(cb);
+                        var html = '';
 
-                    checks.push(cb);
-                    targets.push({
-                        id: c.dataset.target,
-                        name: c.dataset.name
-                    });
+                        response.users.forEach(function(user) {
+                            var photo = (user.employee && user.employee.profile_photo) ||
+                                'https://ui-avatars.com/api/?name=' +
+                                encodeURIComponent((user.employee && user.employee.first_name) ||
+                                    user.name);
 
-                    list.appendChild(item);
-                });
+                            html += `
+                    <label class="emp-row">
+                        <img class="avatar" src="${escapeHtml(photo)}">
+                        <span class="emp-name">${escapeHtml(user.name)}</span>
+                        <input type="checkbox" value="${user.id}">
+                    </label>
+                `;
+                        });
 
-                if (!targets.length) {
-                    toast('No chats to forward to');
-                    return;
-                }
-                wrap.appendChild(list);
+                        list.innerHTML = html;
+                        wrap.appendChild(list);
 
-                showModal({
-                    title: 'Forward to...',
-                    text: 'Select one or more chats to forward this message to.',
-                    content: wrap,
-                    actions: [{
-                            icon: 'fas fa-share',
-                            label: 'Forward',
-                            onClick: function() {
-                                var picked = targets.filter(function(t, i) {
-                                    return checks[i].checked;
-                                });
-                                if (!picked.length) {
-                                    toast('Select at least one chat');
-                                    return;
+                        showModal({
+                            title: 'Forward to...',
+                            text: 'Select one or more chats to forward this message to.',
+                            content: wrap,
+                            actions: [{
+                                    icon: 'fas fa-share',
+                                    label: 'Forward',
+                                    onClick: function() {
+                                        var picked = $(list).find('input:checked');
+                                        var userIds = [];
+
+                                        $(list).find('input:checked').each(function() {
+                                            userIds.push(Number($(this).val()));
+                                        });
+
+
+
+                                        if (!picked.length) {
+                                            toast('Select at least one chat');
+                                            return;
+                                        }
+
+                                        forwardTo(row, userIds);
+
+                                        // picked.each(function() {
+                                        //     forwardTo(row, $(this).val());
+                                        // });
+
+                                        // closeModal();
+                                        // toast('Message forwarded');
+                                    }
+                                },
+                                {
+                                    icon: 'fas fa-xmark',
+                                    label: 'Cancel',
+                                    onClick: closeModal
                                 }
-                                picked.forEach(function(t) {
-                                    forwardTo(row, t.id, t.name);
-                                });
-                                closeModal();
-                                toast(picked.length === 1 ?
-                                    'Forwarded to ' + picked[0].name :
-                                    'Forwarded to ' + picked.length + ' chats');
-                            }
-                        },
-                        {
-                            icon: 'fas fa-xmark',
-                            label: 'Cancel',
-                            onClick: closeModal
-                        }
-                    ]
+                            ]
+                        });
+                    },
+                    error: function(xhr) {
+                        toast(errorText(xhr));
+                    }
                 });
             }
 
-            function forwardTo(row, targetId) {
-                var pane = targetId ? document.getElementById(targetId) : null;
-                if (!pane) return;
-                var body = pane.querySelector('.chat-body');
-                var source = bubbleOf(row);
-                if (!body || !source) return;
+            function forwardTo(row, userIds) {
 
-                var newRow = document.createElement('div');
-                newRow.className = 'msg out first';
-                var bubble = source.cloneNode(true);
-                bubble.querySelectorAll('.quote, .reactions, .flag-badge, .edit-box').forEach(function(n) {
-                    n.remove();
+                let message_id = $(row).closest('.msg').attr('data-message-id');
+                console.log(userIds);
+
+                $.ajax({
+                    url: "{{ route('messageForward') }}",
+                    type: "POST",
+                    data: {
+                        message_id: message_id,
+                        users: userIds,
+                        _token: "{{ csrf_token() }}",
+                    },
+                    success: function(response) {
+                        closeModal();
+                        loadContacts();
+                        toast('Message forwarded');
+                    }
+
                 });
 
-                var fwd = document.createElement('div');
-                fwd.style.cssText = 'font-size:11.5px;color:#94a3b8;font-style:italic;margin-bottom:2px;';
-                fwd.textContent = 'Forwarded';
-                bubble.insertBefore(fwd, bubble.firstChild);
 
-                var meta = bubble.querySelector('.meta, .meta-over');
-                if (meta) {
-                    meta.textContent = nowTime() + ' ';
-                    var tick = document.createElement('i');
-                    tick.className = 'tick fas fa-check';
-                    tick.dataset.status = 'sent';
-                    tick.title = 'Sent';
-                    meta.appendChild(tick);
-                }
 
-                newRow.appendChild(bubble);
-                body.appendChild(newRow);
-                decorateAll();
-                scrollBottom(body, true);
+
+
+                // var pane = targetId ? document.getElementById(targetId) : null;
+                // if (!pane) return;
+                // var body = pane.querySelector('.chat-body');
+                // var source = bubbleOf(row);
+                // if (!body || !source) return;
+
+                // var newRow = document.createElement('div');
+                // newRow.className = 'msg out first';
+                // var bubble = source.cloneNode(true);
+                // bubble.querySelectorAll('.quote, .reactions, .flag-badge, .edit-box').forEach(function(n) {
+                //     n.remove();
+                // });
+
+                // var fwd = document.createElement('div');
+                // fwd.style.cssText = 'font-size:11.5px;color:#94a3b8;font-style:italic;margin-bottom:2px;';
+                // fwd.textContent = 'Forwarded';
+                // bubble.insertBefore(fwd, bubble.firstChild);
+
+                // var meta = bubble.querySelector('.meta, .meta-over');
+                // if (meta) {
+                //     meta.textContent = nowTime() + ' ';
+                //     var tick = document.createElement('i');
+                //     tick.className = 'tick fas fa-check';
+                //     tick.dataset.status = 'sent';
+                //     tick.title = 'Sent';
+                //     meta.appendChild(tick);
+                // }
+
+                // newRow.appendChild(bubble);
+                // body.appendChild(newRow);
+                // decorateAll();
+                // scrollBottom(body, true);
             }
 
             /* ---------- star / pin ---------- */
@@ -4007,9 +4107,9 @@
                     success: function(response) {
 
 
-                        row.classList.toggle('starred');
-
                         loadChat(response.conversation_id, response.receiver_id);
+
+
                     }
                 });
 

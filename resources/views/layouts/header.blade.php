@@ -16,22 +16,7 @@
 
               </a>
           </li>
-          @can('apply leave')
-              <li>
-                  <a href="{{ route('leave') }}" class="{{ request()->routeIs('leave') ? 'active' : '' }}">
-                      <i class="fas fa-calendar-check"></i>
-                      <span>Leaves</span>
-                  </a>
-              </li>
-          @endcan
-          @can('approve leave')
-              <li>
-                  <a href="{{ route('leaveRequest') }}" class="{{ request()->routeIs('leaveRequest') ? 'active' : '' }}">
-                      <i class="fas fa-calendar-check"></i>
-                      <span>Leave Requests</span>
-                  </a>
-              </li>
-          @endcan
+
           @can('chat')
               <li>
                   <a href="{{ route('chat') }}" class="{{ request()->routeIs('chat') ? 'active' : '' }}">

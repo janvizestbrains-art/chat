@@ -31,7 +31,8 @@ Route::POST('/message-react',[ChatController::class,'messageReact'])->name("mess
 Route::POST('/message-remove-react',[ChatController::class,'messageRemoveReact'])->name('messageRemoveReact');
 Route::POST('/message-star',[ChatController::class,'messageStar'])->name('messageStar');
 Route::POST('/message-pin',[ChatController::class,'messagePin'])->name('messagePin');
-
+Route::GET('/get-users',[ChatController::class,'getUsers'])->name('getUsers');
+Route::POST('/message-forward',[ChatController::class,'messageFOrward'])->name('messageForward');
 
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');
