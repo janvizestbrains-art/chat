@@ -34,7 +34,7 @@ Route::POST('/message-pin',[ChatController::class,'messagePin'])->name('messageP
 Route::GET('/get-users',[ChatController::class,'getUsers'])->name('getUsers');
 Route::POST('/message-forward',[ChatController::class,'messageFOrward'])->name('messageForward');
 Route::POST('/message-reply',[ChatController::class,'messageReply'])->name('messageReply');
-
+Route::POST('/user-typing',[ChatController::class,'userTyping'])->name('userTyping');
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');
 });

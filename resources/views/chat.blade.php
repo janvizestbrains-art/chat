@@ -8,6 +8,60 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .typing-row {
+            display: flex;
+            margin: 6px 0 4px;
+        }
+
+        .typing-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 11px 14px;
+            background: #fff;
+            border-radius: 10px;
+            border-top-left-radius: 0;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, .13);
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background: #25a56a;
+            border-radius: 50%;
+            animation: typingWave 1.3s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: .18s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: .36s;
+        }
+
+        .typing-text {
+            font-size: 12px;
+            color: #25a56a;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+
+        @keyframes typingWave {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                background: #94a3b8;
+            }
+
+            30% {
+                transform: translateY(-5px);
+                background: #25a56a;
+            }
+        }
+
         .reply-message {
             display: flex;
             gap: 8px;
@@ -2568,6 +2622,58 @@
             });
 
 
+            channel.listen('.user.typing', function(event) {
+
+                console.log("Called user typing", event.istyping);
+
+
+
+                let pane = $('.chat-pane').filter(function() {
+
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+
+                });
+
+
+                let body = pane.find('.chat-body');
+
+                if (Number(event.receiver_id) !== Number(authUserId)) {
+                    return;
+                }
+
+
+                if (event.istyping) {
+
+                    console.log("Hello");
+
+                    body.find('.empty-chat').remove();
+
+
+
+                    if (!body.find('.typing-indicator').length) {
+
+                        body.append(`
+             <div class="typing-row">
+    <div class="typing-bubble">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+
+    </div>
+</div>
+            `);
+
+                    }
+
+                } else {
+                    body.find('.typing-row').remove();
+                }
+
+                body.scrollTop(body[0].scrollHeight);
+
+            });
+
             // ------------------------------------
             // 2. Update unread message count
             // ------------------------------------
@@ -2864,6 +2970,56 @@
             //     });
 
         });
+
+        let typing = false;
+        let typingtimeout;
+
+        $('#msgInput').on('input', function() {
+
+            let conversation_id = $('.chat-pane.active').attr('data-conversation-id');
+            let receiver_id = $('.chat-pane.active').attr('data-user-id');
+            let message = $(this).val().trim();
+
+            clearTimeout(typingtimeout);
+
+            if (message.length === 0) {
+
+                if (typing) {
+                    typing = false;
+                    settyping(conversation_id, receiver_id, false);
+                }
+
+                return;
+            }
+
+            if (!typing) {
+                typing = true;
+                settyping(conversation_id, receiver_id, true);
+            }
+
+            typingtimeout = setTimeout(function() {
+
+                typing = false;
+
+                settyping(conversation_id, receiver_id, false);
+
+            }, 3000);
+
+        });
+
+        function settyping(conversation_id, receiver_id, istyping) {
+            $.ajax({
+                "url": "{{ route('userTyping') }}",
+                "type": "POST",
+                "data": {
+                    conversation_id: conversation_id,
+                    receiver_id: receiver_id,
+                    istyping: istyping,
+                    _token: "{{ csrf_token() }}"
+                }
+
+            });
+        }
 
 
         // ------------------------------------

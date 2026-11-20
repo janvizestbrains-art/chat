@@ -11,6 +11,7 @@ use App\Events\MessageReply;
 use App\Events\MessageSent;
 use App\Events\MessageUpdate;
 use App\Events\NotificationCreated;
+use App\Events\UserTyping;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Employee;
@@ -770,5 +771,20 @@ class ChatController extends Controller
                         "conversation_id" =>$message->conversation_id,
                         "receiver_id" =>$receiverId,
                     ]);
+        }
+
+        public function userTyping(Request $request)
+        {
+
+        
+                UserTyping::dispatch(
+                    $request->conversation_id,
+                    auth::id(),
+                    $request->receiver_id,
+                    $request->istyping
+                );
+                return response()->json([
+                    "success" =>true,
+                ]);
         }
 }
