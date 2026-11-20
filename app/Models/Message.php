@@ -21,6 +21,7 @@ class Message extends Model
         'delete_for_everyone',
         'clear_for_sender',
         'clear_for_receiver',
+        'reply_message_id',
     ];
     protected function casts(): array
 {
@@ -61,5 +62,15 @@ public function messagestar()
 public function messagepin()
 {
     return $this->hasOne(MessagePin::class);
+}
+
+  public function replyMessage()
+{
+    return $this->belongsTo(Message::class, 'reply_message_id');
+}
+
+public function replies()
+{
+    return $this->hasMany(Message::class, 'reply_message_id');
 }
 }

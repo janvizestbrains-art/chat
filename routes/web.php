@@ -33,6 +33,7 @@ Route::POST('/message-star',[ChatController::class,'messageStar'])->name('messag
 Route::POST('/message-pin',[ChatController::class,'messagePin'])->name('messagePin');
 Route::GET('/get-users',[ChatController::class,'getUsers'])->name('getUsers');
 Route::POST('/message-forward',[ChatController::class,'messageFOrward'])->name('messageForward');
+Route::POST('/message-reply',[ChatController::class,'messageReply'])->name('messageReply');
 
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');

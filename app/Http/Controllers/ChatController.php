@@ -7,6 +7,7 @@ use App\Events\MessageDeleteEveryone;
 use App\Events\MessageLatest;
 use App\Events\MessageReact;
 use App\Events\MessageRead;
+use App\Events\MessageReply;
 use App\Events\MessageSent;
 use App\Events\MessageUpdate;
 use App\Events\NotificationCreated;
@@ -176,6 +177,8 @@ class ChatController extends Controller
             'conversation.messages.reactions',
             'conversation.messages.messagestar',
             'conversation.messages.messagepin',
+            'conversation.messages.replyMessage.sender',
+
 
 
             'conversation.messages' => function ($query) {
@@ -695,10 +698,6 @@ class ChatController extends Controller
 
         );
 
-
-
-
-
         }
 
 
@@ -710,4 +709,66 @@ class ChatController extends Controller
             ]
         );
     }
+
+
+        public function messageReply(Request $request)
+        {
+                $message=Message::where("id",$request->message_id)->first();
+                 $receiverId = $message->sender_id == auth::id()
+            ? $message->receiver_id
+            : $message->sender_id;
+                if($message)
+                    {
+                       $message_data=Message::create([
+                            "conversation_id"=>$message->conversation_id,
+                            "sender_id"=>auth::id(),
+                            "receiver_id" =>$receiverId,
+                            "message"=>$request->text,
+                            "reply_message_id" =>$message->id,
+
+                        ]);
+
+                    }
+
+
+     $unread_count = Message::where("conversation_id", $message_data->conversation_id)->where("receiver_id", $message_data->receiver_id)->where("is_read", false)->count();
+        //dd($unread_count);
+
+
+        MessageCount::dispatch(
+            $message_data->conversation_id,
+            $message_data->receiver_id,
+            $unread_count
+        );
+
+        MessageLatest::dispatch(
+            $message_data->conversation_id,
+            $message_data->receiver_id,
+            $message_data->message ,
+        );
+
+
+
+
+
+            MessageReply::dispatch(
+                $message_data->id,
+                $message_data->conversation_id,
+                $message_data->sender_id,
+                $message_data->receiver_id,
+                $message_data->replyMessage->message,
+                0,
+                $message_data->created_at,
+                $message_data->replyMessage->sender->name,
+                $message_data->message,
+
+            );
+
+
+                    return response()->json([
+                        "success" =>true,
+                        "conversation_id" =>$message->conversation_id,
+                        "receiver_id" =>$receiverId,
+                    ]);
+        }
 }

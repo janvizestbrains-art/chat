@@ -8,6 +8,41 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .reply-message {
+            display: flex;
+            gap: 8px;
+            padding: 7px 10px;
+            margin-bottom: 7px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .reply-message-line {
+            width: 3px;
+            flex-shrink: 0;
+            background: #25a56a;
+            border-radius: 5px;
+        }
+
+        .reply-message-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .reply-sender {
+            font-size: 12px;
+            color: #25a56a;
+        }
+
+        .reply-text {
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .img-wrap {
             position: relative;
         }
@@ -2670,6 +2705,70 @@
                 box.html(reactionHtml);
 
             });
+
+
+
+
+
+            channel.listen('.message.reply', function(event) {
+
+                if (Number(event.sender_id) === Number(window.authUserId)) {
+                    return;
+                }
+
+                let pane = $('.chat-pane').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+
+                if (pane.length && pane.hasClass('active')) {
+
+                    let time = new Date(event.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+
+                    let body = pane.find('.chat-body');
+
+                    body.find('.empty-chat').remove();
+
+                    let rendered = {
+                        'cls': 'bubble',
+                        'html': `
+                        <div class="reply-message">
+                            <div class="reply-message-line"></div>
+                            <div class="reply-message-content">
+                                <strong class="reply-sender">${event.sender_name}</strong>
+                                <span class="reply-text">${event.reply_message}
+                                </div>
+                                </div>
+                                <div class="message-content">
+                                    ${event.message}
+                                </div>
+
+                        `
+                    };
+
+                    body.append(`
+                    <div class="msg in" data-message-id="${event.message_id}">
+                        <div class="${rendered.cls}">
+                            ${rendered.html}
+                        </div>
+                    </div>
+                `);
+
+
+                    // Mark incoming message as read
+                    MessageRead(event.conversation_id, event.sender_id);
+
+                    body.scrollTop(body[0].scrollHeight);
+
+                } else {
+                    console.log('Message received. Chat is not open.');
+                }
+
+            });
             // channel.listen('.message.updated', function(event) {
 
             //     console.log('Message update received:', event);
@@ -3064,7 +3163,7 @@
                     success: function(response) {
 
 
-                        //console.log(response.messages.message_pin);
+                        console.log(response);
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
 
@@ -3225,10 +3324,30 @@
                             } else {
 
                                 rendered = ChatMedia.render(message, time + ' ' + ticks);
-                                console.log('Message:', message);
-                                console.log('Rendered:', rendered);
+
 
                             }
+                            if (message.reply_message_id) {
+                                rendered = {
+                                    cls: 'bubble',
+                                    html: `
+                                    <div class="reply-message">
+                                        <div class="reply-message-line"></div>
+                                        <div class="reply-message-content">
+                                            <strong class="reply-sender">${message.reply_message.sender.name}</strong>
+                                            <span class='reply-text'>${message.reply_message.message}</span>
+                                            </div>
+                                            </div>
+                                            <div class="message-content">
+                                                ${message.message}
+                                                  <span class="meta">${time} ${ticks}</span>
+                                                </div>
+
+                                    `
+                                }
+                            }
+
+
 
                             let reactionHtml = '<div class="message-reactions">';
 
@@ -3344,7 +3463,12 @@
                 e.preventDefault();
                 var text = input.value.trim();
                 if (!text) return;
-                sendText(text);
+                if ($('#replyBar').hasClass('show')) {
+
+                    sendReply(text);
+                } else {
+                    sendText(text);
+                }
                 input.value = '';
                 emojiPanel.classList.remove('show');
             });
@@ -4261,28 +4385,56 @@
 
             /* ---------- reply ---------- */
             var replyTo = null;
-            var replyBar = document.getElementById('replyBar');
-            var replyBarWho = document.getElementById('replyBarWho');
-            var replyBarText = document.getElementById('replyBarText');
 
-            document.getElementById('replyBarClose').addEventListener('click', cancelReply);
+            var $replyBar = $('#replyBar');
+            var $replyBarWho = $('#replyBarWho');
+            var $replyBarText = $('#replyBarText');
+
+            $('#replyBarClose').on('click', cancelReply);
 
             function startReply(row) {
+
                 replyTo = {
                     row: row,
                     who: senderOf(row),
                     text: messageText(row)
                 };
-                replyBarWho.textContent = replyTo.who;
-                replyBarText.textContent = replyTo.text;
-                replyBar.classList.add('show');
+                $replyBar.attr('data-message-id', $(row).data('message-id'));
+                $replyBarWho.text(replyTo.who);
+                $replyBarText.text(replyTo.text);
+
+                $replyBar.addClass('show');
+
                 input.focus();
             }
 
             function cancelReply() {
+
                 replyTo = null;
-                replyBar.classList.remove('show');
+
+                $replyBar.removeClass('show');
             }
+
+            function sendReply(text) {
+                let message_id = $('#replyBar').attr('data-message-id');
+                console.log(message_id);
+                console.log(text);
+                $.ajax({
+                    url: "{{ route('messageReply') }}",
+                    type: "POST",
+                    data: {
+                        message_id: message_id,
+                        text: text,
+                        _token: "{{ csrf_token() }}",
+                    },
+                    success: function(response) {
+                        $replyBar.removeClass('show');
+                        loadChat(response.conversation_id, response.receiver_id);
+                    }
+                });
+
+            }
+
 
             /* ---------- edit ---------- */
             function startEdit(row) {
