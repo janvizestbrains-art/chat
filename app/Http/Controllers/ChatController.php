@@ -625,7 +625,7 @@ class ChatController extends Controller
             ]);
             if($message_attach)
                 {
-                    MessageAttachment::create([
+                    $message_attach_data=MessageAttachment::create([
                         "message_id"=>$message_data->id,
                         "file_type"=>$message_attach->file_type,
                         "file_path" =>$message_attach->file_path,
@@ -657,13 +657,47 @@ class ChatController extends Controller
                     ]);
                     if($message_attach)
                         {
-                            MessageAttachment::create([
+                            $message_attach_data=MessageAttachment::create([
                                 "message_id" =>$message_data->message_id,
                                 "file_type" =>$message_attach->file_type,
                                 "file_path" =>$message_attach->file_path,
                             ]);
                         }
             }
+
+
+           $unread_count = Message::where("conversation_id", $message_data->conversation_id)->where("receiver_id", $message_data->receiver_id)->where("is_read", false)->count();
+
+
+              MessageCount::dispatch(
+            $message_data->conversation_id,
+            $message_data->receiver_id,
+            $unread_count
+        );
+
+        MessageLatest::dispatch(
+            $message_data->conversation_id,
+           $message_data->receiver_id,
+            $message_data->message,
+        );
+
+
+        MessageSent::dispatch(
+            $message_data->id,
+            $message_data->conversation_id,
+            Auth::id(),
+            $message_data->receiver_id,
+            $message_data->message,
+            0,
+            $message_data->created_at,
+            $message_attach_data->file_type ?? null,
+            $message_attach_data->file_path ?? null,
+
+        );
+
+
+
+
 
         }
 

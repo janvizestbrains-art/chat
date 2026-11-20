@@ -8,6 +8,20 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .img-wrap {
+            position: relative;
+        }
+
+        .img-wrap::after {
+            content: attr(data-caption);
+            display: block;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: inherit;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+
         /* ===== WhatsApp-style reactions ===== */
         .msg:has(.reaction-item) {
             margin-bottom: 20px;
@@ -2326,9 +2340,11 @@
 
             /* builds the inside of a bubble. metaInner = trusted html (time + ticks) */
 
+
             function render(m, metaInner) {
 
-                var text = m.message == null ? '' : String(m.message);
+                var text = (m.message === null || m.message === 'document' || m.message === 'image') ? '' : String(m
+                    .message);
 
                 // Support database response and Reverb event formats
                 var file = null;
@@ -2357,11 +2373,11 @@
 
                     var html = '';
 
-                    // Image: display image only
+                    // Image: display image with caption
                     if (file.file_type === 'image') {
 
                         html += `
-                <div class="img-wrap" data-caption="">
+                <div class="img-wrap" data-caption="${esc(text)}">
                     <img src="${esc(url)}"
                          alt="image"
                          loading="lazy">
@@ -2378,6 +2394,8 @@
 
                     // Document: display document only
                     if (file.file_type === 'document') {
+
+
 
                         var e = ext(name);
                         var st = docStyle(e);
@@ -2423,6 +2441,7 @@
                 // No text and no attachment: do not create a bubble
                 return null;
             }
+
 
             return {
                 LIMITS: LIMITS,
@@ -2482,7 +2501,12 @@
 
                     let messageEvent = {
                         ...event,
-                        message: hasAttachment ? '' : (event.message || '')
+                        message: (
+                            event.message === 'image' ||
+
+                            event.message === 'document'
+
+                        ) ? '' : (event.message || '')
                     };
 
                     let rendered = ChatMedia.render(messageEvent, time);
@@ -3039,7 +3063,7 @@
 
                     success: function(response) {
 
-                        console.log(response.data);
+
                         //console.log(response.messages.message_pin);
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
@@ -3201,6 +3225,8 @@
                             } else {
 
                                 rendered = ChatMedia.render(message, time + ' ' + ticks);
+                                console.log('Message:', message);
+                                console.log('Rendered:', rendered);
 
                             }
 
@@ -3245,6 +3271,11 @@
 `;
 
                             body.append(messageHtml);
+
+                            let imgWrap = body.find('.msg[data-message-id="' + message.id +
+                                '"] .img-wrap');
+
+
 
                             let row = body.find(`.msg[data-message-id="${message.id}"]`)[0];
 
@@ -4015,6 +4046,11 @@
 
             function forwardTo(row, userIds) {
 
+                let conversation_id = $('.chat-pane.active').attr('data-conversation-id');
+                let user_id = $('.chat-pane.active').attr('data-user-id');
+                console.log(conversation_id);
+                console.log(user_id);
+
                 let message_id = $(row).closest('.msg').attr('data-message-id');
                 console.log(userIds);
 
@@ -4029,6 +4065,7 @@
                     success: function(response) {
                         closeModal();
                         loadContacts();
+                        loadChat(conversation_id, user_id);
                         toast('Message forwarded');
                     }
 
