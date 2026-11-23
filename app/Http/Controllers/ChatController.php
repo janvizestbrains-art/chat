@@ -776,12 +776,14 @@ class ChatController extends Controller
         public function userTyping(Request $request)
         {
 
-        
+
+             $istyping = $request->boolean('istyping');
+
                 UserTyping::dispatch(
                     $request->conversation_id,
-                    auth::id(),
+
                     $request->receiver_id,
-                    $request->istyping
+                  $istyping,
                 );
                 return response()->json([
                     "success" =>true,

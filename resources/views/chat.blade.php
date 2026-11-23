@@ -2624,7 +2624,6 @@
 
             channel.listen('.user.typing', function(event) {
 
-                console.log("Called user typing", event.istyping);
 
 
 
@@ -2645,7 +2644,7 @@
 
                 if (event.istyping) {
 
-                    console.log("Hello");
+
 
                     body.find('.empty-chat').remove();
 
@@ -2973,6 +2972,34 @@
 
         let typing = false;
         let typingtimeout;
+        $('#previewCaption').on('input', function() {
+            let conversation_id = $('.chat-pane.active').attr('data-conversation-id');
+            let receiver_id = $('.chat-pane.active').attr('data-user-id');
+            let message = $(this).val().trim();
+            if (message.length === 0) {
+                if (typing) {
+                    typing = false;
+                    settyping(conversation_id, receiver_id, typing);
+                }
+                return
+
+
+            }
+            if (!typing) {
+                typing = true;
+                settyping(conversation_id, receiver_id, true);
+            }
+
+            typingtimeout = setTimeout(function() {
+
+                typing = false;
+
+                settyping(conversation_id, receiver_id, typing);
+
+            }, 3000);
+
+
+        });
 
         $('#msgInput').on('input', function() {
 
@@ -2986,7 +3013,7 @@
 
                 if (typing) {
                     typing = false;
-                    settyping(conversation_id, receiver_id, false);
+                    settyping(conversation_id, receiver_id, typing);
                 }
 
                 return;
@@ -3001,11 +3028,25 @@
 
                 typing = false;
 
-                settyping(conversation_id, receiver_id, false);
+                settyping(conversation_id, receiver_id, typing);
 
-            }, 3000);
+            }, 2000);
 
         });
+        let last_conversation;
+        $(doucment).on('click', '.contact', function() {
+
+            let conversation = $(this).attr('data-conversation-id');
+            let receiver = $(this).attr('data-user-id');
+            if (last_conversation != conversation) {
+                typing = false;
+                settyping(conversation, receiver, typing);
+                last_conversation = conversation;
+            }
+
+        });
+
+
 
         function settyping(conversation_id, receiver_id, istyping) {
             $.ajax({
@@ -3591,6 +3632,8 @@
             function sendText(text) {
 
                 if (!receiverId) return;
+                typing = false;
+                settyping(conversationId, receiverId, typing);
 
                 $.ajax({
                     url: "{{ route('chatSend') }}",
@@ -5737,6 +5780,28 @@
             window.addEventListener('resize', closeMsgMenu);
 
         })();
+    </script>
+    <script>
+        window.addEventListener('pagehide', function() {
+
+            let conversation_id = $('.chat-pane.active').attr('data-conversation-id');
+            // alert(conversation_id);
+            let receiver_id = $('.chat-pane.active').attr('data-user-id');
+            //alert(receiver_id);
+            if (conversation_id) {
+                typing = false;
+
+                let data = new FormData();
+                data.append("conversation_id", conversation_id);
+                data.append("receiver_id", receiver_id);
+                data.append("istyping", typing);
+                data.append("_token", "{{ csrf_token() }}");
+                let sent = navigator.sendBeacon("{{ route('userTyping') }}", data);
+                //alert(sent);
+            }
+
+
+        });
     </script>
 
 </body>

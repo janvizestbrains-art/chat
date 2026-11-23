@@ -20,7 +20,7 @@ class UserTyping implements ShouldBroadcastNow
      */
     public function __construct(
         public int $conversation_id,
-        public int $sender_id,
+
         public int $receiver_id,
         public bool $istyping,
 
@@ -50,7 +50,7 @@ class UserTyping implements ShouldBroadcastNow
     {
         return[
             "conversation_id" =>$this->conversation_id,
-            "sender_id" =>$this->sender_id,
+
             "receiver_id" =>$this->receiver_id,
             "istyping" =>$this->istyping,
         ];
