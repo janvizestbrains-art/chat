@@ -3030,21 +3030,11 @@
 
                 settyping(conversation_id, receiver_id, typing);
 
-            }, 2000);
+            }, 3000);
 
         });
-        let last_conversation;
-        $(doucment).on('click', '.contact', function() {
+        let last_conversation = null;
 
-            let conversation = $(this).attr('data-conversation-id');
-            let receiver = $(this).attr('data-user-id');
-            if (last_conversation != conversation) {
-                typing = false;
-                settyping(conversation, receiver, typing);
-                last_conversation = conversation;
-            }
-
-        });
 
 
 
@@ -3056,12 +3046,30 @@
                     conversation_id: conversation_id,
                     receiver_id: receiver_id,
                     istyping: istyping,
-                    _token: "{{ csrf_token() }}"
+                    _token: "{{ csrf_token() }}",
                 }
 
             });
         }
 
+        function savedraft(conversation_id, receiver_id, draft) {
+
+            console.log("call savedraft");
+            $.ajax({
+                "url": "{{ route('saveMessageDraft') }}",
+                "type": "POST",
+                "data": {
+                    conversation_id: conversation_id,
+                    receiver_id: receiver_id,
+                    draft: draft,
+                    _token: "{{ csrf_token() }}",
+                },
+                success: function(response) {
+                    $('#msgInput').val('');
+                }
+            });
+
+        }
 
         // ------------------------------------
         // Update user online/offline status
@@ -3283,6 +3291,7 @@
                 loadContacts();
             });
 
+
             /* ---------- open / load chat ---------- */
             function openChat(contact) {
 
@@ -3305,6 +3314,28 @@
 
                 loadChat(conversationId, receiverId);
             }
+
+
+            $('#contacts').on('click', '.contact', function() {
+
+                let conversation = $('.chat-pane.active').attr('data-conversation-id');
+                let receiver = $('.chat-pane.active').attr('data-user-id');
+                let message = $('#msgInput').val().trim();
+                if (message) {
+                    savedraft(conversation, receiver, message);
+                }
+
+                if (last_conversation != conversation) {
+
+
+                    typing = false;
+
+                    settyping(conversation, receiver, typing);
+                    last_conversation = conversation;
+                }
+                openChat(this);
+
+            });
 
 
 
@@ -3361,6 +3392,8 @@
 
 
                         console.log(response);
+
+
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
 
@@ -3368,6 +3401,8 @@
                         let profileUrl = response.user?.employee?.profile_url || '';
                         let messagePin = response.messagepin;
                         console.log("pin message is", messagePin);
+
+
 
                         let pinchat;
                         if (messagePin !== null && response.data) {
@@ -3413,6 +3448,9 @@
 
                         chatContent.prepend(html);
 
+
+
+
                         let body = chatContent.find('.chat-body');
 
                         if (response.status === false || !response.data?.length) {
@@ -3431,6 +3469,11 @@
                         let messages = response.data[0].conversation.messages;
                         let previousDate = '';
                         let myId = {{ Auth::id() }};
+
+                        if (response.message_draft) {
+                            $('#msgInput').val(response.message_draft.draft);
+                        }
+
 
 
 
@@ -3624,9 +3667,7 @@
             }
 
 
-            $('#contacts').on('click', '.contact', function() {
-                openChat(this);
-            });
+
 
             /* ---------- send text ---------- */
             function sendText(text) {

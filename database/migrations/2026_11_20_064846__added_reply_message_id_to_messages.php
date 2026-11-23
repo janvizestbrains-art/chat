@@ -6,26 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('messages', function (Blueprint $table) {
-             $table->foreignId("reply_message_id")
-            ->nullable()
-            ->constrained()
-            ->cascadeOnDelete();
-        });
+        if (!Schema::hasColumn('messages', 'reply_message_id')) {
+            Schema::table('messages', function (Blueprint $table) {
+                $table->foreignId('reply_message_id')
+                    ->nullable()
+                    ->constrained('messages')
+                    ->cascadeOnDelete();
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('messages', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('messages', 'reply_message_id')) {
+            Schema::table('messages', function (Blueprint $table) {
+                $table->dropForeign(['reply_message_id']);
+                $table->dropColumn('reply_message_id');
+            });
+        }
     }
 };

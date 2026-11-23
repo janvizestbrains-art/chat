@@ -103,4 +103,9 @@ public function getLatestMessageAttribute()
     {
         return $this->hasMany(MessagePin::class);
     }
+    public function messageDraft()
+    {
+        return $this->hasMany(MessageDraft::class);
+    }
+
 }

@@ -33,4 +33,8 @@ class Conversation extends Model
     {
             return $this->hasOne(MessagePin::class);
     }
+    public function messageDraft()
+    {
+            return $this->hasOne(MessageDraft::class);
+    }
 }

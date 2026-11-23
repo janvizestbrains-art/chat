@@ -73,4 +73,5 @@ public function replies()
 {
     return $this->hasMany(Message::class, 'reply_message_id');
 }
+
 }

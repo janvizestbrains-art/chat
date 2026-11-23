@@ -17,6 +17,7 @@ use App\Models\ConversationParticipant;
 use App\Models\Employee;
 use App\Models\Message;
 use App\Models\MessageAttachment;
+use App\Models\MessageDraft;
 use App\Models\MessagePin;
 use App\Models\MessageReaction;
 use App\Models\MessageStar;
@@ -100,6 +101,11 @@ class ChatController extends Controller
             ]);
         }
 
+        $message_draft=MessageDraft::where("conversation_id",$request->conversation_id)->where("user_id",auth::id())->first();
+        if($message_draft)
+            {
+                    $message_draft->delete();
+            }
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => Auth::id(),
@@ -173,6 +179,8 @@ class ChatController extends Controller
         ])
         ->where("conversation_id",$request->conversationId)->where("user_id",auth::id())->first();
 
+        $message_draft=MessageDraft::where("conversation_id",$request->conversationId)->where("user_id",auth::id())->first();
+
         $chat = ConversationParticipant::with([
             'user.employee',
             'conversation.messages.reactions',
@@ -245,6 +253,7 @@ class ChatController extends Controller
                     'data' => $chat,
                     'user' => $user,
                     'messagepin' =>$messagePin,
+                    'message_draft' =>$message_draft,
                 ]
             );
         } else {
@@ -789,4 +798,27 @@ class ChatController extends Controller
                     "success" =>true,
                 ]);
         }
+
+    public function saveMessageDraft(Request $request)
+    {
+        $draft=MessageDraft::where("conversation_id",$request->conversation_id)->where("user_id",auth::id())->first();
+        if($draft)
+            {
+                    $updatedraft=MessageDraft::where("conversation_id",$request->conversation_id)->where("user_id",auth::id())
+                    ->update([
+                        "draft" =>$request->draft,
+                    ]);
+            }
+        else
+        {
+                MessageDraft::create([
+                    "conversation_id" =>$request->conversation_id,
+                    "user_id" =>auth::id(),
+                    "draft" =>$request->draft,
+                ]);
+        }
+        return response()->json([
+            "success" =>true,
+        ]);
+    }
 }
