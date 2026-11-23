@@ -11,6 +11,7 @@ use App\Events\MessageReply;
 use App\Events\MessageSent;
 use App\Events\MessageUpdate;
 use App\Events\NotificationCreated;
+use App\Events\UnreadMessage;
 use App\Events\UserTyping;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
@@ -132,6 +133,16 @@ class ChatController extends Controller
         }
         $unread_count = Message::where("conversation_id", $conversation->id)->where("receiver_id", $request->reciver_id)->where("is_read", false)->count();
         //dd($unread_count);
+
+        $unread_message=Message::where("receiver_id",$request->reciver_id)
+        ->where("is_read",false)
+        ->where("delete_for_everyone",false)
+        ->count();
+
+        UnreadMessage::dispatch(
+            $request->reciver_id,
+            $unread_message,
+        );
 
 
         MessageCount::dispatch(

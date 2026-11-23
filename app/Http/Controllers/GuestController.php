@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,8 +28,13 @@ class GuestController extends Controller
         if (Auth::attempt($credentials)) {
 
             $request->session()->regenerate();
+            $messagecount=Message::where("sender_id",'!=',auth::id())
+            ->where("receiver_id",auth::id())
+            ->where("delete_for_everyone",true)
+            ->where("is_read",false)->count();
 
-            return redirect('/');
+
+            return redirect('/')->with("messagecount",$messagecount);
         }
 
         return redirect()->back()->with("error","invalid Email / Password.");

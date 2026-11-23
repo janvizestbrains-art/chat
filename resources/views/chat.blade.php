@@ -351,7 +351,6 @@
         }
 
         .sidebar-menu .count {
-            margin-left: auto;
             background: #ef4444;
             color: #fff;
             font-size: 11px;
@@ -2924,6 +2923,16 @@
 
             });
 
+
+
+            channel.listen('.unread.messages', function(event) {
+
+                console.log("unread count", event.unread_count);
+
+            });
+
+
+
             // ------------------------------------
             // 5. Online / Offline presence channel
             // ------------------------------------
@@ -3383,6 +3392,14 @@
             });
 
 
+            $(document).on('click', '#chatBack', function() {
+                $('.contact').removeClass('active');
+                $('.chat-pane').removeClass('active');
+                $('#emptyScreen').addClass('active');
+                //loadContacts();
+
+
+            })
 
 
             function loadChat(conversationId, receiverId, target) {
@@ -3435,7 +3452,7 @@
                     data-conversation-id="${conversationId}">
 
                     <div class="chat-head">
-                        <i class="fas fa-arrow-left back"></i>
+                        <i class="fas fa-arrow-left back" id="chatBack"></i>
 
                         <img class="avatar online"
                             src="${escapeHtml(profileUrl)}"

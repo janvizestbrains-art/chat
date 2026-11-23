@@ -2,8 +2,8 @@
       <div class="sidebar-brand">
           <div class="brand-logo"><i class="fas fa-fan"></i></div>
           <div class="brand-text">
-              <strong>HVAC Portal</strong>
-              <small>Employee Dashboard</small>
+              <strong>Employee Dashboard</strong>
+
           </div>
       </div>
 
@@ -21,7 +21,15 @@
               <li>
                   <a href="{{ route('chat') }}" class="{{ request()->routeIs('chat') ? 'active' : '' }}">
                       <i class="fas fa-comments"></i>
-                      <span>Chat</span>
+                      <span>Chat
+
+                      </span>
+                      @if ($messagecount > 0)
+                          <span class="count" id="unreadCount">
+                              {{ $messagecount }}
+                          </span>
+                      @endif
+
                   </a>
               </li>
           @endcan

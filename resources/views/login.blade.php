@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MsgNest - Login</title>
+    <title></title>
     <link rel="stylesheet" href="{{ asset('assets/css/login.css') }}">
 </head>
 
@@ -15,7 +15,7 @@
         <section class="brand-panel">
             <div class="brand-logo">
                 <span class="logo-icon">💬</span>
-                <span class="logo-text">MsgNest</span>
+                <span class="logo-text">Employee Dashboard</span>
             </div>
             <h2>Stay connected with the people who matter.</h2>
             <p>Fast, secure and beautifully simple messaging for you and your team.</p>
@@ -23,7 +23,7 @@
             <ul class="features">
                 <li>✔ Real-time conversations</li>
                 <li>✔ Share files and photos easily</li>
-                <li>✔ Group chats and online status</li>
+
             </ul>
 
             <div class="circle circle-1"></div>
