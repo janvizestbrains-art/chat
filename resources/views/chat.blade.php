@@ -2874,53 +2874,55 @@
                 }
 
             });
-            // channel.listen('.message.updated', function(event) {
 
-            //     console.log('Message update received:', event);
 
-            //     let activePane = $('.chat-pane.active');
 
-            //     if (!activePane.length) return;
 
-            //     let activeConversation = Number(activePane.attr('data-conversation-id'));
+            channel.listen('.message.updated', function(event) {
 
-            //     if (activeConversation !== Number(event.conversation_id)) {
-            //         return;
-            //     }
+                let pane = $('.chat-pane').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+                let time = new Date(event.updated_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                if (!pane.length) return;
 
-            //     let row = activePane.find('.msg').filter(function() {
-            //         return Number($(this).attr('data-message-id')) ===
-            //             Number(event.message_id);
-            //     });
+                let message = pane.find('.msg[data-message-id="' + event.message_id + '"]');
+                let oldTicks = message.find('.message-status').prop('outerHTML') || '';
 
-            //     if (!row.length) {
-            //         console.log('Message not found in receiver chat');
-            //         return;
-            //     }
+                if (!message.length) return;
 
-            //     let bubble = row.find('.bubble');
+                let messageType = Number(event.sender_id) === Number(authUserId) ? 'In' : 'Out';
 
-            //     if (!bubble.length) return;
+                console.log(messageType);
 
-            //     let meta = bubble.find('.meta').detach();
+                let edithtml = {
+                    cls: 'bubble',
+                    html: `
+            ${event.message}
+            <span class="meta">
 
-            //     bubble.empty().append(
-            //         document.createTextNode(event.message)
-            //     );
+                ${time}
+                 <span class="edited-label">edited</span>
+                 ${oldTicks}
 
-            //     bubble.append(meta);
+            </span>
+        `
+                };
 
-            //     row.attr('data-edited', '1');
+                message.find('.bubble').replaceWith(`
+        <div class="${edithtml.cls}">
+            ${edithtml.html}
+        </div>
+    `);
 
-            //     if (!meta.find('.edited-label').length) {
-            //         $('<span>', {
-            //             class: 'edited-label',
-            //             text: 'edited · '
-            //         }).insertBefore(meta.contents().first());
-            //     }
 
-            // });
 
+            });
 
             // ------------------------------------
             // 5. Online / Offline presence channel
@@ -3321,6 +3323,11 @@
                 let conversation = $('.chat-pane.active').attr('data-conversation-id');
                 let receiver = $('.chat-pane.active').attr('data-user-id');
                 let message = $('#msgInput').val().trim();
+
+
+                if ($('#replyBar').length > 0) {
+                    $('#replyBar').removeClass('show');
+                }
                 if (message) {
                     savedraft(conversation, receiver, message);
                 }
@@ -3531,12 +3538,12 @@
 
                             // Edited label
                             let ticks = '';
-                            if (messageType === 'out') {
 
-                                if (Number(message.is_edited) === 1 || message.is_edited === true) {
-                                    ticks += '<span class="edited-label">edited · </span>';
-                                }
+
+                            if (Number(message.is_edited) === 1 || message.is_edited === true) {
+                                ticks += '<span class="edited-label">edited</span>';
                             }
+
 
                             // Read receipts
                             if (messageType === 'out') {
@@ -4886,7 +4893,7 @@
 
                     },
                     success: function(response) {
-                        loadChat(response.conversation_id, response.receiver_id);
+                        //loadChat(response.conversation_id, response.receiver_id);
 
                         toast('Message deleted for everyone');
                     }

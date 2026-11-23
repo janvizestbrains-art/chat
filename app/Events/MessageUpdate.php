@@ -40,8 +40,9 @@ class MessageUpdate implements ShouldBroadcastNow
       public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('users.' . $this->receiver_id),
+
             new PrivateChannel('users.' . $this->sender_id),
+            new PrivateChannel('users.'.$this->receiver_id),
         ];
     }
        public function broadcastAs(): string
