@@ -24,11 +24,10 @@
                       <span>Chat
 
                       </span>
-                      @if ($messagecount > 0)
-                          <span class="count" id="unreadCount">
-                              {{ $messagecount }}
-                          </span>
-                      @endif
+
+                      <span class="count" id="unreadCount">
+                          {{ $messagecount }}
+                      </span>
 
                   </a>
               </li>

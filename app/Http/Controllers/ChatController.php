@@ -30,6 +30,16 @@ use Illuminate\Support\Facades\Storage;
 
 class ChatController extends Controller
 {
+
+    public function unreadMessages(int $receiver_id)
+    {
+            $unread_count=Message::where("receiver_id",$receiver_id)
+            ->where("is_read",false)
+            ->where("delete_for_everyone",false)
+            ->count();
+            return $unread_count;
+    }
+
     public function index()
     {
 
@@ -131,17 +141,18 @@ class ChatController extends Controller
                 );
             }
         }
-        $unread_count = Message::where("conversation_id", $conversation->id)->where("receiver_id", $request->reciver_id)->where("is_read", false)->count();
-        //dd($unread_count);
-
-        $unread_message=Message::where("receiver_id",$request->reciver_id)
-        ->where("is_read",false)
+        $unread_count = Message::where("conversation_id", $conversation->id)
+        ->where("receiver_id", $message->receiver_id)
+        ->where("is_read", false)
         ->where("delete_for_everyone",false)
         ->count();
+        //dd($unread_count);
+
+
 
         UnreadMessage::dispatch(
-            $request->reciver_id,
-            $unread_message,
+          $message->receiver_id,
+           $this->unreadMessages($message->receiver_id),
         );
 
 
@@ -242,9 +253,15 @@ class ChatController extends Controller
                     'is_read' => true,
                     'read_at' => now(),
                 ]);
+
+
             MessageRead::dispatch(
                 $request->conversationId,
                 $request->receiverId,
+            );
+            UnreadMessage::dispatch(
+                auth::id(),
+                $this->unreadMessages(auth::id()),
             );
         }
 
@@ -294,7 +311,7 @@ class ChatController extends Controller
 
             $user->unread_messages_count = Message::where('sender_id', $user->id)
                 ->where('receiver_id', $authId)
-                ->where('is_read', 0)
+                ->where('is_read', false)
                 ->where('clear_for_receiver', false)
                 ->where('delete_for_everyone', false)
                 ->count();
@@ -324,9 +341,15 @@ class ChatController extends Controller
             'read_at' => now(),
         ]);
 
+
+
         MessageRead::dispatch(
             $request->conversation_id,
             $request->sender_id
+        );
+        UnreadMessage::dispatch(
+       auth::id(),
+        $this->unreadMessages(auth::id()),
         );
         $messages = $messages->get();
 
@@ -392,6 +415,7 @@ class ChatController extends Controller
     public function messageDeleteForEveryone(Request $request)
     {
         $message = Message::where("id", $request->messageId)->first();
+
         Message::where("id", $request->messageId)->update([
             "delete_for_everyone" => true
 
@@ -408,10 +432,27 @@ class ChatController extends Controller
             })
             ->latest()->first();
 
+
         MessageDeleteEveryone::dispatch(
             $request->messageId,
             auth::id(),
             $message->receiver_id,
+        );
+
+         UnreadMessage::dispatch(
+            $message->receiver_id,
+            $this->unreadMessages($message->receiver_id),
+        );
+        $unread_count=Message::where("conversation_id",$message->conversation_id)
+        ->where("receiver_id",$message->receiver_id)
+        ->where("is_read",false)
+        ->where("delete_for_everyone",false)
+        ->count();
+        MessageCount::dispatch(
+            $message->conversation_id,
+            $message->receiver_id,
+            $unread_count,
+
         );
 
         MessageLatest::dispatch(

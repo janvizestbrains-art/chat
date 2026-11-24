@@ -8,6 +8,83 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        /* ===== Star / Pin classes (on .msg) ===== */
+        /* ===== Star / Pin (pure CSS, driven by .starred / .pinned on .msg) ===== */
+        /* outline around the bubble */
+        .msg.starred .bubble {
+            box-shadow: 0 0 0 1px rgba(245, 158, 11, .6), 0 1px 1px rgba(0, 0, 0, .13);
+        }
+
+        .msg.pinned .bubble {
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, .6), 0 1px 1px rgba(0, 0, 0, .13);
+        }
+
+        .msg.starred.pinned .bubble {
+            box-shadow: 0 0 0 1px rgba(245, 158, 11, .6),
+                0 0 0 3px rgba(37, 99, 235, .25),
+                0 1px 1px rgba(0, 0, 0, .13);
+        }
+
+        /* STAR icon (top-right corner of the bubble) */
+        .msg.starred .bubble::after {
+            content: "\f005";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: -8px;
+            right: -6px;
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            background: #f59e0b;
+            color: #fff;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+            z-index: 2;
+        }
+
+        /* PIN icon (same corner; moves down when the message is also starred) */
+        .msg.pinned:not(.first) .bubble::before {
+            content: "\f08d";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: -8px;
+            right: -6px;
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+            z-index: 2;
+        }
+
+        .msg.starred.pinned:not(.first) .bubble::before {
+            top: 13px;
+        }
+
+        /* the old JS-created badges would now be duplicates, so hide them */
+        .bubble .flag-badge {
+            display: none;
+        }
+
+        /* no icons on deleted messages */
+        .msg.deleted .bubble::before,
+        .msg.deleted .bubble::after,
+        .msg[data-deleted="1"] .bubble::before,
+        .msg[data-deleted="1"] .bubble::after {
+            display: none !important;
+        }
+
+        /* ===== Star / Pin classes (on .msg) ===== */
         .typing-row {
             display: flex;
             margin: 6px 0 4px;
@@ -2612,6 +2689,7 @@
                     // Mark incoming message as read
                     MessageRead(event.conversation_id, event.sender_id);
 
+
                     body.scrollTop(body[0].scrollHeight);
 
                 } else {
@@ -2668,7 +2746,7 @@
                     body.find('.typing-row').remove();
                 }
 
-                body.scrollTop(body[0].scrollHeight);
+                //  body.scrollTop(body[0].scrollHeight);
 
             });
 
@@ -2692,13 +2770,14 @@
 
                 let badge = contact.find('.unread');
 
-                if (pane.length && pane.hasClass('active')) {
-                    badge.hide();
-                    return;
-                }
+                // If conversation is active, hide unread count
 
+
+                // Update unread count
                 badge.text(event.count);
 
+
+                // Hide if count is zero, otherwise display
                 if (Number(event.count) > 0) {
                     badge.show();
                 } else {
@@ -2866,7 +2945,7 @@
                     // Mark incoming message as read
                     MessageRead(event.conversation_id, event.sender_id);
 
-                    body.scrollTop(body[0].scrollHeight);
+                    //ody.scrollTop(body[0].scrollHeight);
 
                 } else {
                     console.log('Message received. Chat is not open.');
@@ -2924,13 +3003,15 @@
             });
 
 
-
             channel.listen('.unread.messages', function(event) {
+                console.log("Call event", event);
 
-                console.log("unread count", event.unread_count);
+
+
+                $('#unreadCount').text(event.unread_count);
+
 
             });
-
 
 
             // ------------------------------------
@@ -3375,21 +3456,39 @@
             });
 
 
-            $(document).on('click', '.unpin', function() {
-                let messageId = $(this).closest('.pinned-bar.show').attr('data-message-id');
+
+
+            $(document).on('click', '.unpin', function(e) {
+                e.preventDefault();
+
+                let button = $(this);
+                let pinBar = button.closest('.pinned-bar');
+                let messageId = pinBar.attr('data-message-id');
+                let pane = pinBar.closest('.chat-pane');
+
+                if (!messageId) return;
+
+                button.prop('disabled', true);
+
                 $.ajax({
                     url: "{{ route('messagePin') }}",
                     type: "POST",
                     data: {
-                        "message_id": messageId,
-                        _token: "{{ csrf_token() }}",
-
+                        message_id: messageId,
+                        _token: "{{ csrf_token() }}"
                     },
-                    success: function(response) {
-                        loadChat(response.conversation_id, response.receiver_id);
+                    success: function() {
+                        pinBar.remove();
+                        pane.find('.msg.pinned').removeClass('pinned').each(function() {
+                            syncBadges(this);
+                        });
+                        toast('Message unpinned');
                     }
-                })
+
+                });
             });
+
+
 
 
             $(document).on('click', '#chatBack', function() {
@@ -3414,9 +3513,7 @@
 
                     success: function(response) {
 
-
                         console.log(response);
-
 
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').remove();
@@ -3426,25 +3523,22 @@
                         let messagePin = response.messagepin;
                         console.log("pin message is", messagePin);
 
-
-
                         let pinchat;
                         if (messagePin !== null && response.data) {
 
                             pinchat = `<div class="pinned-bar show"
-                            data-message-id="${messagePin.message.id}"
-                            >
-                    <i class="fas fa-thumbtack">
-                    </i><div class="txt">
-                    <strong>${messagePin.user.name}: </strong>${messagePin.message.message}</div>
+                    data-message-id="${messagePin.message.id}">
+                    <i class="fas fa-thumbtack"></i>
+                    <div class="txt">
+                        <strong>${messagePin.user.name}: </strong>${messagePin.message.message}
+                    </div>
                     <button type="button" title="Unpin" class="unpin">
-                    <i class="fas fa-xmark"></i>
+                        <i class="fas fa-xmark"></i>
                     </button>
-                    </div>`;
+                </div>`;
                         } else {
                             pinchat = '';
                         }
-
 
                         let html = `
                 <div class="chat-pane active"
@@ -3464,16 +3558,12 @@
                     </div>
                     ${pinchat}
 
-
                     <div class="chat-body"></div>
 
                 </div>
             `;
 
                         chatContent.prepend(html);
-
-
-
 
                         let body = chatContent.find('.chat-body');
 
@@ -3498,12 +3588,7 @@
                             $('#msgInput').val(response.message_draft.draft);
                         }
 
-
-
-
-
                         $.each(messages, function(index, message) {
-
 
                             let messageDate = new Date(message.created_at);
                             let dateKey = messageDate.toLocaleDateString('en-CA');
@@ -3518,22 +3603,16 @@
                                 let displayDate;
 
                                 if (dateKey === today.toLocaleDateString('en-CA')) {
-
                                     displayDate = 'Today';
-
                                 } else if (dateKey === yesterday.toLocaleDateString('en-CA')) {
-
                                     displayDate = 'Yesterday';
-
                                 } else {
-
                                     displayDate = messageDate.toLocaleDateString('en-IN', {
                                         weekday: 'long',
                                         day: 'numeric',
                                         month: 'long',
                                         year: 'numeric'
                                     });
-
                                 }
 
                                 body.append(`
@@ -3556,23 +3635,18 @@
                             // Edited label
                             let ticks = '';
 
-
                             if (Number(message.is_edited) === 1 || message.is_edited === true) {
                                 ticks += '<span class="edited-label">edited</span>';
                             }
 
-
                             // Read receipts
                             if (messageType === 'out') {
-
                                 ticks += message.is_read ?
                                     '<span class="message-status read-tick"><i class="fas fa-check-double"></i></span>' :
                                     '<span class="message-status single-tick"><i class="fas fa-check"></i></span>';
-
                             }
 
                             // Render message using existing ChatMedia
-
                             let rendered;
 
                             if (Number(message.delete_for_everyone) === 1) {
@@ -3586,95 +3660,79 @@
                                 };
 
                             } else {
-
                                 rendered = ChatMedia.render(message, time + ' ' + ticks);
-
-
                             }
+
                             if (message.reply_message_id) {
                                 rendered = {
                                     cls: 'bubble',
                                     html: `
-                                    <div class="reply-message">
-                                        <div class="reply-message-line"></div>
-                                        <div class="reply-message-content">
-                                            <strong class="reply-sender">${message.reply_message.sender.name}</strong>
-                                            <span class='reply-text'>${message.reply_message.message}</span>
-                                            </div>
-                                            </div>
-                                            <div class="message-content">
-                                                ${message.message}
-                                                  <span class="meta">${time} ${ticks}</span>
-                                                </div>
-
-                                    `
-                                }
+                            <div class="reply-message">
+                                <div class="reply-message-line"></div>
+                                <div class="reply-message-content">
+                                    <strong class="reply-sender">${message.reply_message.sender.name}</strong>
+                                    <span class='reply-text'>${message.reply_message.message}</span>
+                                </div>
+                            </div>
+                            <div class="message-content">
+                                ${message.message}
+                                <span class="meta">${time} ${ticks}</span>
+                            </div>
+                        `
+                                };
                             }
 
-
-
+                            // Reactions
                             let reactionHtml = '<div class="message-reactions">';
 
                             if (message.reactions && message.reactions.length > 0) {
                                 $.each(message.reactions, function(index, reaction) {
                                     let mine = Number(reaction.user_id) === myId;
                                     reactionHtml += `<span class="reaction-item ${mine ? 'mine' : ''}"
-                                        data-emo="${reaction.reaction}"
-                                        ${mine ? 'title="Click to remove"' : ''}>${reaction.reaction}</span>`;
+                            data-emo="${reaction.reaction}"
+                            ${mine ? 'title="Click to remove"' : ''}>${reaction.reaction}</span>`;
                                 });
                             }
 
                             reactionHtml += '</div>';
 
-
-
-                            let addedMessage = body.find(
-                                '.msg[data-message-id="' + message.id + '"]'
-                            );
-
-                            let isStarred = message.messagestar &&
+                            // Star / Pin state -> CSS classes
+                            let isStarred = !!message.messagestar &&
                                 Number(message.messagestar.user_id) === Number(myId);
 
-                            let isPinned = message.messagepin && Number(message.messagepin
-                                .user_id) === Number(myId);
+                            let isPinned = !!message.messagepin &&
+                                Number(message.messagepin.user_id) === Number(myId);
 
-
+                            let msgClass = 'msg ' + messageType +
+                                (isStarred ? ' starred' : '') +
+                                (isPinned ? ' pinned' : '');
 
                             let messageHtml = `
-    <div class="msg ${messageType} ${isStarred ? 'starred' : ''}   ${isPinned ?'pinned':''}"
-        data-message-id="${message.id}">
+                    <div class="${msgClass}"
+                        data-message-id="${message.id}">
 
-        <div class="${rendered.cls}">
-            ${rendered.html}
-        </div>
+                        <div class="${rendered.cls}">
+                            ${rendered.html}
+                        </div>
 
-        ${reactionHtml}
+                        ${reactionHtml}
 
-    </div>
-`;
+                    </div>
+                `;
 
                             body.append(messageHtml);
-
-                            let imgWrap = body.find('.msg[data-message-id="' + message.id +
-                                '"] .img-wrap');
-
-
 
                             let row = body.find(`.msg[data-message-id="${message.id}"]`)[0];
 
                             syncBadges(row);
 
-
-
                         });
 
                         // Image loading
                         body.find('.img-wrap img').each(function() {
-
                             this.addEventListener('load', function() {
                                 scrollBottom(body[0], false);
                             });
-
                         });
 
                         // Scroll to bottom
@@ -3683,9 +3741,7 @@
                     },
 
                     error: function(xhr) {
-
                         console.log(xhr.responseJSON || xhr.responseText);
-
                     }
                 });
             }
@@ -4532,7 +4588,8 @@
                     success: function(response) {
 
 
-                        loadChat(response.conversation_id, response.receiver_id);
+                        $(row).toggleClass('starred');
+                        syncBadges(row);
 
 
                     }
@@ -4540,38 +4597,52 @@
 
             }
 
+
             function togglePin(row) {
 
-
-                let message = $(row).attr('data-message-id');
-
+                let $row = $(row);
+                let message = $row.attr('data-message-id');
+                let wasPinned = $row.hasClass('pinned');
 
                 $.ajax({
-
                     url: "{{ route('messagePin') }}",
                     type: "POST",
                     data: {
                         message_id: message,
-                        _toekn: "{{ csrf_token() }}",
+                        _token: "{{ csrf_token() }}",
                     },
-                    success: function(response) {
-                        row.classList.toggle('pinned');
-                        loadChat(response.conversation_id, response.receiver_id);
+                    success: function() {
+
+                        let pane = $row.closest('.chat-pane');
+
+
+                        pane.find('.pinned-bar').remove();
+                        pane.find('.msg.pinned').removeClass('pinned').each(function() {
+                            syncBadges(this);
+                        });
+
+                        if (!wasPinned) {
+                            $row.addClass('pinned');
+
+                            let pinhtml = `
+                    <div class="pinned-bar show" data-message-id="${message}">
+                        <i class="fas fa-thumbtack"></i>
+                        <div class="txt">
+                            <strong>{{ auth::user()->name }}: </strong>${escapeHtml(messageText(row))}
+                        </div>
+                        <button type="button" title="Unpin" class="unpin">
+                            <i class="fas fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+
+                            pane.find('.chat-body').before(pinhtml);
+                        }
+
+                        syncBadges(row);
                     }
 
                 });
-                // var pane = row.closest('.chat-pane');
-                // if (!pane) return;
-                // var willPin = !row.classList.contains('pinned');
-
-                // pane.querySelectorAll('.msg.pinned').forEach(function(r) {
-                //     r.classList.remove('pinned');
-                //     syncBadges(r);
-                // });
-                // if (willPin) row.classList.add('pinned');
-                // syncBadges(row);
-                // updatePinnedBar(pane);
-                // toast(willPin ? 'Message pinned' : 'Message unpinned');
             }
 
             function updatePinnedBar(pane) {
