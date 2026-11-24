@@ -24,6 +24,16 @@ class GuestController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
+        $employee=User::with([
+            "employee"
+        ])->where("email",$request->email)
+        ->first();
+     if ($employee->employee->employment_status != "active") {
+    return redirect()->back()->with(
+        "error",
+        "Your Account is {$employee->employee->employment_status}. You cannot login."
+    );
+}
 
         if (Auth::attempt($credentials)) {
 

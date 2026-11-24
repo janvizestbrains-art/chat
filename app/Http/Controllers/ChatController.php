@@ -33,11 +33,11 @@ class ChatController extends Controller
 
     public function unreadMessages(int $receiver_id)
     {
-            $unread_count=Message::where("receiver_id",$receiver_id)
-            ->where("is_read",false)
-            ->where("delete_for_everyone",false)
+        $unread_count = Message::where("receiver_id", $receiver_id)
+            ->where("is_read", false)
+            ->where("delete_for_everyone", false)
             ->count();
-            return $unread_count;
+        return $unread_count;
     }
 
     public function index()
@@ -112,11 +112,10 @@ class ChatController extends Controller
             ]);
         }
 
-        $message_draft=MessageDraft::where("conversation_id",$request->conversation_id)->where("user_id",auth::id())->first();
-        if($message_draft)
-            {
-                    $message_draft->delete();
-            }
+        $message_draft = MessageDraft::where("conversation_id", $request->conversation_id)->where("user_id", auth::id())->first();
+        if ($message_draft) {
+            $message_draft->delete();
+        }
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => Auth::id(),
@@ -142,17 +141,17 @@ class ChatController extends Controller
             }
         }
         $unread_count = Message::where("conversation_id", $conversation->id)
-        ->where("receiver_id", $message->receiver_id)
-        ->where("is_read", false)
-        ->where("delete_for_everyone",false)
-        ->count();
+            ->where("receiver_id", $message->receiver_id)
+            ->where("is_read", false)
+            ->where("delete_for_everyone", false)
+            ->count();
         //dd($unread_count);
 
 
 
         UnreadMessage::dispatch(
-          $message->receiver_id,
-           $this->unreadMessages($message->receiver_id),
+            $message->receiver_id,
+            $this->unreadMessages($message->receiver_id),
         );
 
 
@@ -195,13 +194,13 @@ class ChatController extends Controller
     public function loadChat(Request $request)
     {
 
-        $messagePin=MessagePin::with([
+        $messagePin = MessagePin::with([
             "message",
             "user"
         ])
-        ->where("conversation_id",$request->conversationId)->where("user_id",auth::id())->first();
+            ->where("conversation_id", $request->conversationId)->where("user_id", auth::id())->first();
 
-        $message_draft=MessageDraft::where("conversation_id",$request->conversationId)->where("user_id",auth::id())->first();
+        $message_draft = MessageDraft::where("conversation_id", $request->conversationId)->where("user_id", auth::id())->first();
 
         $chat = ConversationParticipant::with([
             'user.employee',
@@ -269,6 +268,9 @@ class ChatController extends Controller
             ->where('id', $request->receiverId)
             ->first();
 
+
+
+
         $user->employee->append([
             'full_name',
             'profile_url',
@@ -280,8 +282,9 @@ class ChatController extends Controller
                     'status' => true,
                     'data' => $chat,
                     'user' => $user,
-                    'messagepin' =>$messagePin,
-                    'message_draft' =>$message_draft,
+                    'messagepin' => $messagePin,
+                    'message_draft' => $message_draft,
+
                 ]
             );
         } else {
@@ -348,8 +351,8 @@ class ChatController extends Controller
             $request->sender_id
         );
         UnreadMessage::dispatch(
-       auth::id(),
-        $this->unreadMessages(auth::id()),
+            auth::id(),
+            $this->unreadMessages(auth::id()),
         );
         $messages = $messages->get();
 
@@ -439,15 +442,15 @@ class ChatController extends Controller
             $message->receiver_id,
         );
 
-         UnreadMessage::dispatch(
+        UnreadMessage::dispatch(
             $message->receiver_id,
             $this->unreadMessages($message->receiver_id),
         );
-        $unread_count=Message::where("conversation_id",$message->conversation_id)
-        ->where("receiver_id",$message->receiver_id)
-        ->where("is_read",false)
-        ->where("delete_for_everyone",false)
-        ->count();
+        $unread_count = Message::where("conversation_id", $message->conversation_id)
+            ->where("receiver_id", $message->receiver_id)
+            ->where("is_read", false)
+            ->where("delete_for_everyone", false)
+            ->count();
         MessageCount::dispatch(
             $message->conversation_id,
             $message->receiver_id,
@@ -527,245 +530,223 @@ class ChatController extends Controller
         );
 
 
-     $message = Message::with('reactions')->where("id",$message->id)->first();
-       $reactions=[];
-       foreach($message->reactions as $reaction)
-        {
-            $reactions[]=
-            [
-            'user_id' =>$reaction->user_id,
-            'reaction'=>$reaction->reaction,
-            ];
+        $message = Message::with('reactions')->where("id", $message->id)->first();
+        $reactions = [];
+        foreach ($message->reactions as $reaction) {
+            $reactions[] =
+                [
+                    'user_id' => $reaction->user_id,
+                    'reaction' => $reaction->reaction,
+                ];
         }
 
         return response()->json([
             "success" => true,
-            'message_id' =>$message->id,
-            "reactions" =>$reactions,
+            'message_id' => $message->id,
+            "reactions" => $reactions,
         ]);
     }
 
     public function messageRemoveReact(Request $request)
     {
-        $message=MessageReaction::where("message_id",$request->messageId)->where("user_id",auth::id())->first();
-        if($message)
-        {
-                $message->delete();
-
+        $message = MessageReaction::where("message_id", $request->messageId)->where("user_id", auth::id())->first();
+        if ($message) {
+            $message->delete();
         }
-    $message = Message::findOrFail($request->messageId);
+        $message = Message::findOrFail($request->messageId);
 
-    $receiverId = $message->sender_id == auth::id()
-        ? $message->receiver_id
-        : $message->sender_id;
+        $receiverId = $message->sender_id == auth::id()
+            ? $message->receiver_id
+            : $message->sender_id;
 
-    MessageReact::dispatch(
-        $message->id,
-     auth::id(),
-        $receiverId,
-        ''
-    );
+        MessageReact::dispatch(
+            $message->id,
+            auth::id(),
+            $receiverId,
+            ''
+        );
 
 
-     $message = Message::with('reactions')->where("id",$message->id)->first();
-       $reactions=[];
-       foreach($message->reactions as $reaction)
-        {
-            $reactions[]=
-            [
-            'user_id' =>$reaction->user_id,
-            'reaction'=>$reaction->reaction,
-            ];
+        $message = Message::with('reactions')->where("id", $message->id)->first();
+        $reactions = [];
+        foreach ($message->reactions as $reaction) {
+            $reactions[] =
+                [
+                    'user_id' => $reaction->user_id,
+                    'reaction' => $reaction->reaction,
+                ];
         }
 
 
         return response()->json([
-            "success"=>true,
-           "message_id"=>$message->id,
-           "reactions"=>$reactions,
+            "success" => true,
+            "message_id" => $message->id,
+            "reactions" => $reactions,
         ]);
     }
 
-  public function messageStar(Request $request)
+    public function messageStar(Request $request)
     {
-        $message=MessageStar::where("message_id",$request->message_id)->where("user_id",auth::id())->first();
-        if($message)
-            {
-                $message->delete();
-
-            }
-        else
-        {
+        $message = MessageStar::where("message_id", $request->message_id)->where("user_id", auth::id())->first();
+        if ($message) {
+            $message->delete();
+        } else {
             MessageStar::create([
-                "message_id"=>$request->message_id,
-                "user_id" =>auth::id(),
+                "message_id" => $request->message_id,
+                "user_id" => auth::id(),
             ]);
-
         }
 
-         $message = Message::findOrFail($request->message_id);
+        $message = Message::findOrFail($request->message_id);
 
-    $receiverId = $message->sender_id == auth::id()
-        ? $message->receiver_id
-        : $message->sender_id;
+        $receiverId = $message->sender_id == auth::id()
+            ? $message->receiver_id
+            : $message->sender_id;
 
         return response()->json([
-            "success" =>true,
-            "conversation_id" =>$message->conversation_id,
-            "receiver_id" =>$receiverId,
+            "success" => true,
+            "conversation_id" => $message->conversation_id,
+            "receiver_id" => $receiverId,
         ]);
     }
 
     public function messagePin(Request $request)
     {
-         $conversation = Message::findOrFail($request->message_id);
-        $message=MessagePin::where("conversation_id",$conversation->conversation_id)->where("message_id",$conversation->id)->where("user_id",auth::id())->first();
+        $conversation = Message::findOrFail($request->message_id);
+        $message = MessagePin::where("conversation_id", $conversation->conversation_id)->where("message_id", $conversation->id)->where("user_id", auth::id())->first();
 
 
-        if($message)
-        {
+        if ($message) {
             $message->delete();
-        }
-        else
-            {
+        } else {
 
-                $conversation_data=MessagePin::where("conversation_id",$conversation->conversation_id)->where("user_id",auth::id())->first();
-                if($conversation_data)
-                    {
-                        $conversation_data->delete();
-                    }
-
-                //dd($conversation);
-                MessagePin::create([
-                    "conversation_id" =>$conversation->conversation_id,
-                    "message_id"=>$request->message_id,
-                    "user_id"=>auth::id(),
-                ]);
-
+            $conversation_data = MessagePin::where("conversation_id", $conversation->conversation_id)->where("user_id", auth::id())->first();
+            if ($conversation_data) {
+                $conversation_data->delete();
             }
-             $receiverId = $conversation->sender_id == auth::id()
-        ? $conversation->receiver_id
-        : $conversation->sender_id;
-            return response()->json([
-                "success"=>true,
-                "conversation_id"=>$conversation->conversation_id,
-                "receiver_id" =>$receiverId,
+
+            //dd($conversation);
+            MessagePin::create([
+                "conversation_id" => $conversation->conversation_id,
+                "message_id" => $request->message_id,
+                "user_id" => auth::id(),
             ]);
+        }
+        $receiverId = $conversation->sender_id == auth::id()
+            ? $conversation->receiver_id
+            : $conversation->sender_id;
+        return response()->json([
+            "success" => true,
+            "conversation_id" => $conversation->conversation_id,
+            "receiver_id" => $receiverId,
+        ]);
     }
 
     public function getUsers()
     {
-       $users=User::with(['employee'])->whereNot("id",auth::id())
-        ->whereHas('employee')
-        ->get();
+        $users = User::with(['employee'])->whereNot("id", auth::id())
+            ->whereHas('employee')
+            ->get();
         return response()->json([
-            "success"=>true,
-            "users"=>$users,
+            "success" => true,
+            "users" => $users,
         ]);
     }
 
 
     public function messageForward(Request $request)
     {
-        foreach($request->users as $user)
-        {
-        $conversation=ConversationParticipant::wherein("user_id",[auth::id(),$user])
-        ->groupBy("conversation_id")
-        ->havingRaw('count(distinct user_id)=2')
-        ->value('conversation_id');
+        foreach ($request->users as $user) {
+            $conversation = ConversationParticipant::wherein("user_id", [auth::id(), $user])
+                ->groupBy("conversation_id")
+                ->havingRaw('count(distinct user_id)=2')
+                ->value('conversation_id');
 
 
-        $message=Message::where("id",$request->message_id)->first();
-        $message_attach=MessageAttachment::where("message_id",$message->id)->first();
+            $message = Message::where("id", $request->message_id)->first();
+            $message_attach = MessageAttachment::where("message_id", $message->id)->first();
 
-       if($conversation)
-        {
+            if ($conversation) {
 
-           $message_data= Message::create([
-                "conversation_id" =>$conversation,
-                "sender_id"=>auth::id(),
-                "receiver_id" =>$user,
-                "message" =>$message->message,
+                $message_data = Message::create([
+                    "conversation_id" => $conversation,
+                    "sender_id" => auth::id(),
+                    "receiver_id" => $user,
+                    "message" => $message->message,
 
-            ]);
-            if($message_attach)
-                {
-                    $message_attach_data=MessageAttachment::create([
-                        "message_id"=>$message_data->id,
-                        "file_type"=>$message_attach->file_type,
-                        "file_path" =>$message_attach->file_path,
+                ]);
+                if ($message_attach) {
+                    $message_attach_data = MessageAttachment::create([
+                        "message_id" => $message_data->id,
+                        "file_type" => $message_attach->file_type,
+                        "file_path" => $message_attach->file_path,
 
                     ]);
                 }
-
-        }
-        else
-            {
-                $conversation_data=Conversation::create(
+            } else {
+                $conversation_data = Conversation::create(
                     [
-                        "type"=>"Private",
+                        "type" => "Private",
                     ]
                 );
-                    ConversationParticipant::create([
-                        "conversation_id"=>$conversation_data->id,
-                        "user_id"=>auth::id(),
+                ConversationParticipant::create([
+                    "conversation_id" => $conversation_data->id,
+                    "user_id" => auth::id(),
+                ]);
+                ConversationParticipant::create([
+                    "conversation_id" => $conversation_data->id,
+                    "user_id" => $user,
+                ]);
+                $message_data = Message::create([
+                    "conversation_id" => $conversation_data->id,
+                    "sender_id" => auth::id(),
+                    "receiver_id" => $user,
+                    "message" => $message->message,
+                ]);
+                if ($message_attach) {
+                    $message_attach_data = MessageAttachment::create([
+                        "message_id" => $message_data->message_id,
+                        "file_type" => $message_attach->file_type,
+                        "file_path" => $message_attach->file_path,
                     ]);
-                    ConversationParticipant::create([
-                        "conversation_id"=>$conversation_data->id,
-                        "user_id"=>$user,
-                    ]);
-                    $message_data=Message::create([
-                        "conversation_id"=>$conversation_data->id,
-                        "sender_id"=>auth::id(),
-                        "receiver_id"=>$user,
-                        "message"=>$message->message,
-                    ]);
-                    if($message_attach)
-                        {
-                            $message_attach_data=MessageAttachment::create([
-                                "message_id" =>$message_data->message_id,
-                                "file_type" =>$message_attach->file_type,
-                                "file_path" =>$message_attach->file_path,
-                            ]);
-                        }
+                }
             }
 
 
-           $unread_count = Message::where("conversation_id", $message_data->conversation_id)->where("receiver_id", $message_data->receiver_id)->where("is_read", false)->count();
+            $unread_count = Message::where("conversation_id", $message_data->conversation_id)->where("receiver_id", $message_data->receiver_id)->where("is_read", false)->count();
 
 
-              MessageCount::dispatch(
-            $message_data->conversation_id,
-            $message_data->receiver_id,
-            $unread_count
-        );
+            MessageCount::dispatch(
+                $message_data->conversation_id,
+                $message_data->receiver_id,
+                $unread_count
+            );
 
-        MessageLatest::dispatch(
-            $message_data->conversation_id,
-           $message_data->receiver_id,
-            $message_data->message,
-        );
+            MessageLatest::dispatch(
+                $message_data->conversation_id,
+                $message_data->receiver_id,
+                $message_data->message,
+            );
 
 
-        MessageSent::dispatch(
-            $message_data->id,
-            $message_data->conversation_id,
-            Auth::id(),
-            $message_data->receiver_id,
-            $message_data->message,
-            0,
-            $message_data->created_at,
-            $message_attach_data->file_type ?? null,
-            $message_attach_data->file_path ?? null,
+            MessageSent::dispatch(
+                $message_data->id,
+                $message_data->conversation_id,
+                Auth::id(),
+                $message_data->receiver_id,
+                $message_data->message,
+                0,
+                $message_data->created_at,
+                $message_attach_data->file_type ?? null,
+                $message_attach_data->file_path ?? null,
 
-        );
-
+            );
         }
 
 
         return response()->json(
             [
-                "success"=>true,
+                "success" => true,
 
 
             ]
@@ -773,27 +754,25 @@ class ChatController extends Controller
     }
 
 
-        public function messageReply(Request $request)
-        {
-                $message=Message::where("id",$request->message_id)->first();
-                 $receiverId = $message->sender_id == auth::id()
+    public function messageReply(Request $request)
+    {
+        $message = Message::where("id", $request->message_id)->first();
+        $receiverId = $message->sender_id == auth::id()
             ? $message->receiver_id
             : $message->sender_id;
-                if($message)
-                    {
-                       $message_data=Message::create([
-                            "conversation_id"=>$message->conversation_id,
-                            "sender_id"=>auth::id(),
-                            "receiver_id" =>$receiverId,
-                            "message"=>$request->text,
-                            "reply_message_id" =>$message->id,
+        if ($message) {
+            $message_data = Message::create([
+                "conversation_id" => $message->conversation_id,
+                "sender_id" => auth::id(),
+                "receiver_id" => $receiverId,
+                "message" => $request->text,
+                "reply_message_id" => $message->id,
 
-                        ]);
-
-                    }
+            ]);
+        }
 
 
-     $unread_count = Message::where("conversation_id", $message_data->conversation_id)->where("receiver_id", $message_data->receiver_id)->where("is_read", false)->count();
+        $unread_count = Message::where("conversation_id", $message_data->conversation_id)->where("receiver_id", $message_data->receiver_id)->where("is_read", false)->count();
         //dd($unread_count);
 
 
@@ -806,71 +785,68 @@ class ChatController extends Controller
         MessageLatest::dispatch(
             $message_data->conversation_id,
             $message_data->receiver_id,
-            $message_data->message ,
+            $message_data->message,
         );
 
 
 
 
 
-            MessageReply::dispatch(
-                $message_data->id,
-                $message_data->conversation_id,
-                $message_data->sender_id,
-                $message_data->receiver_id,
-                $message_data->replyMessage->message,
-                0,
-                $message_data->created_at,
-                $message_data->replyMessage->sender->name,
-                $message_data->message,
+        MessageReply::dispatch(
+            $message_data->id,
+            $message_data->conversation_id,
+            $message_data->sender_id,
+            $message_data->receiver_id,
+            $message_data->replyMessage->message,
+            0,
+            $message_data->created_at,
+            $message_data->replyMessage->sender->name,
+            $message_data->message,
 
-            );
-
-
-                    return response()->json([
-                        "success" =>true,
-                        "conversation_id" =>$message->conversation_id,
-                        "receiver_id" =>$receiverId,
-                    ]);
-        }
-
-        public function userTyping(Request $request)
-        {
+        );
 
 
-             $istyping = $request->boolean('istyping');
+        return response()->json([
+            "success" => true,
+            "conversation_id" => $message->conversation_id,
+            "receiver_id" => $receiverId,
+        ]);
+    }
 
-                UserTyping::dispatch(
-                    $request->conversation_id,
+    public function userTyping(Request $request)
+    {
 
-                    $request->receiver_id,
-                  $istyping,
-                );
-                return response()->json([
-                    "success" =>true,
-                ]);
-        }
+
+        $istyping = $request->boolean('istyping');
+
+        UserTyping::dispatch(
+            $request->conversation_id,
+
+            $request->receiver_id,
+            $istyping,
+        );
+        return response()->json([
+            "success" => true,
+        ]);
+    }
 
     public function saveMessageDraft(Request $request)
     {
-        $draft=MessageDraft::where("conversation_id",$request->conversation_id)->where("user_id",auth::id())->first();
-        if($draft)
-            {
-                    $updatedraft=MessageDraft::where("conversation_id",$request->conversation_id)->where("user_id",auth::id())
-                    ->update([
-                        "draft" =>$request->draft,
-                    ]);
-            }
-        else
-        {
-                MessageDraft::create([
-                    "conversation_id" =>$request->conversation_id,
-                    "user_id" =>auth::id(),
-                    "draft" =>$request->draft,
+        $draft = MessageDraft::where("conversation_id", $request->conversation_id)->where("user_id", auth::id())->first();
+        if ($draft) {
+            $updatedraft = MessageDraft::where("conversation_id", $request->conversation_id)->where("user_id", auth::id())
+                ->update([
+                    "draft" => $request->draft,
                 ]);
+        } else {
+            MessageDraft::create([
+                "conversation_id" => $request->conversation_id,
+                "user_id" => auth::id(),
+                "draft" => $request->draft,
+            ]);
         }
         return response()->json([
-            "success" =>true,
+            "success" => true,
         ]);
     }
 }

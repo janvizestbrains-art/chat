@@ -8,6 +8,27 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        /* ===== Terminated employee notice ===== */
+        .terminated-notice {
+            flex-shrink: 0;
+            display: flex;
+            /* shown by JS with .css('display', 'flex') */
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 18px;
+            background: #fef2f2;
+            border-top: 1px solid #fecaca;
+            color: #dc2626;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .terminated-notice i {
+            font-size: 16px;
+        }
+
         /* ===== Star / Pin classes (on .msg) ===== */
         /* ===== Star / Pin (pure CSS, driven by .starred / .pinned on .msg) ===== */
         /* outline around the bubble */
@@ -2324,7 +2345,12 @@
                         <div class="track"><i id="uploadFill"></i></div>
                     </div>
 
-                    <form class="chat-footer" id="chatForm" autocomplete="off" style="display: none;">
+                    <div class="terminated-notice" id="terminatedNotice" style="display: none;">
+                        <i class="fas fa-ban"></i>
+                        <span> You can no longer send messages to this chat.</span>
+                    </div>
+
+                    <form class="chat-footer" id="chatForm" autocomplete="off">
                         <button type="button" class="tool" id="emojiBtn" aria-label="Emoji">
                             <i class="far fa-face-smile"></i>
                         </button>
@@ -2339,9 +2365,8 @@
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
-
                     <!-- Image preview screen -->
-                    <div class="preview-screen" id="previewScreen">
+                    <div class="preview-screen" id="previewScreen" style="display: none;">
                         <div class="preview-top">
                             <i class="fas fa-xmark" id="previewClose" title="Close"></i>
                             <span>Send photo</span>
@@ -3317,11 +3342,14 @@
             /* ---------- contacts ---------- */
             function loadContacts() {
 
+
+
                 $.ajax({
                     url: "{{ route('loadContact') }}",
                     type: "GET",
 
                     success: function(response) {
+
 
                         let html = '';
 
@@ -3329,6 +3357,11 @@
 
                             let name = user.employee?.full_name ?? '';
                             let profile = user.employee?.profile_url ?? '';
+
+
+
+
+
 
                             let latestMessage = null;
 
@@ -3339,6 +3372,7 @@
                             html += `
                                 <div class="contact"
                                     data-user-id="${user.id}"
+                                    data-employee-status="${user.employee.employment_status}"
                                     data-conversation-id="${convId}"
                                     data-name="${escapeHtml(name)}">
 
@@ -3413,6 +3447,22 @@
                 let conversation = $('.chat-pane.active').attr('data-conversation-id');
                 let receiver = $('.chat-pane.active').attr('data-user-id');
                 let message = $('#msgInput').val().trim();
+                let employee_status = $('.contact').attr('data-employee-status');
+
+
+
+
+
+                if (employee_status == "active") {
+                    $('#terminatedNotice').hide();
+                    $('#chatForm').show();
+
+                } else {
+
+                    $('#terminatedNotice').show();
+                    $('#chatForm').hide();
+
+                }
 
 
                 if ($('#replyBar').length > 0) {
@@ -3587,6 +3637,17 @@
                         if (response.message_draft) {
                             $('#msgInput').val(response.message_draft.draft);
                         }
+                        if (response.user.employee.employment_status == "active") {
+                            $('#terminatedNotice').hide();
+                            $('#chatForm').show();
+
+                        } else {
+
+                            $('#terminatedNotice').show();
+                            $('#chatForm').hide();
+
+                        }
+
 
                         $.each(messages, function(index, message) {
 
@@ -3671,7 +3732,7 @@
                                 <div class="reply-message-line"></div>
                                 <div class="reply-message-content">
                                     <strong class="reply-sender">${message.reply_message.sender.name}</strong>
-                                    <span class='reply-text'>${message.reply_message.message}</span>
+                                    <span class='reply-text' data-reply-message-id="${message.reply_message.id}">${message.reply_message.delete_for_everyone  || message.reply_message.delete_for_me ? 'This Message was deleted': message.reply_message.message}</span>
                                 </div>
                             </div>
                             <div class="message-content">
@@ -3696,7 +3757,7 @@
 
                             reactionHtml += '</div>';
 
-                            // Star / Pin state -> CSS classes
+
                             let isStarred = !!message.messagestar &&
                                 Number(message.messagestar.user_id) === Number(myId);
 
@@ -3722,9 +3783,14 @@
 
                             body.append(messageHtml);
 
+
                             let row = body.find(`.msg[data-message-id="${message.id}"]`)[0];
 
                             syncBadges(row);
+
+
+
+
 
                         });
 
@@ -4960,6 +5026,9 @@
 
                     },
                     success: function(response) {
+
+                        let reply_message = $(`.reply-text[data-reply-message-id="${messageId}"]`);
+                        reply_message.text("This Message was deleted");
                         row.remove();
                         toast('Message deleted');
                         loadChat(response.conversation_id, response.reciver_id);
@@ -4982,6 +5051,8 @@
                     },
                     success: function(response) {
                         //loadChat(response.conversation_id, response.receiver_id);
+                        let reply_message = $(`.reply-text[data-reply-message-id="${messageId}"]`);
+                        reply_message.text("This Message was deleted");
 
                         toast('Message deleted for everyone');
                     }
