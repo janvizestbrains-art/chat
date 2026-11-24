@@ -295,7 +295,7 @@ class ChatController extends Controller
             ]);
         }
     }
-    public function loadContact()
+    public function loadContact(Request $request)
     {
         $authId = Auth::id();
 
@@ -331,6 +331,7 @@ class ChatController extends Controller
             'status' => true,
             'users' => $users,
         ]);
+
     }
     public function messageRead(Request $request)
     {

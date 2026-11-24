@@ -269,29 +269,6 @@
             margin-right: 3px;
         }
 
-        .online-dot {
-            width: 9px;
-            height: 9px;
-            background-color: #22c55e;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 5px;
-            box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
-        }
-
-        .online-dot[hidden] {
-            display: none;
-        }
-
-        .user-status {
-            font-size: 12px;
-            color: #888;
-        }
-
-        .user-status.is-online {
-            color: #22c55e;
-        }
-
         .message-status.read-tick {
             color: #34b7f1;
         }
@@ -502,30 +479,6 @@
             justify-content: space-between;
         }
 
-        .chat-list-head .new-group-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 0;
-            background: rgba(255, 255, 255, .16);
-            color: #fff;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 8px 14px;
-            border-radius: 999px;
-            cursor: pointer;
-            transition: background .2s ease, transform .15s ease;
-        }
-
-        .chat-list-head .new-group-btn:hover {
-            background: rgba(255, 255, 255, .28);
-            transform: translateY(-1px);
-        }
-
-        .chat-list-head .new-group-btn i {
-            font-size: 13px;
-        }
-
         .chat-search {
             flex-shrink: 0;
             padding: 12px 14px 8px;
@@ -559,34 +512,6 @@
             background: #fff;
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
-        }
-
-        .chat-filters {
-            flex-shrink: 0;
-            display: flex;
-            gap: 8px;
-            padding: 6px 14px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .chat-filters button {
-            border: 0;
-            background: #f1f5f9;
-            color: var(--muted);
-            font-size: 12.5px;
-            font-weight: 600;
-            padding: 6px 16px;
-            border-radius: 20px;
-            transition: all .2s ease;
-        }
-
-        .chat-filters button:hover {
-            background: #e2e8f0;
-        }
-
-        .chat-filters button.active {
-            background: #dbeafe;
-            color: #1d4ed8;
         }
 
         .contacts {
@@ -650,18 +575,6 @@
             position: relative;
             box-shadow: 0 3px 8px rgba(15, 23, 42, .18);
             object-fit: cover;
-        }
-
-        .avatar.online::after {
-            content: "";
-            position: absolute;
-            right: 0;
-            bottom: 1px;
-            width: 12px;
-            height: 12px;
-            background: #22c55e;
-            border: 2px solid #fff;
-            border-radius: 50%;
         }
 
         .contact-info {
@@ -795,15 +708,6 @@
             display: block;
             font-size: 15.5px;
             line-height: 1.25;
-        }
-
-        .chat-head .who small {
-            font-size: 12.5px;
-            color: var(--muted);
-        }
-
-        .chat-head .who small.on {
-            color: #16a34a;
         }
 
         .chat-body {
@@ -1852,34 +1756,9 @@
             background: #fef2f2;
         }
 
-        /* ================= Groups ================= */
+        /* ================= Pick lists ================= */
         .wa-modal .panel-content {
             padding: 0 18px 12px;
-        }
-
-        .wa-input {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 14px;
-            outline: none;
-            color: var(--text);
-            background: #fff;
-        }
-
-        .wa-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
-        }
-
-        .pick-hint {
-            font-size: 11.5px;
-            letter-spacing: .6px;
-            text-transform: uppercase;
-            color: #94a3b8;
-            font-weight: 700;
-            margin: 14px 0 6px;
         }
 
         .pick-list {
@@ -1926,129 +1805,6 @@
             height: 18px;
             accent-color: var(--primary);
             cursor: pointer;
-        }
-
-        .add-part-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            border: 1px dashed #cbd5e1;
-            background: #f8fafc;
-            color: var(--primary);
-            font-size: 13.5px;
-            font-weight: 600;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-
-        .add-part-btn:hover {
-            background: #eff6ff;
-            border-color: var(--primary);
-        }
-
-        .member-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 7px 8px;
-            border-radius: 10px;
-        }
-
-        .member-row:hover {
-            background: #f8fafc;
-        }
-
-        .member-row .avatar {
-            width: 38px;
-            height: 38px;
-            min-width: 38px;
-            font-size: 12.5px;
-        }
-
-        .member-row .m-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .member-row .m-info strong {
-            display: block;
-            font-size: 14px;
-            line-height: 1.3;
-        }
-
-        .member-row .m-info small {
-            font-size: 11.5px;
-            color: var(--muted);
-        }
-
-        .group-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 6px;
-        }
-
-        .group-actions .add-part-btn {
-            margin-bottom: 0;
-        }
-
-        .add-part-btn.danger {
-            color: #dc2626;
-            border-color: #fecaca;
-            background: #fef2f2;
-        }
-
-        .add-part-btn.danger:hover {
-            background: #fee2e2;
-            border-color: #dc2626;
-        }
-
-        .add-part-btn.active {
-            background: #eff6ff;
-            border-color: var(--primary);
-            border-style: solid;
-        }
-
-        .add-part-btn.danger.active {
-            background: #fee2e2;
-            border-color: #dc2626;
-        }
-
-        .admin-tag {
-            font-size: 10.5px;
-            font-weight: 700;
-            background: #dbeafe;
-            color: #1d4ed8;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        .chat-head .who small {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .sys-msg {
-            text-align: center;
-            margin: 12px 0;
-        }
-
-        .sys-msg span {
-            display: inline-block;
-            max-width: 85%;
-            background: #fff;
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.45;
-            padding: 6px 14px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
         }
 
         .wa-toast {
@@ -2262,10 +2018,6 @@
 
                     <div class="chat-list-head">
                         <span>Chats</span>
-                        <button type="button" class="new-group-btn" id="newGroupBtn" title="Create a new group">
-                            <i class="fas fa-users"></i>
-                            <span>New group</span>
-                        </button>
                     </div>
 
                     <div class="chat-search">
@@ -2273,12 +2025,6 @@
                             <i class="fas fa-magnifying-glass"></i>
                             <input type="text" id="searchContact" placeholder="Search chats">
                         </div>
-                    </div>
-
-                    <div class="chat-filters" id="chatFilters">
-                        <button type="button" class="active" data-filter="all">All</button>
-                        <button type="button" data-filter="unread">Unread</button>
-                        <button type="button" data-filter="groups">Groups</button>
                     </div>
 
                     <div class="contacts" id="contacts"></div>
@@ -2350,7 +2096,7 @@
                         <span> You can no longer send messages to this chat.</span>
                     </div>
 
-                    <form class="chat-footer" id="chatForm" autocomplete="off">
+                    <form class="chat-footer" id="chatForm" autocomplete="off" style="display: none;">
                         <button type="button" class="tool" id="emojiBtn" aria-label="Emoji">
                             <i class="far fa-face-smile"></i>
                         </button>
@@ -2388,7 +2134,7 @@
     </main>
 
     <!-- Lightbox -->
-    <div class="lightbox" id="lightbox">
+    <div class="lightbox" id="lightbox" >
         <i class="fas fa-xmark close" id="lightboxClose"></i>
         <img id="lightboxImg" alt="">
         <div class="cap" id="lightboxCap"></div>
@@ -3039,52 +2785,6 @@
             });
 
 
-            // ------------------------------------
-            // 5. Online / Offline presence channel
-            // ------------------------------------
-
-            // window.Echo.join('online')
-
-            //     .here(function(users) {
-
-            //         console.log('Currently online users:', users);
-
-            //         onlineUsers = users.map(user => Number(user.id));
-
-            //         updateAllContactStatuses();
-
-            //     })
-
-            //     .joining(function(user) {
-
-            //         console.log('Joining:', user);
-
-            //         let id = Number(user.id);
-
-            //         if (!onlineUsers.includes(id)) {
-            //             onlineUsers.push(id);
-            //         }
-
-            //         setUserStatus(id, true);
-
-            //     })
-
-            //     .leaving(function(user) {
-
-            //         console.log('Leaving:', user);
-
-            //         let id = Number(user.id);
-
-            //         onlineUsers = onlineUsers.filter(userId => userId !== id);
-
-            //         setUserStatus(id, false);
-
-            //     })
-
-            //     .error(function(error) {
-            //         console.error('Presence error:', error);
-            //     });
-
         });
 
         let typing = false;
@@ -3188,46 +2888,6 @@
 
         }
 
-        // ------------------------------------
-        // Update user online/offline status
-        // ------------------------------------
-
-        function updateAllContactStatuses() {
-
-            $('.contact[data-user-id]').each(function() {
-
-                let userId = Number($(this).attr('data-user-id'));
-
-                setUserStatus(userId, onlineUsers.includes(userId));
-
-            });
-
-        }
-
-
-        function setUserStatus(userId, isOnline) {
-
-            let contact = $('.contact').filter(function() {
-
-                return Number($(this).attr('data-user-id')) === Number(userId);
-
-            });
-
-            if (!contact.length) {
-                console.log('Contact not found:', userId);
-                return;
-            }
-
-            contact.find('.online-dot').toggle(isOnline);
-
-            contact.find('.user-status').contents().filter(function() {
-                return this.nodeType === 3;
-            }).last().replaceWith(isOnline ? ' Online' : ' Offline');
-
-            contact.find('.user-status').toggleClass('is-online', isOnline);
-
-        }
-
         function MessageRead(conversation_id, sender_id) {
             $.ajax({
                 url: "{{ route('messageRead') }}",
@@ -3250,7 +2910,6 @@
             var app = document.getElementById('chatApp');
             var contactsEl = document.getElementById('contacts');
             var searchEl = document.getElementById('searchContact');
-            var filtersEl = document.getElementById('chatFilters');
             var noResult = document.getElementById('noResult');
             var receiverId = null;
             var conversationId = null;
@@ -3273,7 +2932,6 @@
             var lightboxImg = document.getElementById('lightboxImg');
             var lightboxCap = document.getElementById('lightboxCap');
 
-            var filter = 'all';
             var pending = [];
             var pendingIndex = 0;
             var newCount = 0;
@@ -3348,6 +3006,7 @@
                     url: "{{ route('loadContact') }}",
                     type: "GET",
 
+
                     success: function(response) {
 
 
@@ -3376,16 +3035,13 @@
                                     data-conversation-id="${convId}"
                                     data-name="${escapeHtml(name)}">
 
-                                    <img class="avatar online"
+                                    <img class="avatar"
                                         src="${escapeHtml(profile)}"
                                         style="background:#2563eb">
 
                                     <div class="contact-info">
                                         <div class="contact-top">
                                             <strong>${escapeHtml(name)}</strong>
-
-                                            <span class="user-status">Offline</span>
-
                                         </div>
 
                                         <div class="contact-bottom">
@@ -3414,7 +3070,7 @@
             }
 
             $(document).ready(function() {
-                loadContacts();
+                loadContacts("all");
             });
 
 
@@ -3483,8 +3139,6 @@
                 openChat(this);
 
             });
-
-
 
             $(document).on('click', '.reaction-item.mine', function() {
                 let messageId = $(this).closest('.msg').attr('data-message-id');
@@ -3598,7 +3252,7 @@
                     <div class="chat-head">
                         <i class="fas fa-arrow-left back" id="chatBack"></i>
 
-                        <img class="avatar online"
+                        <img class="avatar"
                             src="${escapeHtml(profileUrl)}"
                             style="background:#2563eb">
 
@@ -4158,15 +3812,13 @@
                 }
             });
 
-            /* ---------- search + filters ---------- */
+            /* ---------- search ---------- */
             function applyFilters() {
                 var q = searchEl.value.trim().toLowerCase();
                 var shown = 0;
 
                 contactsEl.querySelectorAll('.contact').forEach(function(c) {
                     var ok = (c.dataset.name || '').toLowerCase().indexOf(q) > -1;
-                    if (filter === 'unread' && !c.querySelector('.unread')) ok = false;
-                    if (filter === 'groups' && !c.dataset.group) ok = false;
                     c.style.display = ok ? '' : 'none';
                     if (ok) shown++;
                 });
@@ -4175,16 +3827,6 @@
             }
 
             searchEl.addEventListener('input', applyFilters);
-
-            filtersEl.addEventListener('click', function(e) {
-                var btn = e.target.closest('button');
-                if (!btn) return;
-                filter = btn.dataset.filter;
-                Array.prototype.forEach.call(filtersEl.children, function(b) {
-                    b.classList.toggle('active', b === btn);
-                });
-                applyFilters();
-            });
 
             /* ============================================================
                WhatsApp-style message & chat actions (front-end only)
@@ -4338,9 +3980,7 @@
                     addMenuItem('fas fa-reply', 'Reply', function() {
                         startReply(row);
                     });
-                    addMenuItem('fas fa-copy', 'Copy', function() {
-                        copyMessage(row);
-                    });
+
                     addMenuItem('fas fa-share', 'Forward', function() {
                         openForward(row);
                     });
@@ -4446,32 +4086,7 @@
 
 
 
-            /* ---------- copy ---------- */
-            function copyMessage(row) {
-                var text = messageText(row);
 
-                function fallback() {
-                    var ta = document.createElement('textarea');
-                    ta.value = text;
-                    ta.style.position = 'fixed';
-                    ta.style.opacity = '0';
-                    document.body.appendChild(ta);
-                    ta.select();
-                    try {
-                        document.execCommand('copy');
-                    } catch (err) {}
-                    ta.remove();
-                    toast('Message copied');
-                }
-
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(function() {
-                        toast('Message copied');
-                    }, fallback);
-                } else {
-                    fallback();
-                }
-            }
 
             /* ---------- forward (multi-select) ---------- */
             function openForward(row) {
@@ -5140,28 +4755,9 @@
                 var pane = head.closest('.chat-pane');
                 var nameEl = head.querySelector('.who strong');
                 var name = nameEl ? nameEl.textContent.trim() : 'this chat';
-                var isGroup = !!getGroup(pane);
 
                 menuEl.innerHTML = '';
 
-                if (isGroup) {
-                    addMenuItem('fas fa-circle-info', 'Group info', function() {
-                        openGroupInfo(pane);
-                    });
-                    addMenuItem('fas fa-user-plus', 'Add participants', function() {
-                        openGroupInfo(pane, 'add');
-                    });
-                } else {
-                    addMenuItem('fas fa-circle-info', 'Contact info', function() {
-                        chatInfo(pane, name);
-                    });
-                }
-
-
-                addMenuItem('fas fa-bell-slash', 'Mute notifications', function() {
-                    toast('Notifications muted for ' + name);
-                });
-                menuEl.appendChild(divider());
                 addMenuItem('fas fa-broom', 'Clear chat', function() {
                     confirmAction('Clear chat?', 'All messages in "' + name + '" will be removed.',
                         'Clear chat',
@@ -5170,49 +4766,8 @@
                         });
                 });
 
-                if (isGroup) {
-                    addMenuItem('fas fa-right-from-bracket', 'Exit group', function() {
-                        confirmAction('Exit group?', 'You will no longer receive messages from "' + name + '".',
-                            'Exit group',
-                            function() {
-                                deleteChat(pane);
-                            });
-                    }, 'danger');
-                } else {
-                    addMenuItem('fas fa-thumbs-down', 'Block ' + name, function() {
-                        toast(name + ' blocked');
-                    }, 'danger');
-                    addMenuItem('fas fa-flag', 'Report ' + name, function() {
-                        toast('Report sent');
-                    }, 'danger');
-                }
-
-                // addMenuItem('fas fa-trash-can', 'Delete chat', function() {
-                //     confirmAction('Delete chat?', 'The conversation with "' + name + '" will be removed.',
-                //         'Delete chat',
-                //         function() {
-                //             deleteChat(pane);
-                //         });
-                // }, 'danger');
-
                 menuEl.classList.add('show');
                 placeMenu(anchor, 'right');
-            }
-
-            function chatInfo(pane, name) {
-                if (!pane) return;
-                var status = pane.querySelector('.chat-head .who small');
-                showModal({
-                    title: name,
-                    text: 'Status: ' + (status ? status.textContent.trim() : 'Available') + '\n' +
-                        'Messages: ' + pane.querySelectorAll('.msg').length + '\n' +
-                        'Media: ' + pane.querySelectorAll('.img-wrap, .doc-card').length,
-                    actions: [{
-                        icon: 'fas fa-xmark',
-                        label: 'Close',
-                        onClick: closeModal
-                    }]
-                });
             }
 
             function emptyState() {
@@ -5247,640 +4802,6 @@
                 });
 
             }
-
-            function deleteChat(pane) {
-
-
-                console.log(pane)
-                if (!pane) return;
-                var contact = pane.id ? document.querySelector('.contact[data-target="' + pane.id + '"]') :
-                    activeContact();
-                pane.remove();
-                if (contact) contact.remove();
-                closePanels();
-                toast('Chat deleted');
-
-                // back to the welcome screen
-                receiverId = null;
-                conversationId = null;
-                $('#welcomeScreen').addClass('active');
-                $('#chatForm').hide();
-                app.classList.remove('open');
-            }
-
-            /* ---------- employees & groups (front-end demo) ---------- */
-            var EMPLOYEES = [{
-                    name: 'Rahul Sharma',
-                    initials: 'RS',
-                    color: '#2563eb'
-                },
-                {
-                    name: 'Amit Verma',
-                    initials: 'AV',
-                    color: '#4f46e5'
-                },
-                {
-                    name: 'Karan Mehta',
-                    initials: 'KM',
-                    color: '#ca8a04'
-                },
-                {
-                    name: 'Neha Joshi',
-                    initials: 'NJ',
-                    color: '#0891b2'
-                },
-                {
-                    name: 'Priya Patel',
-                    initials: 'PP',
-                    color: '#db2777'
-                },
-                {
-                    name: 'Vikram Malhotra',
-                    initials: 'VM',
-                    color: '#7c3aed'
-                },
-                {
-                    name: 'Suresh Kumar',
-                    initials: 'SK',
-                    color: '#ea580c'
-                },
-                {
-                    name: 'Dinesh Rao',
-                    initials: 'DR',
-                    color: '#0d9488'
-                }
-            ];
-            var GROUP_COLORS = ['#0d9488', '#ea580c', '#7c3aed', '#0891b2', '#db2777', '#4f46e5'];
-            var groupCounter = 0;
-
-            function makeMember(name, isAdmin) {
-                var emp = null;
-                EMPLOYEES.forEach(function(e) {
-                    if (e.name === name) emp = e;
-                });
-
-                var initials, color;
-                if (name === 'You') {
-                    initials = 'ME';
-                    color = '#2563eb';
-                } else if (emp) {
-                    initials = emp.initials;
-                    color = emp.color;
-                } else {
-                    var parts = name.split(' ');
-                    initials = ((parts[0] || '?').charAt(0) + (parts[1] ? parts[1].charAt(0) : '')).toUpperCase();
-                    color = '#64748b';
-                }
-                return {
-                    name: name,
-                    initials: initials,
-                    color: color,
-                    admin: !!isAdmin
-                };
-            }
-
-            function getGroup(pane) {
-                if (!pane) return null;
-                return pane._group || null;
-            }
-
-            function syncGroup(pane) {
-                var g = getGroup(pane);
-                if (!g) return;
-
-                var title = pane.querySelector('.chat-head .who strong');
-                if (title) title.textContent = g.name;
-
-                var sub = pane.querySelector('.chat-head .who small');
-                if (sub) {
-                    sub.textContent = g.members.map(function(m) {
-                        return m.name;
-                    }).join(', ');
-                    sub.classList.remove('on');
-                }
-
-                var contact = document.querySelector('.contact[data-target="' + pane.id + '"]');
-                if (contact) {
-                    contact.dataset.name = g.name;
-                    var cName = contact.querySelector('.contact-top strong');
-                    if (cName) cName.textContent = g.name;
-                    var pv = contact.querySelector('.preview');
-                    if (pv) {
-                        pv.textContent = g.members.length + ' members · ' + g.members.filter(function(m) {
-                            return m.admin;
-                        }).length + ' admin(s)';
-                    }
-                }
-            }
-
-            function addSystemMessage(pane, text) {
-                var body = pane ? pane.querySelector('.chat-body') : null;
-                if (!body) return;
-
-                body.querySelectorAll('.empty-chat').forEach(function(n) {
-                    n.remove();
-                });
-
-                var wrap = document.createElement('div');
-                wrap.className = 'sys-msg';
-                var span = document.createElement('span');
-                span.textContent = text;
-                wrap.appendChild(span);
-                body.appendChild(wrap);
-                scrollBottom(body, true);
-
-                var contact = document.querySelector('.contact[data-target="' + pane.id + '"]');
-                if (contact) {
-                    var t = contact.querySelector('.contact-top small');
-                    if (t) t.textContent = nowTime();
-                    var pv = contact.querySelector('.preview');
-                    if (pv) pv.textContent = text;
-                }
-            }
-
-            /* ---------- new group dialog ---------- */
-            function openNewGroup() {
-                closeMsgMenu();
-
-                var wrap = document.createElement('div');
-                wrap.className = 'panel-content';
-
-                var nameInput = document.createElement('input');
-                nameInput.type = 'text';
-                nameInput.className = 'wa-input';
-                nameInput.placeholder = 'Group name';
-                nameInput.maxLength = 40;
-                wrap.appendChild(nameInput);
-
-                var hint = document.createElement('div');
-                hint.className = 'pick-hint';
-                hint.textContent = 'Add employees';
-                wrap.appendChild(hint);
-
-                var list = document.createElement('div');
-                list.className = 'pick-list';
-                var checks = [];
-
-                EMPLOYEES.forEach(function(e) {
-                    var row = document.createElement('label');
-                    row.className = 'emp-row';
-
-                    var av = document.createElement('div');
-                    av.className = 'avatar';
-                    av.style.background = e.color;
-                    av.textContent = e.initials;
-                    row.appendChild(av);
-
-                    var nm = document.createElement('span');
-                    nm.className = 'emp-name';
-                    nm.textContent = e.name;
-                    row.appendChild(nm);
-
-                    var cb = document.createElement('input');
-                    cb.type = 'checkbox';
-                    cb.value = e.name;
-                    row.appendChild(cb);
-                    checks.push(cb);
-
-                    list.appendChild(row);
-                });
-                wrap.appendChild(list);
-
-                showModal({
-                    title: 'New group',
-                    content: wrap,
-                    actions: [{
-                            icon: 'fas fa-users',
-                            label: 'Create group',
-                            onClick: function() {
-                                var name = nameInput.value.trim();
-                                var picked = EMPLOYEES.filter(function(e, i) {
-                                    return checks[i].checked;
-                                });
-                                if (!name) {
-                                    toast('Please enter a group name');
-                                    nameInput.focus();
-                                    return;
-                                }
-                                if (!picked.length) {
-                                    toast('Please select at least one employee');
-                                    return;
-                                }
-                                createGroup(name, picked);
-                                closeModal();
-                            }
-                        },
-                        {
-                            icon: 'fas fa-xmark',
-                            label: 'Cancel',
-                            onClick: closeModal
-                        }
-                    ]
-                });
-
-                setTimeout(function() {
-                    nameInput.focus();
-                }, 60);
-            }
-
-            function createGroup(name, picked) {
-                groupCounter++;
-                var id = 'group-' + groupCounter;
-                var color = GROUP_COLORS[(groupCounter - 1) % GROUP_COLORS.length];
-
-                var members = [makeMember('You', true)];
-                picked.forEach(function(e) {
-                    members.push(makeMember(e.name, false));
-                });
-
-                /* contact row */
-                var contact = document.createElement('div');
-                contact.className = 'contact';
-                contact.dataset.target = id;
-                contact.dataset.name = name;
-                contact.dataset.group = '1';
-
-                var avatar = document.createElement('div');
-                avatar.className = 'avatar';
-                avatar.style.background = color;
-                avatar.innerHTML = '<i class="fas fa-users"></i>';
-                contact.appendChild(avatar);
-
-                var info = document.createElement('div');
-                info.className = 'contact-info';
-
-                var top = document.createElement('div');
-                top.className = 'contact-top';
-                var cName = document.createElement('strong');
-                cName.textContent = name;
-                var cTime = document.createElement('small');
-                cTime.textContent = 'Just now';
-                top.appendChild(cName);
-                top.appendChild(cTime);
-                info.appendChild(top);
-
-                var bottom = document.createElement('div');
-                bottom.className = 'contact-bottom';
-                var preview = document.createElement('span');
-                preview.className = 'preview';
-                preview.textContent = 'Group created';
-                bottom.appendChild(preview);
-                info.appendChild(bottom);
-
-                contact.appendChild(info);
-                contactsEl.insertBefore(contact, contactsEl.firstChild);
-
-                /* chat pane */
-                var pane = document.createElement('div');
-                pane.className = 'chat-pane';
-                pane.id = id;
-
-                var head = document.createElement('div');
-                head.className = 'chat-head';
-                var back = document.createElement('i');
-                back.className = 'fas fa-arrow-left back';
-                head.appendChild(back);
-                head.appendChild(avatar.cloneNode(true));
-
-                var who = document.createElement('div');
-                who.className = 'who';
-                var wName = document.createElement('strong');
-                wName.textContent = name;
-                var wSub = document.createElement('small');
-                wSub.textContent = members.map(function(m) {
-                    return m.name;
-                }).join(', ');
-                who.appendChild(wName);
-                who.appendChild(wSub);
-                head.appendChild(who);
-                pane.appendChild(head);
-
-                var body = document.createElement('div');
-                body.className = 'chat-body';
-                var chip = document.createElement('div');
-                chip.className = 'day-chip';
-                var chipText = document.createElement('span');
-                chipText.textContent = 'Today';
-                chip.appendChild(chipText);
-                body.appendChild(chip);
-                pane.appendChild(body);
-
-                pane._group = {
-                    name: name,
-                    members: members
-                };
-
-                var panes = document.querySelector('.panes');
-                var scrollBtnEl = panes.querySelector('.scroll-down');
-                if (scrollBtnEl) panes.insertBefore(pane, scrollBtnEl);
-                else panes.appendChild(pane);
-
-                decorateAll();
-
-                // show this group (it has no server conversation yet)
-                $('.contact').removeClass('active');
-                contact.classList.add('active');
-                receiverId = null;
-                conversationId = null;
-                $('.chat-pane').removeClass('active');
-                pane.classList.add('active');
-                $('#chatForm').hide();
-                app.classList.add('open');
-
-                addSystemMessage(pane, 'You created group "' + name + '"');
-                applyFilters();
-                toast('Group "' + name + '" created');
-            }
-
-            /* ---------- group info / members ---------- */
-            function groupActionsRow(pane, active) {
-                var wrap = document.createElement('div');
-                wrap.className = 'group-actions';
-
-                [
-                    ['add', 'add-part-btn', 'fas fa-user-plus', 'Add participants', function() {
-                        openGroupInfo(pane, 'add');
-                    }],
-                    ['remove', 'add-part-btn danger', 'fas fa-user-minus', 'Remove participants', function() {
-                        openGroupInfo(pane, 'remove');
-                    }],
-                    ['admins', 'add-part-btn', 'fas fa-user-shield', 'Group admins', function() {
-                        openGroupInfo(pane, 'admins');
-                    }]
-                ].forEach(function(item) {
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = item[1] + (active === item[0] ? ' active' : '');
-                    btn.innerHTML = '<i class="' + item[2] + '"></i> ' + item[3];
-                    btn.addEventListener('click', item[4]);
-                    wrap.appendChild(btn);
-                });
-
-                return wrap;
-            }
-
-            function memberRow(m) {
-                var row = document.createElement('div');
-                row.className = 'member-row';
-
-                var av = document.createElement('div');
-                av.className = 'avatar';
-                av.style.background = m.color;
-                av.textContent = m.initials;
-                row.appendChild(av);
-
-                var info = document.createElement('div');
-                info.className = 'm-info';
-                var nm = document.createElement('strong');
-                nm.textContent = m.name;
-                var role = document.createElement('small');
-                role.textContent = m.admin ? 'Group admin' : 'Member';
-                info.appendChild(nm);
-                info.appendChild(role);
-                row.appendChild(info);
-
-                if (m.admin) {
-                    var tag = document.createElement('span');
-                    tag.className = 'admin-tag';
-                    tag.textContent = 'Admin';
-                    row.appendChild(tag);
-                }
-
-                return row;
-            }
-
-            function pickRow(person, checked, disabled) {
-                var row = document.createElement('label');
-                row.className = 'emp-row';
-
-                var av = document.createElement('div');
-                av.className = 'avatar';
-                av.style.background = person.color;
-                av.textContent = person.initials;
-                row.appendChild(av);
-
-                var nm = document.createElement('span');
-                nm.className = 'emp-name';
-                nm.textContent = person.name + (person.admin ? ' (admin)' : '');
-                row.appendChild(nm);
-
-                var cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.checked = !!checked;
-                if (disabled) cb.disabled = true;
-                row.appendChild(cb);
-
-                return {
-                    row: row,
-                    cb: cb
-                };
-            }
-
-            function buildPickList(items, isChecked, isDisabled) {
-                var list = document.createElement('div');
-                list.className = 'pick-list';
-                var checks = [];
-
-                items.forEach(function(person) {
-                    var r = pickRow(person, isChecked ? isChecked(person) : false, isDisabled ? isDisabled(
-                        person) : false);
-                    list.appendChild(r.row);
-                    checks.push(r.cb);
-                });
-
-                return {
-                    el: list,
-                    checks: checks
-                };
-            }
-
-            function availableMembers(g) {
-                var taken = g.members.map(function(m) {
-                    return m.name;
-                });
-                return EMPLOYEES.filter(function(e) {
-                    return taken.indexOf(e.name) === -1;
-                });
-            }
-
-            function openGroupInfo(pane, mode) {
-                var g = getGroup(pane);
-                if (!g) {
-                    toast('This is not a group');
-                    return;
-                }
-
-                mode = mode || 'info';
-
-                var wrap = document.createElement('div');
-                wrap.className = 'panel-content';
-                wrap.appendChild(groupActionsRow(pane, mode === 'info' ? '' : mode));
-
-                var hint = document.createElement('div');
-                hint.className = 'pick-hint';
-                wrap.appendChild(hint);
-
-                var checks = [];
-                var actions = [];
-                var built;
-                var closeBtn = {
-                    icon: 'fas fa-xmark',
-                    label: 'Close',
-                    onClick: closeModal
-                };
-
-                if (mode === 'info') {
-                    hint.textContent = 'Participants';
-
-                    var list = document.createElement('div');
-                    g.members.forEach(function(m) {
-                        list.appendChild(memberRow(m));
-                    });
-                    wrap.appendChild(list);
-
-                    actions = [closeBtn];
-                } else if (mode === 'add') {
-                    var available = availableMembers(g);
-
-                    if (!available.length) {
-                        hint.textContent = 'All employees are already in this group';
-                    } else {
-                        hint.textContent = 'Select employees to add';
-                        built = buildPickList(available);
-                        checks = built.checks;
-                        wrap.appendChild(built.el);
-                    }
-
-                    actions = [{
-                        icon: 'fas fa-user-plus',
-                        label: 'Add selected',
-                        onClick: function() {
-                            var picked = available.filter(function(e, i) {
-                                return checks[i] && checks[i].checked;
-                            });
-
-                            if (!picked.length) {
-                                toast('Select at least one employee');
-                                return;
-                            }
-
-                            picked.forEach(function(e) {
-                                g.members.push(makeMember(e.name, false));
-                            });
-
-                            addSystemMessage(pane, 'You added ' + picked.map(function(e) {
-                                return e.name;
-                            }).join(', '));
-                            syncGroup(pane);
-                            toast(picked.length + ' member(s) added');
-                            openGroupInfo(pane, 'add');
-                        }
-                    }, closeBtn];
-                } else if (mode === 'remove') {
-                    var removable = g.members.filter(function(m) {
-                        return m.name !== 'You';
-                    });
-
-                    if (!removable.length) {
-                        hint.textContent = 'There are no participants to remove';
-                    } else {
-                        hint.textContent = 'Uncheck the employees you want to remove';
-                        built = buildPickList(removable, function() {
-                            return true;
-                        });
-                        checks = built.checks;
-                        wrap.appendChild(built.el);
-                    }
-
-                    actions = [{
-                        icon: 'fas fa-user-minus',
-                        label: 'Remove selected',
-                        onClick: function() {
-                            var removed = removable.filter(function(m, i) {
-                                return checks[i] && !checks[i].checked;
-                            });
-
-                            if (!removed.length) {
-                                toast('Uncheck at least one employee');
-                                return;
-                            }
-
-                            var names = removed.map(function(m) {
-                                return m.name;
-                            });
-
-                            g.members = g.members.filter(function(m) {
-                                return names.indexOf(m.name) === -1;
-                            });
-
-                            addSystemMessage(pane, 'You removed ' + names.join(', '));
-                            syncGroup(pane);
-                            toast(removed.length + ' member(s) removed');
-                            openGroupInfo(pane, 'remove');
-                        }
-                    }, closeBtn];
-                } else {
-                    hint.textContent = 'Tick employees to make them group admin';
-
-                    built = buildPickList(
-                        g.members,
-                        function(m) {
-                            return m.name === 'You' ? true : !!m.admin;
-                        },
-                        function(m) {
-                            return m.name === 'You';
-                        }
-                    );
-                    checks = built.checks;
-                    wrap.appendChild(built.el);
-
-                    actions = [{
-                        icon: 'fas fa-user-shield',
-                        label: 'Save admins',
-                        onClick: function() {
-                            var made = [];
-                            var dismissed = [];
-
-                            g.members.forEach(function(m, i) {
-                                if (m.name === 'You') return;
-                                var wantsAdmin = checks[i].checked;
-                                if (wantsAdmin && !m.admin) {
-                                    m.admin = true;
-                                    made.push(m.name);
-                                } else if (!wantsAdmin && m.admin) {
-                                    m.admin = false;
-                                    dismissed.push(m.name);
-                                }
-                            });
-
-                            if (!made.length && !dismissed.length) {
-                                toast('No admin changes');
-                                return;
-                            }
-
-                            if (made.length) addSystemMessage(pane, 'You made ' + made.join(', ') +
-                                ' group admin(s)');
-                            if (dismissed.length) addSystemMessage(pane, 'You dismissed ' + dismissed.join(
-                                ', ') + ' as group admin(s)');
-
-                            syncGroup(pane);
-                            toast('Admin changes saved');
-                            openGroupInfo(pane, 'admins');
-                        }
-                    }, closeBtn];
-                }
-
-                showModal({
-                    title: g.name,
-                    text: g.members.length + ' members · ' + g.members.filter(function(m) {
-                        return m.admin;
-                    }).length + ' admin(s)',
-                    content: wrap,
-                    actions: actions
-                });
-            }
-
-            document.getElementById('newGroupBtn').addEventListener('click', openNewGroup);
 
             /* ---------- decorate messages & headers ---------- */
             function decorateRow(row) {
