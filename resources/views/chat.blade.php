@@ -8,6 +8,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .welcome-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .welcome-screen.active {
+            display: block;
+        }
+
         /* ===== Terminated employee notice ===== */
         .terminated-notice {
             flex-shrink: 0;
@@ -512,6 +522,108 @@
             background: #fff;
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+        }
+
+        /* ---------- Archived (static) ---------- */
+        .archive-row {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+            padding: 12px 18px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14.5px;
+            color: var(--text);
+            transition: background .15s ease;
+        }
+
+        .archive-row:hover {
+            background: #f8fafc;
+        }
+
+        .archive-row .arch-ico {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .archive-row .arch-label {
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .archive-row .arch-count {
+            background: var(--wa-green);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+
+        .archive-view {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: none;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .chat-list.show-archived {
+            overflow: hidden;
+        }
+
+        .chat-list.show-archived .archive-view {
+            display: flex;
+        }
+
+        .archive-view-head {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 18px 20px;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .archive-view-head .back {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .archive-list {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .archive-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px;
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .contacts {
@@ -2019,6 +2131,11 @@
                     <div class="chat-list-head">
                         <span>Chats</span>
                     </div>
+                    <button type="button" class="archive-row" id="archiveRow" style="display: none;">
+                        <span class="arch-ico"><i class="fas fa-archive"></i></span>
+                        <span class="arch-label">Archived</span>
+                        <span class="arch-count">2</span>
+                    </button>
 
                     <div class="chat-search">
                         <div class="box">
@@ -2030,6 +2147,16 @@
                     <div class="contacts" id="contacts"></div>
 
                     <div class="no-result" id="noResult">No chats found</div>
+
+                    <div class="archive-view" id="archiveView">
+                        <div class="archive-view-head">
+                            <i class="fas fa-arrow-left back" id="archiveBack"></i>
+                            <span>Archived</span>
+                        </div>
+                        <div class="archive-list" id="archive">
+
+                        </div>
+                    </div>
                 </aside>
 
                 <!-- RIGHT : conversation -->
@@ -2038,7 +2165,7 @@
                     <div class="panes">
 
                         <!-- Welcome screen -->
-                        <div class="chat-pane active" id="welcomeScreen">
+                        <div id="welcomeScreen" class="welcome-screen active">
                             <div class="chat-body">
                                 <div
                                     style="height:100%; display:flex; align-items:center; justify-content:center; text-align:center;">
@@ -2050,7 +2177,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <button type="button" class="scroll-down" id="scrollDown" aria-label="Scroll to latest">
                             <i class="fas fa-chevron-down"></i>
                             <span class="badge-new" id="newBadge">0</span>
@@ -2134,7 +2260,7 @@
     </main>
 
     <!-- Lightbox -->
-    <div class="lightbox" id="lightbox" >
+    <div class="lightbox" id="lightbox">
         <i class="fas fa-xmark close" id="lightboxClose"></i>
         <img id="lightboxImg" alt="">
         <div class="cap" id="lightboxCap"></div>
@@ -2616,7 +2742,9 @@
                         'You deleted this message' :
                         'This message was deleted';
 
-                    message.attr('data-deleted', 1);
+                    message.attr('data-delete-for-everyone', "1");
+                    message.find('.msg-menu-btn').remove();
+                    message.find('.reactions').remove();
 
                     message.find('.bubble').html(`
             <i class="fas fa-ban"></i>
@@ -3010,7 +3138,24 @@
                     success: function(response) {
 
 
+
+
+                        if (response.users && response.users.length === 0) {
+                            $("#noResult").show();
+                        }
+
+                        if (response.isarchive === true) {
+                            $('#archiveRow').show();
+                            $('.arch-count').text(response.archive_count);
+                        } else {
+                            $('archiveRow').hide();
+                        }
+
+
+
                         let html = '';
+
+
 
                         $.each(response.users, function(index, user) {
 
@@ -3033,6 +3178,7 @@
                                     data-user-id="${user.id}"
                                     data-employee-status="${user.employee.employment_status}"
                                     data-conversation-id="${convId}"
+
                                     data-name="${escapeHtml(name)}">
 
                                     <img class="avatar"
@@ -3070,9 +3216,47 @@
             }
 
             $(document).ready(function() {
-                loadContacts("all");
+                loadContacts();
             });
+            $("#archive").on('click', ".contact", function() {
+                let conversation = $('.chat-pane.active').attr('data-conversation-id');
+                let receiver = $('.chat-pane.active').attr('data-user-id');
+                let message = $('#msgInput').val().trim();
+                let employee_status = $('.contact').attr('data-employee-status');
 
+
+
+
+
+                if (employee_status == "active") {
+                    $('#terminatedNotice').hide();
+                    $('#chatForm').show();
+
+                } else {
+
+                    $('#terminatedNotice').show();
+                    $('#chatForm').hide();
+
+                }
+
+
+                if ($('#replyBar').length > 0) {
+                    $('#replyBar').removeClass('show');
+                }
+                if (message) {
+                    savedraft(conversation, receiver, message);
+                }
+
+                if (last_conversation != conversation) {
+
+
+                    typing = false;
+
+                    settyping(conversation, receiver, typing);
+                    last_conversation = conversation;
+                }
+                openChat(this);
+            });
 
             /* ---------- open / load chat ---------- */
             function openChat(contact) {
@@ -3204,6 +3388,12 @@
 
             })
 
+            $(document).on('click', "#archiveBack", function() {
+                loadContacts();
+            });
+
+
+
 
             function loadChat(conversationId, receiverId, target) {
 
@@ -3220,7 +3410,8 @@
                         console.log(response);
 
                         let chatContent = $('.panes');
-                        chatContent.find('.chat-pane').remove();
+                        chatContent.find('.chat-pane').removeClass('active');
+
 
                         let userName = response.user?.employee?.full_name || '';
                         let profileUrl = response.user?.employee?.profile_url || '';
@@ -3247,7 +3438,9 @@
                         let html = `
                 <div class="chat-pane active"
                     data-user-id="${receiverId}"
-                    data-conversation-id="${conversationId}">
+                    data-conversation-id="${conversationId}"
+                    data-archived="${response.data[0].is_archived ? "1" :'0'}"
+                   >
 
                     <div class="chat-head">
                         <i class="fas fa-arrow-left back" id="chatBack"></i>
@@ -3400,7 +3593,8 @@
                             // Reactions
                             let reactionHtml = '<div class="message-reactions">';
 
-                            if (message.reactions && message.reactions.length > 0) {
+                            if (message.reactions && message.reactions.length > 0 && Number(message
+                                    .delete_for_everyone) !== 1) {
                                 $.each(message.reactions, function(index, reaction) {
                                     let mine = Number(reaction.user_id) === myId;
                                     reactionHtml += `<span class="reaction-item ${mine ? 'mine' : ''}"
@@ -3424,7 +3618,9 @@
 
                             let messageHtml = `
                     <div class="${msgClass}"
-                        data-message-id="${message.id}">
+                        data-message-id="${message.id}"
+
+                        data-delete-for-everyone="${Number(message.delete_for_everyone) ?'1' :'0'}">
 
                         <div class="${rendered.cls}">
                             ${rendered.html}
@@ -4399,6 +4595,70 @@
                 });
             }
 
+            $(document).on("click", "#archiveRow", function() {
+                $.ajax({
+                    url: "{{ route('loadArchiveContact') }}",
+                    type: "GET",
+                    success: function(response) {
+
+                        let html = '';
+
+                        $.each(response.users, function(index, user) {
+
+                            let name = user.employee?.full_name ?? '';
+                            let profile = user.employee?.profile_url ?? '';
+
+
+
+
+
+
+                            let latestMessage = null;
+
+                            let convId = user.conversation_id;
+                            let messageText = user.latest_message_text ?? 'No Messages Yet';
+                            let unreadCount = user.unread_messages_count;
+
+                            html += `
+                                <div class="contact"
+                                    data-user-id="${user.id}"
+                                    data-employee-status="${user.employee.employment_status}"
+                                    data-conversation-id="${convId}"
+
+                                    data-name="${escapeHtml(name)}">
+
+                                    <img class="avatar"
+                                        src="${escapeHtml(profile)}"
+                                        style="background:#2563eb">
+
+                                    <div class="contact-info">
+                                        <div class="contact-top">
+                                            <strong>${escapeHtml(name)}</strong>
+                                        </div>
+
+                                        <div class="contact-bottom">
+                                            <span class="preview">${escapeHtml(messageText)}</span>
+                                           <em class="unread" style="${unreadCount > 0 ? '' : 'display:none;'}">
+        ${unreadCount}
+    </em>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        $('#archive').html(html);
+
+                        // keep the currently open chat highlighted after reload
+                        if (receiverId) {
+                            $('#archive .contact[data-user-id="' + receiverId + '"]').addClass(
+                                'active');
+                        }
+                        applyFilters();
+
+                    }
+                });
+            });
             /* ---------- reply ---------- */
             var replyTo = null;
 
@@ -4645,6 +4905,7 @@
                         let reply_message = $(`.reply-text[data-reply-message-id="${messageId}"]`);
                         reply_message.text("This Message was deleted");
                         row.remove();
+                        $('.pinned-bar.show').hide();
                         toast('Message deleted');
                         loadChat(response.conversation_id, response.reciver_id);
                     }
@@ -4668,6 +4929,11 @@
                         //loadChat(response.conversation_id, response.receiver_id);
                         let reply_message = $(`.reply-text[data-reply-message-id="${messageId}"]`);
                         reply_message.text("This Message was deleted");
+                        $('.pinned-bar.show').hide();
+                        let message = $(`.msg[data-message-id="${messageId}"]`);
+                        message.removeClass('starred');
+                        message.removeClass('pinned');
+
 
                         toast('Message deleted for everyone');
                     }
@@ -4765,9 +5031,135 @@
                             clearChat(pane);
                         });
                 });
+                let archive = $('.chat-pane.active').attr('data-archived');
+                console.log(archive);
+                if (archive === '0') {
+                    addMenuItem('fas fa-box-archive', 'Archive chat', function() {
+                        confirmAction(
+                            'Archive chat?',
+                            'The chat with "' + name + '" will be moved to Archived.',
+                            'Archive chat',
+                            function() {
+                                archiveChat(conversationId);
+                            }
+                        );
+                    });
+                }
+                if (archive === '1') {
+                    addMenuItem('fas fa-box-open', 'Unarchive chat', function() {
+                        confirmAction(
+                            'Unarchive chat?',
+                            'The chat with "' + name + '" will be moved back to Chats.',
+                            'Unarchive chat',
+                            function() {
+                                unarchiveChat(conversationId);
+                            }
+                        );
+                    });
+                }
 
                 menuEl.classList.add('show');
                 placeMenu(anchor, 'right');
+            }
+
+            function unarchiveChat(conversationId) {
+                $.ajax({
+                    url: "{{ route('chatUnArchived') }}",
+                    type: "POST",
+                    data: {
+                        "conversation_id": conversationId,
+                        _token: "{{ csrf_token() }}",
+                    },
+                    success: function(response) {
+
+
+                        if (response.isarchived === true) {
+                            let contact = $(`.contact[data-conversation-id="${conversationId}"]`);
+                            let chatPane = $(`.chat-pane[data-conversation-id="${conversationId}"]`);
+
+                            let isActive = contact.hasClass('active');
+
+                            contact.remove();
+                            chatPane.remove();
+
+                            if (isActive) {
+                                let nextContact = $('#archive .contact:visible').first();
+
+                                if (nextContact.length) {
+                                    openChat(nextContact[0]);
+                                }
+                            }
+                        } else {
+                            let contact = $(`.contact[data-conversation-id="${conversationId}"]`);
+                            let chatPane = $(`.chat-pane[data-conversation-id="${conversationId}"]`);
+
+                            let isActive = contact.hasClass('active');
+
+                            contact.remove();
+                            chatPane.remove();
+
+                            if (isActive) {
+                                let nextContact = $('#contacts .contact:visible').first();
+                                $(".chat-list").removeClass("show-archived");
+                                $('#archiveRow').hide();
+                                loadContacts();
+
+                                if (nextContact.length) {
+                                    openChat(nextContact[0]);
+                                }
+
+                            }
+
+
+
+
+
+                        }
+                    }
+                });
+            }
+
+            function archiveChat(conversationId) {
+                console.log("called archived chat");
+
+                $.ajax({
+                    url: "{{ route('chatArchived') }}",
+                    type: "POST",
+                    data: {
+                        conversation_id: conversationId,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+
+                        $('#archiveRow').show();
+                        $('.arch-count').text(response.archive_count);
+
+                        let contact = $(`.contact[data-conversation-id="${conversationId}"]`);
+                        let chatPane = $(`.chat-pane[data-conversation-id="${conversationId}"]`);
+
+                        let isActive = contact.hasClass('active');
+
+                        contact.remove();
+                        chatPane.remove();
+
+                        if (isActive) {
+
+                            let nextContact = $('#contacts .contact:visible').first();
+
+                            if (nextContact.length) {
+                                openChat(nextContact[0]);
+                            } else {
+
+                                $('.chat-pane').remove();
+                                $('#welcomeScreen').addClass('active');
+                                $('#chatForm, #terminatedNotice').hide();
+                                $('#replyBar').removeClass('show');
+                                $('#noResult').show();
+                                app.classList.remove('open');
+                            }
+                        }
+                    }
+                });
             }
 
             function emptyState() {
@@ -4805,35 +5197,44 @@
 
             /* ---------- decorate messages & headers ---------- */
             function decorateRow(row) {
-                var b = bubbleOf(row);
-                if (!b) return;
+                var $row = $(row);
+                var $bubble = $row.find('.bubble').first();
 
-                var tick = row.querySelector('.meta .tick, .meta-over .tick');
-                if (tick && tick.dataset.bound !== '1') {
-                    tick.dataset.bound = '1';
-                    tick.addEventListener('click', function(e) {
+                if (!$bubble.length) return;
+
+                var $tick = $row.find('.meta .tick, .meta-over .tick').first();
+
+                if ($tick.length && $tick.data('bound') !== 1) {
+                    $tick.data('bound', 1);
+
+                    $tick.on('click', function(e) {
                         e.stopPropagation();
                         messageInfo(row);
                     });
                 }
 
-                if (!row.querySelector('.msg-menu-btn')) {
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'msg-menu-btn';
-                    btn.setAttribute('aria-label', 'Message options');
-                    btn.innerHTML = '<i class="fas fa-chevron-down"></i>';
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        openMessageMenu(row, btn);
+                if (row.dataset.deleteForEveryone !== '1' && !$row.find('.msg-menu-btn').length) {
+                    var $btn = $('<button>', {
+                        type: 'button',
+                        class: 'msg-menu-btn',
+                        'aria-label': 'Message options',
+                        html: '<i class="fas fa-chevron-down"></i>'
                     });
-                    row.appendChild(btn);
+
+                    $btn.on('click', function(e) {
+                        e.stopPropagation();
+                        openMessageMenu(row, this);
+                    });
+
+                    $row.append($btn);
                 }
 
-                if (!row.querySelector('.reactions')) {
-                    var box = document.createElement('div');
-                    box.className = 'reactions';
-                    row.appendChild(box);
+                if (!$row.find('.reactions').length) {
+                    var $box = $('<div>', {
+                        class: 'reactions'
+                    });
+
+                    $row.append($box);
                 }
             }
 
@@ -4930,6 +5331,23 @@
 
 
         });
+    </script>
+    <script>
+        (function() {
+            var chatList = document.querySelector('.chat-list');
+            var openArchived = document.getElementById('archiveRow');
+            var closeArchived = document.getElementById('archiveBack');
+
+            if (!chatList || !openArchived || !closeArchived) return;
+
+            openArchived.addEventListener('click', function() {
+                chatList.classList.add('show-archived');
+            });
+
+            closeArchived.addEventListener('click', function() {
+                chatList.classList.remove('show-archived');
+            });
+        })();
     </script>
 
 </body>

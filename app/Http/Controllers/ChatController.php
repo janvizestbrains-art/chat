@@ -298,9 +298,16 @@ class ChatController extends Controller
     public function loadContact(Request $request)
     {
         $authId = Auth::id();
-
         $users = User::where('id', '!=', $authId)
             ->whereHas('employee')
+            ->whereDoesntHave('conversationParticipants', function ($query) use ($authId) {
+                $query->whereIn('conversation_id', function ($subQuery) use ($authId) {
+                    $subQuery->select('conversation_id')
+                        ->from('conversation_participants')
+                        ->where('user_id', $authId)
+                        ->where('is_archived', true);
+                });
+            })
             ->with('employee')
             ->get();
 
@@ -310,7 +317,14 @@ class ChatController extends Controller
 
             $user->latest_message_text = $latestMessage?->message;
             $user->latest_message_at = $latestMessage?->created_at;
-            $user->conversation_id = $latestMessage?->conversation_id;
+          $conversationId = ConversationParticipant::where('user_id', $authId)
+    ->whereHas('conversation.participants', function ($query) use ($user) {
+        $query->where('user_id', $user->id);
+    })
+    ->latest('conversation_id')
+    ->value('conversation_id');
+
+$user->conversation_id = $conversationId;
 
             $user->unread_messages_count = Message::where('sender_id', $user->id)
                 ->where('receiver_id', $authId)
@@ -326,12 +340,19 @@ class ChatController extends Controller
         });
 
         $users = $users->sortByDesc('latest_message_at')->values();
+        $isarchive = ConversationParticipant::where("user_id", auth::id())
+            ->where("is_archived", true)
+            ->exists();
+        $archive_count = ConversationParticipant::where("user_id", auth::id())
+            ->where("is_archived", true)
+            ->count();
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'users' => $users,
+            'isarchive' => $isarchive,
+            'archive_count' => $archive_count,
         ]);
-
     }
     public function messageRead(Request $request)
     {
@@ -392,6 +413,15 @@ class ChatController extends Controller
         Message::where("id", $request->messageId)->update([
             "delete_for_me" => true,
         ]);
+        $message_pin = MessagePin::where("message_id", $request->messageId)->first();
+        $message_star = MessageStar::where("message_id", $request->messageId)->first();
+
+        if ($message_pin) {
+            $message_pin->delete();
+        }
+        if ($message_star) {
+            $message_star->delete();
+        }
 
         $latestMessage = Message::where("conversation_id", $message->conversation_id)->where("delete_for_everyone", false)
             ->where(function ($query) {
@@ -424,6 +454,14 @@ class ChatController extends Controller
             "delete_for_everyone" => true
 
         ]);
+        $message_pin = MessagePin::where("message_id", $request->messageId)->first();
+        $message_star = MessageStar::where("message_id", $request->messageId)->first();
+        if ($message_pin) {
+            $message_pin->delete();
+        }
+        if ($message_star) {
+            $message_star->delete();
+        }
 
         $attachment = MessageAttachment::where("message_id", $message->id)->first();
         if ($attachment) {
@@ -820,12 +858,16 @@ class ChatController extends Controller
 
         $istyping = $request->boolean('istyping');
 
+        if($request->conversation_id)
+        {
+
         UserTyping::dispatch(
             $request->conversation_id,
 
             $request->receiver_id,
             $istyping,
         );
+        }
         return response()->json([
             "success" => true,
         ]);
@@ -848,6 +890,96 @@ class ChatController extends Controller
         }
         return response()->json([
             "success" => true,
+        ]);
+    }
+
+    public function chatArchived(Request $request)
+    {
+        $conversation = ConversationParticipant::where("conversation_id", $request->conversation_id)->where("user_id", auth::id())->first();
+        if ($conversation) {
+            $conversation->update([
+                "is_archived" => true,
+            ]);
+        }
+        $archive_count = ConversationParticipant::where("user_id", auth::id())
+            ->where("is_archived", true)
+            ->count();
+        return response()->json(
+            [
+                "success" => true,
+                'archive_count' => $archive_count,
+            ]
+        );
+    }
+
+    public function chatUnArchived(Request $request)
+    {
+        $conversation = ConversationParticipant::where("conversation_id", $request->conversation_id)->where("user_id", auth::id())->first();
+        if ($conversation) {
+            $conversation->update([
+                "is_archived" => false,
+            ]);
+
+            $isarchived = ConversationParticipant::where("user_id", auth::id())->where("is_archived", true)->exists();
+
+            return response()->json([
+                "success" => true,
+                'isarchived' => $isarchived,
+            ]);
+        }
+    }
+
+
+
+
+    public function loadArchiveContact()
+    {
+        $authId = Auth::id();
+        $users = User::where('id', '!=', $authId)
+            ->whereHas('employee')
+            ->whereHas('conversationParticipants', function ($query) use ($authId) {
+                $query->whereIn('conversation_id', function ($subQuery) use ($authId) {
+                    $subQuery->select('conversation_id')
+                        ->from('conversation_participants')
+                        ->where('user_id', $authId)
+                        ->where('is_archived', true);
+                });
+            })
+            ->with('employee')
+            ->get();
+
+        $users->each(function ($user) use ($authId) {
+
+            $latestMessage = $user->latest_message;
+
+            $user->latest_message_text = $latestMessage?->message;
+            $user->latest_message_at = $latestMessage?->created_at;
+  $conversationId = ConversationParticipant::where('user_id', $authId)
+    ->whereHas('conversation.participants', function ($query) use ($user) {
+        $query->where('user_id', $user->id);
+    })
+    ->latest('conversation_id')
+    ->value('conversation_id');
+
+$user->conversation_id = $conversationId;
+            $user->unread_messages_count = Message::where('sender_id', $user->id)
+                ->where('receiver_id', $authId)
+                ->where('is_read', false)
+                ->where('clear_for_receiver', false)
+                ->where('delete_for_everyone', false)
+                ->count();
+
+            $user->employee->append([
+                'full_name',
+                'profile_url',
+            ]);
+        });
+
+        $users = $users->sortByDesc('latest_message_at')->values();
+
+        return response()->json([
+            'success' => true,
+            'users' => $users,
         ]);
     }
 }

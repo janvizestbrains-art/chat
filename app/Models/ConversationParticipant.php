@@ -13,9 +13,17 @@ class ConversationParticipant extends Model
     protected $fillable = [
         'conversation_id',
         'user_id',
+        'is_archived'
 
     ];
 
+    #[Override]
+    protected function casts(): array
+    {
+        return[
+            "is_archived"=>'boolean'
+        ];
+    }
 
 
 
@@ -28,4 +36,5 @@ class ConversationParticipant extends Model
     {
         return $this->belongsTo(User::class);
     }
+
 }

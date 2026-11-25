@@ -35,6 +35,9 @@ Route::GET('/get-users',[ChatController::class,'getUsers'])->name('getUsers');
 Route::POST('/message-forward',[ChatController::class,'messageFOrward'])->name('messageForward');
 Route::POST('/message-reply',[ChatController::class,'messageReply'])->name('messageReply');
 Route::POST('/user-typing',[ChatController::class,'userTyping'])->name('userTyping');
+Route::POST('/chat-archived',[ChatController::class,'chatArchived'])->name('chatArchived');
+Route::POST('/chat-unarchived',[ChatController::class,'chatUnArchived'])->name('chatUnArchived');
+Route::get('/load-archive-contacts', [ChatController::class, 'loadArchiveContact'])->name('loadArchiveContact');
 Route::POST('/message-save-draft',[ChatController::class,'saveMessageDraft'])->name('saveMessageDraft');
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');
