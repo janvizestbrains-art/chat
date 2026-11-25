@@ -22,6 +22,7 @@ class Message extends Model
         'clear_for_sender',
         'clear_for_receiver',
         'reply_message_id',
+        'link',
     ];
     protected function casts(): array
 {
@@ -32,6 +33,7 @@ class Message extends Model
         'read_at' => 'datetime',
         'clear_for_sender'=>'boolean',
         'clear_for_receiver'=>'boolean',
+        'link' =>'boolean',
     ];
 }
 

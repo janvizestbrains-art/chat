@@ -28,7 +28,8 @@ class MessageReply implements ShouldBroadcastNow
     public int $is_read,
     public Carbon $created_at,
     public string $sender_name,
-    public string $message
+    public string $message,
+    public bool $link,
     )
     {
         //
@@ -58,6 +59,7 @@ class MessageReply implements ShouldBroadcastNow
                 "created_at" =>$this->created_at,
                 "sender_name"=>$this->sender_name,
                 "message" =>$this->message,
+                "link" =>$this->link,
         ];
     }
     public function broadcastAs():string

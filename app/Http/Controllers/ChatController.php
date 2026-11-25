@@ -30,7 +30,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ChatController extends Controller
 {
-
+    public function hasLink($message)
+{
+    return preg_match('/(https?:\/\/[^\s<]+|www\.[^\s<]+)/i', $message) === 1;
+}
     public function unreadMessages(int $receiver_id)
     {
         $unread_count = Message::where("receiver_id", $receiver_id)
@@ -116,12 +119,14 @@ class ChatController extends Controller
         if ($message_draft) {
             $message_draft->delete();
         }
+
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => Auth::id(),
             'receiver_id' => $request->reciver_id,
             'message' => $request->message ?? ($request->type == "image" ? "image" : "Document"),
             'is_read' => 0,
+            'link' =>$this->hasLink($request->message) ? true :false,
 
         ]);
         if ($request->hasFile('file')) {
@@ -712,7 +717,7 @@ $user->conversation_id = $conversationId;
                     "sender_id" => auth::id(),
                     "receiver_id" => $user,
                     "message" => $message->message,
-
+                    "link" =>$this->hasLink($message->message) ?true:false,
                 ]);
                 if ($message_attach) {
                     $message_attach_data = MessageAttachment::create([
@@ -806,6 +811,7 @@ $user->conversation_id = $conversationId;
                 "receiver_id" => $receiverId,
                 "message" => $request->text,
                 "reply_message_id" => $message->id,
+                'link' =>$this->hasLink($request->text)?true:false,
 
             ]);
         }
@@ -841,6 +847,7 @@ $user->conversation_id = $conversationId;
             $message_data->created_at,
             $message_data->replyMessage->sender->name,
             $message_data->message,
+            $message_data->link,
 
         );
 

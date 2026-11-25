@@ -8,6 +8,18 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
 
     <style>
+        .chat-link {
+            color: #2196f3;
+            text-decoration: underline;
+            cursor: pointer;
+            word-break: break-word;
+        }
+
+        .chat-link:hover {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+
         .welcome-screen {
             display: none;
             width: 100%;
@@ -2408,6 +2420,29 @@
                 var text = (m.message === null || m.message === 'document' || m.message === 'image') ? '' : String(m
                     .message);
 
+                // Convert URLs into clickable links
+                function makeClickableLinks(message) {
+
+                    let escapedMessage = esc(message);
+
+                    let urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+
+                    return escapedMessage.replace(urlRegex, function(url) {
+
+                        let cleanUrl = url.replace(/[.,!?;:]+$/, '');
+                        let trailing = url.substring(cleanUrl.length);
+
+                        let href = /^https?:\/\//i.test(cleanUrl) ?
+                            cleanUrl :
+                            'https://' + cleanUrl;
+
+                        return `<a href="${href}"
+                       class="chat-link"
+                       target="_blank"
+                       rel="noopener noreferrer">${cleanUrl}</a>${trailing}`;
+                    });
+                }
+
                 // Support database response and Reverb event formats
                 var file = null;
 
@@ -2430,12 +2465,11 @@
 
                     var url = "{{ asset('storage') }}/" + file.file_path;
 
-                    var name = file.file_name ||
-                        file.file_path.split('/').pop();
+                    var name = file.file_name || file.file_path.split('/').pop();
 
                     var html = '';
 
-                    // Image: display image with caption
+                    // Image
                     if (file.file_type === 'image') {
 
                         html += `
@@ -2454,10 +2488,8 @@
                         };
                     }
 
-                    // Document: display document only
+                    // Document
                     if (file.file_type === 'document') {
-
-
 
                         var e = ext(name);
                         var st = docStyle(e);
@@ -2496,14 +2528,12 @@
 
                     return {
                         cls: 'bubble',
-                        html: esc(text) + `<span class="meta">${metaInner}</span>`
+                        html: makeClickableLinks(text) + `<span class="meta">${metaInner}</span>`
                     };
                 }
 
-                // No text and no attachment: do not create a bubble
                 return null;
             }
-
 
             return {
                 LIMITS: LIMITS,
@@ -3393,7 +3423,24 @@
             });
 
 
+            function makeClickableLinks(message) {
 
+                let escapedMessage = $('<div>').text(message ?? '').html();
+
+                let urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+
+                return escapedMessage.replace(urlRegex, function(url) {
+
+                    let cleanUrl = url.replace(/[.,!?;:]+$/, '');
+                    let trailing = url.substring(cleanUrl.length);
+
+                    let href = /^https?:\/\//i.test(cleanUrl) ?
+                        cleanUrl :
+                        'https://' + cleanUrl;
+
+                    return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="chat-link">${cleanUrl}</a>${trailing}`;
+                });
+            }
 
             function loadChat(conversationId, receiverId, target) {
 
@@ -3583,7 +3630,7 @@
                                 </div>
                             </div>
                             <div class="message-content">
-                                ${message.message}
+                                ${Number(message.link) ? makeClickableLinks(message.message) : message.message}
                                 <span class="meta">${time} ${ticks}</span>
                             </div>
                         `
@@ -4659,6 +4706,10 @@
                     }
                 });
             });
+
+            function hasLink(message) {
+                return /(https?:\/\/[^\s<]+|www\.[^\s<]+)/i.test(message);
+            }
             /* ---------- reply ---------- */
             var replyTo = null;
 
@@ -4675,9 +4726,11 @@
                     who: senderOf(row),
                     text: messageText(row)
                 };
+
                 $replyBar.attr('data-message-id', $(row).data('message-id'));
                 $replyBarWho.text(replyTo.who);
-                $replyBarText.text(replyTo.text);
+
+                $replyBarText.html(makeClickableLinks(replyTo.text));
 
                 $replyBar.addClass('show');
 
