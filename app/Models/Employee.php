@@ -117,4 +117,8 @@ public function getAvtarAttribute():string
         . '&background=E0E7FF&color=4338CA&size=128&bold=true';
 
 }
+public function actor(): BelongsTo
+{
+    return $this->belongsTo(User::class);
+}
 }

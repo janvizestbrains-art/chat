@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\LeaveController;
@@ -18,6 +19,10 @@ Route::post('/send-notification', [ChatController::class, 'sendNotification'])->
 Route::get('/leave', [LeaveController::class, 'leave'])->name('leave');
 Route::post('/apply-leave', [LeaveController::class, 'applyLeave'])->name('applyLeave');
 Route::get('/leave-request', [LeaveController::class, 'leaveRequest'])->name('leaveRequest');
+
+
+
+//chat
 Route::get('/chat', [ChatController::class, 'chat'])->name('chat');
 Route::get('/load-contacts', [ChatController::class, 'loadContact'])->name('loadContact');
 Route::post('/chat-send', [ChatController::class, 'chatSend'])->name('chatSend');
@@ -41,5 +46,9 @@ Route::get('/load-archive-contacts', [ChatController::class, 'loadArchiveContact
 Route::POST('/message-save-draft',[ChatController::class,'saveMessageDraft'])->name('saveMessageDraft');
 Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
     ->name('leave.updateStatus');
+
+
+//activity
+Route::get('/load-activity', [ActivityController::class, 'loadActivity'])->name('loadActivity');
 
 });

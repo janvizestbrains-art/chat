@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ActivityCount;
+use App\Events\ActivityCreated;
 use App\Events\LatestMessageDeletedForMe;
 use App\Events\MessageCount;
 use App\Events\MessageDeleteEveryone;
@@ -14,6 +16,7 @@ use App\Events\MessageUpdate;
 use App\Events\NotificationCreated;
 use App\Events\UnreadMessage;
 use App\Events\UserTyping;
+use App\Models\Activity;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Employee;
@@ -32,9 +35,9 @@ use Illuminate\Support\Facades\Storage;
 class ChatController extends Controller
 {
     public function hasLink($message)
-{
-    return preg_match('/(https?:\/\/[^\s<]+|www\.[^\s<]+)/i', $message) === 1;
-}
+    {
+        return preg_match('/(https?:\/\/[^\s<]+|www\.[^\s<]+)/i', $message) === 1;
+    }
     public function unreadMessages(int $receiver_id)
     {
         $unread_count = Message::where("receiver_id", $receiver_id)
@@ -127,7 +130,7 @@ class ChatController extends Controller
             'receiver_id' => $request->reciver_id,
             'message' => $request->message ?? ($request->type == "image" ? "image" : "Document"),
             'is_read' => 0,
-            'link' =>$this->hasLink($request->message) ? true :false,
+            'link' => $this->hasLink($request->message) ? true : false,
 
         ]);
         if ($request->hasFile('file')) {
@@ -324,14 +327,14 @@ class ChatController extends Controller
 
             $user->latest_message_text = $latestMessage?->message;
             $user->latest_message_at = $latestMessage?->created_at;
-          $conversationId = ConversationParticipant::where('user_id', $authId)
-    ->whereHas('conversation.participants', function ($query) use ($user) {
-        $query->where('user_id', $user->id);
-    })
-    ->latest('conversation_id')
-    ->value('conversation_id');
+            $conversationId = ConversationParticipant::where('user_id', $authId)
+                ->whereHas('conversation.participants', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->latest('conversation_id')
+                ->value('conversation_id');
 
-$user->conversation_id = $conversationId;
+            $user->conversation_id = $conversationId;
 
             $user->unread_messages_count = Message::where('sender_id', $user->id)
                 ->where('receiver_id', $authId)
@@ -354,11 +357,16 @@ $user->conversation_id = $conversationId;
             ->where("is_archived", true)
             ->count();
 
+        $activity_count=Activity::where("user_id",auth::id())
+        ->where("is_read",false)
+        ->count();
+
         return response()->json([
             'success' => true,
             'users' => $users,
             'isarchive' => $isarchive,
             'archive_count' => $archive_count,
+            "activity_count" =>$activity_count,
         ]);
     }
     public function messageRead(Request $request)
@@ -433,8 +441,7 @@ $user->conversation_id = $conversationId;
         $latestMessage = Message::where("conversation_id", $message->conversation_id)->where("delete_for_everyone", false)
             ->where(function ($query) {
                 $query->where("delete_for_me", false)
-                ->orWhere("sender_id","!=",auth::id());
-
+                    ->orWhere("sender_id", "!=", auth::id());
             })
             ->latest()->first();
 
@@ -560,6 +567,61 @@ $user->conversation_id = $conversationId;
                 "reaction" => $request->emo,
             ]);
         }
+            $is_receiver = Message::where("id", $request->messageId)->where("receiver_id", auth::id())->first();
+
+
+            if ($is_receiver) {
+
+                $activity = Activity::where('user_id', $is_receiver->sender_id)
+                    ->where('actor_id', auth::id())
+                    ->where('message_id', $is_receiver->id)
+                    ->where('conversation_id', $is_receiver->conversation_id)
+                    ->where('type', 'react')
+                    ->first();
+
+                if ($activity) {
+                    $activity->update([
+                        'content' => $request->emo,
+                        'is_read' => false,
+                    ]);
+                } else {
+                   $activity= Activity::create([
+                        'user_id' => $is_receiver->sender_id,
+                        'actor_id' => auth::id(),
+                        'message_id' => $is_receiver->id,
+                        'conversation_id' => $is_receiver->conversation_id,
+                        'type' => 'react',
+                        "is_read" =>false,
+                        'content' => $request->emo,
+                    ]);
+
+
+
+
+            ActivityCreated::dispatch(
+                    $activity->conversation_id,
+                    $activity->message_id,
+                    $activity->user_id,
+                    $activity->actor_id,
+                    $activity->actor->employee->first_name,
+                    $activity->message->message,
+                    $activity->type,
+                    $activity->content,
+                    $activity->is_read,
+                    $activity->updated_at,
+
+            );
+
+
+                    $activity_count=Activity::where("user_id",$activity->user_id)->where("is_read",false)
+                    ->count();
+                    ActivityCount::dispatch(
+                        $activity->user_id,
+                        $activity_count,
+                    );
+                }
+            }
+
         $message = Message::findOrFail($request->messageId);
 
         $receiverId = $message->sender_id == auth::id()
@@ -574,6 +636,9 @@ $user->conversation_id = $conversationId;
             $receiverId,
             $request->emo
         );
+
+
+
 
 
         $message = Message::with('reactions')->where("id", $message->id)->first();
@@ -597,7 +662,19 @@ $user->conversation_id = $conversationId;
     {
         $message = MessageReaction::where("message_id", $request->messageId)->where("user_id", auth::id())->first();
         if ($message) {
+            $is_activity = Activity::where("message_id", $message->message_id)->where("actor_id", auth::id())
+                ->where("type", "react")
+                ->first();
+            if ($is_activity) {
+                $is_activity->delete();
+            }
             $message->delete();
+             $activity_count=Activity::where("user_id",$is_activity->user_id)->where("is_read",false)
+                    ->count();
+                    ActivityCount::dispatch(
+                        $is_activity->user_id,
+                        $activity_count,
+                    );
         }
         $message = Message::findOrFail($request->messageId);
 
@@ -691,7 +768,9 @@ $user->conversation_id = $conversationId;
     public function getUsers()
     {
         $users = User::with(['employee'])->whereNot("id", auth::id())
-            ->whereHas('employee')
+            ->whereHas('employee', function ($query) {
+                $query->where("employment_status", "active");
+            })
             ->get();
         return response()->json([
             "success" => true,
@@ -719,7 +798,7 @@ $user->conversation_id = $conversationId;
                     "sender_id" => auth::id(),
                     "receiver_id" => $user,
                     "message" => $message->message,
-                    "link" =>$this->hasLink($message->message) ?true:false,
+                    "link" => $this->hasLink($message->message) ? true : false,
                 ]);
                 if ($message_attach) {
                     $message_attach_data = MessageAttachment::create([
@@ -748,6 +827,7 @@ $user->conversation_id = $conversationId;
                     "sender_id" => auth::id(),
                     "receiver_id" => $user,
                     "message" => $message->message,
+                    "link" => $this->hasLink($message) ? true : false,
                 ]);
                 if ($message_attach) {
                     $message_attach_data = MessageAttachment::create([
@@ -814,7 +894,7 @@ $user->conversation_id = $conversationId;
                 "receiver_id" => $receiverId,
                 "message" => $request->text,
                 "reply_message_id" => $message->id,
-                'link' =>$this->hasLink($request->text)?true:false,
+                'link' => $this->hasLink($request->text) ? true : false,
 
             ]);
         }
@@ -869,15 +949,14 @@ $user->conversation_id = $conversationId;
 
         $istyping = $request->boolean('istyping');
 
-        if($request->conversation_id)
-        {
+        if ($request->conversation_id) {
 
-        UserTyping::dispatch(
-            $request->conversation_id,
+            UserTyping::dispatch(
+                $request->conversation_id,
 
-            $request->receiver_id,
-            $istyping,
-        );
+                $request->receiver_id,
+                $istyping,
+            );
         }
         return response()->json([
             "success" => true,
@@ -965,14 +1044,14 @@ $user->conversation_id = $conversationId;
 
             $user->latest_message_text = $latestMessage?->message;
             $user->latest_message_at = $latestMessage?->created_at;
-  $conversationId = ConversationParticipant::where('user_id', $authId)
-    ->whereHas('conversation.participants', function ($query) use ($user) {
-        $query->where('user_id', $user->id);
-    })
-    ->latest('conversation_id')
-    ->value('conversation_id');
+            $conversationId = ConversationParticipant::where('user_id', $authId)
+                ->whereHas('conversation.participants', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->latest('conversation_id')
+                ->value('conversation_id');
 
-$user->conversation_id = $conversationId;
+            $user->conversation_id = $conversationId;
             $user->unread_messages_count = Message::where('sender_id', $user->id)
                 ->where('receiver_id', $authId)
                 ->where('is_read', false)

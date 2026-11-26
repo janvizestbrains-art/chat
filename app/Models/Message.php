@@ -75,5 +75,9 @@ public function replies()
 {
     return $this->hasMany(Message::class, 'reply_message_id');
 }
+public function activity()
+{
+    return $this->hasMany(Activity::class);
+}
 
 }

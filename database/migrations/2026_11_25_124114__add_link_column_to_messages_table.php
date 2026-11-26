@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -6,23 +7,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('messages', function (Blueprint $table) {
-            $table->boolean("link",false);
-        });
+        if (!Schema::hasColumn('messages', 'link')) {
+            Schema::table('messages', function (Blueprint $table) {
+                $table->boolean('link')->default(false);
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('messages', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('messages', 'link')) {
+            Schema::table('messages', function (Blueprint $table) {
+                $table->dropColumn('link');
+            });
+        }
     }
 };

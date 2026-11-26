@@ -37,4 +37,8 @@ class Conversation extends Model
     {
             return $this->hasOne(MessageDraft::class);
     }
+    public function activity()
+    {
+        return $this->hasMany(Activity::class);
+    }
 }

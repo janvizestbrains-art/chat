@@ -491,14 +491,424 @@
 
         .chat-list-head {
             flex-shrink: 0;
-            padding: 18px 20px;
+            padding: 12px 14px;
             background: linear-gradient(135deg, #1e3a8a, #2563eb);
             color: #fff;
-            font-size: 18px;
-            font-weight: 700;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+        }
+
+        .list-tabs {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            padding: 4px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .12);
+        }
+
+        .list-tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: rgba(255, 255, 255, .82);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease;
+        }
+
+        .list-tab:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, .1);
+        }
+
+        .list-tab.active {
+            background: #fff;
+            color: #1e3a8a;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, .18);
+        }
+
+        .activity-count {
+            background: #ef4444;
+            color: #fff;
+            font-size: 10.5px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        .activity-count:empty {
+            display: none;
+        }
+
+        .list-tab.active .activity-count {
+            background: var(--primary);
+        }
+
+        .chats-view {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Activity (static demo) ---------- */
+        /* =========================================
+   ACTIVITY VIEW
+========================================= */
+        /* ---------- Activity ---------- */
+        .activity-view {
+            display: none;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .chat-list.show-activity .chats-view {
+            display: none;
+        }
+
+        .chat-list.show-activity .activity-view {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-list {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 12px;
+            background: #fff;
+        }
+
+        .activity-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .activity-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .activity-list::-webkit-scrollbar-thumb {
+            background: #d5dbe3;
+            border-radius: 10px;
+        }
+
+        .activity-list::-webkit-scrollbar-thumb:hover {
+            background: #aeb8c5;
+        }
+
+        .activity-day {
+            margin: 12px 0 8px;
+            padding: 0 4px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+
+        /* ----- common item ----- */
+        .activity-item {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 13px 14px 13px 16px;
+            border: 1px solid #eef2f7;
+            border-radius: 12px;
+            background: #fff;
+            text-align: left;
+            cursor: pointer;
+            transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+
+        /* ===== UNREAD ===== */
+        .activity-item.unread {
+            background: #eaf3ff;
+            border-color: #bfdbfe;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, .10);
+        }
+
+        .activity-item.unread:hover {
+            background: #e0eeff;
+        }
+
+        .activity-item.unread::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 12px;
+            bottom: 12px;
+            width: 4px;
+            border-radius: 0 4px 4px 0;
+            background: #2563eb;
+        }
+
+        .activity-item.unread .activity-line {
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .activity-item.unread .activity-line strong {
+            color: #0b1220;
+            font-weight: 800;
+        }
+
+        .activity-item.unread .activity-preview {
+            background: #fff;
+            border-left-color: #2563eb;
+            color: #334155;
+        }
+
+        .activity-item.unread .activity-time {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .activity-item.unread .activity-dot {
+            display: block;
+            background: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .18);
+        }
+
+        /* ===== READ ===== */
+        .activity-item.read {
+            background: #fff;
+            border-color: #eef2f7;
+            box-shadow: none;
+        }
+
+        .activity-item.read:hover {
+            background: #f8fafc;
+        }
+
+        .activity-item.read::before {
+            display: none;
+        }
+
+        .activity-item.read .activity-line {
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .activity-item.read .activity-line strong {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .activity-item.read .activity-preview {
+            background: #f8fafc;
+            border-left-color: #e2e8f0;
+            color: #94a3b8;
+        }
+
+        .activity-item.read .activity-time {
+            color: #b0bac8;
+            font-weight: 400;
+        }
+
+        .activity-item.read .activity-dot {
+            display: none;
+        }
+
+        .activity-item.read .activity-avatar {
+            opacity: .85;
+        }
+
+        /* ----- avatar + type badge ----- */
+        .activity-avatar {
+            position: relative;
+            flex: 0 0 42px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #e2e8f0;
+        }
+
+        .activity-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* initials fallback (does NOT touch the badge) */
+        .activity-avatar>span:not(.activity-kind) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: #334155;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .activity-kind {
+            position: absolute;
+            right: -3px;
+            bottom: -3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: #64748b;
+            color: #fff;
+            font-size: 10px;
+            line-height: 1;
+        }
+
+        .activity-kind.reaction {
+            background: #ec4899;
+        }
+
+        .activity-kind.reply {
+            background: #2563eb;
+        }
+
+        .activity-kind.mention {
+            background: #8b5cf6;
+        }
+
+        /* ----- body ----- */
+        .activity-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-line {
+            margin: 0;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .activity-line strong {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .activity-context {
+            display: block;
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .activity-preview {
+            margin-top: 7px;
+            padding: 8px 10px;
+            border-left: 3px solid #cbd5e1;
+            border-radius: 4px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .activity-time {
+            display: block;
+            margin-top: 7px;
+            color: #94a3b8;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .activity-dot {
+            flex: 0 0 8px;
+            width: 8px;
+            height: 8px;
+            margin-top: 6px;
+            border-radius: 50%;
+            background: #2563eb;
+        }
+
+        /* ----- empty state ----- */
+        .activity-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            padding: 30px 15px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .activity-empty i {
+            margin-bottom: 12px;
+            font-size: 38px;
+            color: #cbd5e1;
+        }
+
+        .activity-empty h5 {
+            margin: 0 0 6px;
+            color: #475569;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .activity-empty p {
+            max-width: 230px;
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* ----- small screens ----- */
+        @media (max-width: 576px) {
+            .activity-list {
+                padding: 8px;
+            }
+
+            .activity-item {
+                gap: 10px;
+                padding: 12px 10px 12px 14px;
+            }
+
+            .activity-avatar {
+                flex-basis: 38px;
+                width: 38px;
+                height: 38px;
+            }
+
+            .activity-line {
+                font-size: 12.5px;
+            }
+
+            .activity-context,
+            .activity-preview {
+                font-size: 11.5px;
+            }
+
+            .activity-time {
+                font-size: 10.5px;
+            }
         }
 
         .chat-search {
@@ -756,7 +1166,7 @@
             color: #53bdeb;
         }
 
-        .unread {
+        .contact-bottom .unread {
             background: var(--wa-green);
             color: #fff;
             font-style: normal;
@@ -2103,6 +2513,26 @@
                 gap: 10px;
                 padding: 10px;
             }
+
+            .activity-item {
+                gap: 9px;
+                padding: 12px 12px 12px 15px;
+            }
+
+            .activity-avatar {
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+                font-size: 12px;
+            }
+
+            .activity-line {
+                font-size: 13px;
+            }
+
+            .activity-preview {
+                font-size: 12px;
+            }
         }
 
         /* ===== WhatsApp-style reaction picker ===== */
@@ -2141,31 +2571,48 @@
                 <aside class="chat-list">
 
                     <div class="chat-list-head">
-                        <span>Chats</span>
-                    </div>
-                    <button type="button" class="archive-row" id="archiveRow" style="display: none;">
-                        <span class="arch-ico"><i class="fas fa-archive"></i></span>
-                        <span class="arch-label">Archived</span>
-                        <span class="arch-count">2</span>
-                    </button>
-
-                    <div class="chat-search">
-                        <div class="box">
-                            <i class="fas fa-magnifying-glass"></i>
-                            <input type="text" id="searchContact" placeholder="Search chats">
+                        <div class="list-tabs" role="tablist" aria-label="Chat list views">
+                            <button type="button" class="list-tab active" data-list-tab="chats"
+                                aria-selected="true">Chats</button>
+                            <button type="button" class="list-tab" data-list-tab="activity" id="activity"
+                                aria-selected="false">
+                                Activity <span class="activity-count" id="activityCount"></span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="contacts" id="contacts"></div>
+                    <div class="chats-view">
+                        <button type="button" class="archive-row" id="archiveRow" style="display: none;">
+                            <span class="arch-ico"><i class="fas fa-archive"></i></span>
+                            <span class="arch-label">Archived</span>
+                            <span class="arch-count">2</span>
+                        </button>
 
-                    <div class="no-result" id="noResult">No chats found</div>
-
-                    <div class="archive-view" id="archiveView">
-                        <div class="archive-view-head">
-                            <i class="fas fa-arrow-left back" id="archiveBack"></i>
-                            <span>Archived</span>
+                        <div class="chat-search">
+                            <div class="box">
+                                <i class="fas fa-magnifying-glass"></i>
+                                <input type="text" id="searchContact" placeholder="Search chats">
+                            </div>
                         </div>
-                        <div class="archive-list" id="archive">
+
+                        <div class="contacts" id="contacts"></div>
+
+                        <div class="no-result" id="noResult">No chats found</div>
+
+                        <div class="archive-view" id="archiveView">
+                            <div class="archive-view-head">
+                                <i class="fas fa-arrow-left back" id="archiveBack"></i>
+                                <span>Archived</span>
+                            </div>
+                            <div class="archive-list" id="archive">
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity feed: static demo data. Replace each .activity-item with a loop later. -->
+                    <div class="activity-view" id="activityView">
+                        <div class="activity-list" id="activityList">
 
                         </div>
                     </div>
@@ -2313,6 +2760,69 @@
     @vite(['resources/js/app.js'])
 
     <script>
+        $("#activity").on("click", function() {
+            $.ajax({
+                url: "{{ route('loadActivity') }}",
+                type: "GET",
+                success: function(response) {
+                    console.log(response.data);
+
+                    let body = $('#activityList');
+                    $('.activity-list').empty();
+
+                    $.each(response.data, function(index, activity) {
+                        let updatedAt = new Date(activity.updated_at);
+
+                        let formattedDateTime = updatedAt.toLocaleString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                        let message = activity.message.message.length > 10 ?
+                            activity.message.message.slice(0, 10) + '...' :
+                            activity.message.message;
+                        let is_read = Number(activity.is_read) ? 'read' : 'unread';
+                        body.append(
+                            `
+
+                         <div class="activity-item ${is_read}"
+                            data-conversation-id="${activity.conversation_id}"
+                            data-message-id="${activity.message_id}",
+                            data-receiver-id="${activity.actor_id}",
+                         >
+
+
+    <div class="activity-body">
+        <p class="activity-line">
+            <strong>${activity.actor.employee.first_name}</strong> ${activity.type}  ${activity.content} to your message
+        </p>
+
+        <div class="activity-preview">
+           ${message}
+        </div>
+
+        <span class="activity-time">${formattedDateTime}</span>
+    </div>
+
+    <span class="activity-dot"></span>
+</div>
+                        `
+                        )
+                    });
+
+                }
+            })
+        });
+
+
+
+
+
+
+
         /* ===================== shared media helper ===================== */
         window.ChatMedia = (function() {
             var IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -2966,9 +3476,66 @@
 
 
             });
+            channel.listen('.activity.unread.count', function(event) {
 
+                console.log("called activity count");
+                $("#activityCount").text(event.activity_count);
+            });
+
+
+
+
+            channel.listen('.activity.created', function(event) {
+                console.log("call activity");
+                let body = $('#activityList');
+
+                let updatedAt = new Date(event.updated_at);
+
+                let formattedDateTime = updatedAt.toLocaleString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                let message = event.message.length > 10 ?
+                    event.message.slice(0, 10) + '...' :
+                    event.message;
+                let is_read = Number(event.is_read) ? 'read' : 'unread';
+                body.prepend(
+                    `
+
+                         <div class="activity-item ${is_read}"
+                            data-conversation-id="${event.conversation_id}"
+                            data-message-id="${event.message_id}",
+                            data-receiver-id="${event.actor_id}",
+                         >
+
+
+    <div class="activity-body">
+        <p class="activity-line">
+            <strong>${event.actor_name}</strong> ${event.type}  ${event.content} to your message
+        </p>
+
+        <div class="activity-preview">
+           ${message}
+        </div>
+
+        <span class="activity-time">${formattedDateTime}</span>
+    </div>
+
+    <span class="activity-dot"></span>
+</div>
+                        `
+                )
+
+            });
 
         });
+
+
+
 
         let typing = false;
         let typingtimeout;
@@ -3193,6 +3760,7 @@
                     success: function(response) {
 
 
+                        $("#activityCount").text(response.activity_count);
 
 
                         if (response.users && response.users.length === 0) {
@@ -3467,7 +4035,7 @@
                 });
             }
 
-            function loadChat(conversationId, receiverId, target) {
+            function loadChat(conversationId, receiverId, target = null) {
 
                 $.ajax({
                     url: "{{ route('loadChat') }}",
@@ -3484,6 +4052,17 @@
                         let chatContent = $('.panes');
                         chatContent.find('.chat-pane').removeClass('active');
 
+
+                        if (response.user.employee.employment_status == "active") {
+                            $('#terminatedNotice').hide();
+                            $('#chatForm').show();
+
+                        } else {
+
+                            $('#terminatedNotice').show();
+                            $('#chatForm').hide();
+
+                        }
 
                         let userName = response.user?.employee?.full_name || '';
                         let profileUrl = response.user?.employee?.profile_url || '';
@@ -3511,7 +4090,7 @@
                 <div class="chat-pane active"
                     data-user-id="${receiverId}"
                     data-conversation-id="${conversationId}"
-                    data-archived="${response.data[0].is_archived ? "1" :'0'}"
+                    data-archived="${response.data?.[0]?.is_archived ? "1" :'0'}"
                    >
 
                     <div class="chat-head">
@@ -3536,7 +4115,7 @@
 
                         let body = chatContent.find('.chat-body');
 
-                        if (response.status === false || !response.data?.length) {
+                        if (response.status === false || !response.data.length) {
 
                             body.html(`
                     <div class="empty-chat">
@@ -3556,16 +4135,7 @@
                         if (response.message_draft) {
                             $('#msgInput').val(response.message_draft.draft);
                         }
-                        if (response.user.employee.employment_status == "active") {
-                            $('#terminatedNotice').hide();
-                            $('#chatForm').show();
 
-                        } else {
-
-                            $('#terminatedNotice').show();
-                            $('#chatForm').hide();
-
-                        }
 
 
                         $.each(messages, function(index, message) {
@@ -3716,15 +4286,41 @@
 
                         });
 
-                        // Image loading
+
                         body.find('.img-wrap img').each(function() {
                             this.addEventListener('load', function() {
-                                scrollBottom(body[0], false);
+
+                                if (!target) {
+                                    scrollBottom(body[0], false);
+                                }
+
                             });
                         });
 
-                        // Scroll to bottom
-                        scrollBottom(body[0], false);
+                        // Move to the activity message
+                        if (target) {
+
+                            $(".welcome-screen").removeClass("active");
+
+                            let message = body.find(
+                                `.msg[data-message-id="${target}"]`
+                            )[0];
+
+                            if (message) {
+
+                                message.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+
+                            }
+
+                        } else {
+
+                            // Normal chat opening
+                            scrollBottom(body[0], false);
+
+                        }
 
                     },
 
@@ -3766,6 +4362,15 @@
                     }
                 });
             }
+
+
+
+            $(document).on('click', '.activity-item', function() {
+                let conversation_id = $(this).attr('data-conversation-id');
+                let receiver_id = $(this).attr('data-receiver-id');
+                let message_id = $(this).attr('data-message-id');
+                loadChat(conversation_id, receiver_id, message_id);
+            });
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -4304,7 +4909,7 @@
 
                     },
                     success: function(response) {
-                        loadChat(response.conversation_id, response.receiver_id);
+                        //loadChat(response.conversation_id, response.receiver_id);
                     }
                 });
 
@@ -5430,6 +6035,29 @@
                 chatList.classList.remove('show-archived');
             });
         })();
+    </script>
+    <script>
+        /* Chats / Activity tabs — one delegated listener, always works. */
+        document.addEventListener('click', function(e) {
+            var tab = e.target.closest('[data-list-tab]');
+            if (!tab) return;
+
+            var list = document.querySelector('.chat-list');
+            if (!list) return;
+
+            var showingActivity = tab.dataset.listTab === 'activity';
+
+            document.querySelectorAll('[data-list-tab]').forEach(function(t) {
+                var active = t === tab;
+                t.classList.toggle('active', active);
+                t.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+
+            list.classList.toggle('show-activity', showingActivity);
+            if (showingActivity) {
+                list.classList.remove('show-archived');
+            }
+        });
     </script>
 
 </body>
