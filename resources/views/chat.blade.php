@@ -2673,7 +2673,7 @@
                     body.find('.typing-row').remove();
                 }
 
-                //  body.scrollTop(body[0].scrollHeight);
+                body.scrollTop(body[0].scrollHeight);
 
             });
 
@@ -2822,7 +2822,10 @@
 
 
 
+
             channel.listen('.message.reply', function(event) {
+
+                console.log(event);
 
                 if (Number(event.sender_id) === Number(window.authUserId)) {
                     return;
@@ -2833,21 +2836,29 @@
                         Number(event.conversation_id);
                 });
 
-                if (pane.length && pane.hasClass('active')) {
+                if (!pane.length || !pane.hasClass('active')) {
+                    return;
+                }
 
-                    let time = new Date(event.created_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
+                let time = new Date(event.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
 
-                    let body = pane.find('.chat-body');
+                let body = pane.find('.chat-body');
 
-                    body.find('.empty-chat').remove();
+                body.find('.empty-chat').remove();
+                let messageEvent = {
+                    ...event,
+                    message: event.message || ''
+                };
+                let message = ChatMedia.render(messageEvent, time);
 
-                    let rendered = {
-                        'cls': 'bubble',
-                        'html': `
+
+                let rendered = {
+                    'cls': 'bubble',
+                    'html': `
                         <div class="reply-message">
                             <div class="reply-message-line"></div>
                             <div class="reply-message-content">
@@ -2856,13 +2867,13 @@
                                 </div>
                                 </div>
                                 <div class="message-content">
-                                    ${event.message}
+                                    ${message.html}
                                 </div>
 
                         `
-                    };
+                };
 
-                    body.append(`
+                body.append(`
                     <div class="msg in" data-message-id="${event.message_id}">
                         <div class="${rendered.cls}">
                             ${rendered.html}
@@ -2871,18 +2882,13 @@
                 `);
 
 
-                    // Mark incoming message as read
-                    MessageRead(event.conversation_id, event.sender_id);
+                MessageRead(event.conversation_id, event.sender_id);
 
-                    //ody.scrollTop(body[0].scrollHeight);
-
-                } else {
-                    console.log('Message received. Chat is not open.');
+                if (body.length) {
+                    body.scrollTop(body[0].scrollHeight);
                 }
 
             });
-
-
 
 
             channel.listen('.message.updated', function(event) {
@@ -4745,6 +4751,9 @@
             }
 
             function sendReply(text) {
+                if (!receiverId) return;
+                typing = false;
+                settyping(conversationId, receiverId, typing);
                 let message_id = $('#replyBar').attr('data-message-id');
                 console.log(message_id);
                 console.log(text);
