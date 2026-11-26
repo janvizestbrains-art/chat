@@ -2737,6 +2737,25 @@
 
             });
 
+            channel.listen('.latestmessage.deleteforme', function(event) {
+
+                let contact = $('.contact').filter(function() {
+                    return Number($(this).data('conversation-id')) ===
+                        Number(event.conversation_id);
+                });
+
+                if (contact.length === 0) {
+                    console.log('Contact not found for conversation:', event.conversation_id);
+                    return;
+                }
+
+                let preview = contact.find('.preview');
+
+                preview.text(event.latest_message ?? '');
+                preview.show();
+
+            });
+
 
             // ------------------------------------
             // 4. Update message read ticks
@@ -3624,7 +3643,7 @@
                                 rendered = ChatMedia.render(message, time + ' ' + ticks);
                             }
 
-                            if (message.reply_message_id) {
+                            if (message.reply_message_id && message.delete_for_everyone !== true) {
                                 rendered = {
                                     cls: 'bubble',
                                     html: `
@@ -4969,7 +4988,8 @@
                         row.remove();
                         $('.pinned-bar.show').hide();
                         toast('Message deleted');
-                        loadChat(response.conversation_id, response.reciver_id);
+                        $(row).remove();
+                        //loadChat(response.conversation_id, response.reciver_id);
                     }
 
                 });

@@ -23,6 +23,7 @@ class MessageLatest implements ShouldBroadcastNow
         public int $conversation_id,
         public int $receiver_id,
         public string $latest_message,
+        public int $sender_id,
 
     )
     {
@@ -38,6 +39,7 @@ class MessageLatest implements ShouldBroadcastNow
     {
         return [
             new PrivateChannel('users.'.$this->receiver_id),
+            new PrivateChannel('users.'.$this->sender_id),
         ];
     }
     public function broadcastWith():array
@@ -46,7 +48,8 @@ class MessageLatest implements ShouldBroadcastNow
         [
             "conversation_id" =>$this->conversation_id,
             "receiver_id" =>$this->receiver_id,
-            "latest_message" =>$this->latest_message
+            "latest_message" =>$this->latest_message,
+            "sender_id" =>$this->sender_id,
         ];
     }
     public function broadcastAs():string

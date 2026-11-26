@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\LatestMessageDeletedForMe;
 use App\Events\MessageCount;
 use App\Events\MessageDeleteEveryone;
 use App\Events\MessageLatest;
@@ -170,6 +171,7 @@ class ChatController extends Controller
             $conversation->id,
             $request->reciver_id,
             $message->message ?? 'Sent a File',
+            auth::id(),
         );
 
 
@@ -431,16 +433,19 @@ $user->conversation_id = $conversationId;
         $latestMessage = Message::where("conversation_id", $message->conversation_id)->where("delete_for_everyone", false)
             ->where(function ($query) {
                 $query->where("delete_for_me", false)
-                    ->orWhere("sender_id", '!=', auth::id());
+                ->orWhere("sender_id","!=",auth::id());
+
             })
             ->latest()->first();
 
 
         if ($latestMessage) {
-            MessageLatest::dispatch(
+            LatestMessageDeletedForMe::dispatch(
                 $latestMessage->conversation_id,
                 auth::id(),
                 $latestMessage->message,
+
+
             );
         }
         return response()->json([
@@ -506,13 +511,10 @@ $user->conversation_id = $conversationId;
             $latestMessage->conversation_id,
             auth::id(),
             $latestMessage->message,
+            $latestMessage->receiver_id,
         );
 
-        MessageLatest::dispatch(
-            $latestMessage->conversation_id,
-            $latestMessage->receiver_id,
-            $latestMessage->message,
-        );
+
         //  MessageLatest::dispatch(
         //     $latestMessage->conversation_id,
         //     $latestMessage->receiver_id,
@@ -534,7 +536,7 @@ $user->conversation_id = $conversationId;
         Message::where("conversation_id", $request->conversation_id)->where("receiver_id", auth::id())->update([
             "clear_for_receiver" => true,
         ]);
-        MessageLatest::dispatch(
+        LatestMessageDeletedForMe::dispatch(
             $request->conversation_id,
             auth::id(),
             "No Messages Yet",
@@ -770,6 +772,7 @@ $user->conversation_id = $conversationId;
                 $message_data->conversation_id,
                 $message_data->receiver_id,
                 $message_data->message,
+                auth::id(),
             );
 
 
@@ -831,6 +834,7 @@ $user->conversation_id = $conversationId;
             $message_data->conversation_id,
             $message_data->receiver_id,
             $message_data->message,
+            auth::id(),
         );
 
 
