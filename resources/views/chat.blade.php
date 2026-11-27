@@ -2781,9 +2781,12 @@
                             minute: '2-digit',
                             hour12: true
                         });
-                        let message = activity.message.message.length > 10 ?
-                            activity.message.message.slice(0, 10) + '...' :
+                        let message = activity.message.message.length > 20 ?
+                            activity.message.message.slice(0, 20) + '...' :
                             activity.message.message;
+
+                        let content = activity.content.length > 20 ?
+                            activity.content.slice(0, 20) + '...' : activity.content;
                         let is_read = Number(activity.is_read) ? 'read' : 'unread';
                         body.append(
                             `
@@ -2799,7 +2802,7 @@
 
     <div class="activity-body">
         <p class="activity-line">
-            <strong>${activity.actor.employee.first_name}</strong> ${activity.type}  ${activity.content} to your message
+            <strong>${activity.actor.employee.first_name}</strong> ${activity.type} <strong>${content}</strong> to your message
         </p>
 
         <div class="activity-preview">
@@ -3250,6 +3253,9 @@
 
             });
 
+
+
+
             channel.listen('.latestmessage.deleteforme', function(event) {
 
                 let contact = $('.contact').filter(function() {
@@ -3494,6 +3500,7 @@
             channel.listen('.activity.created', function(event) {
 
                 let message = event.message ?? '';
+                let content = event.content ?? '';
 
                 let formattedDateTime = new Date(event.updated_at).toLocaleString('en-IN', {
                     day: '2-digit',
@@ -3517,11 +3524,11 @@
             <div class="activity-body">
                 <p class="activity-line">
                     <strong>${event.actor_name}</strong>
-                    ${event.type} ${event.content} to your message
+                    ${event.type}  ${content.length > 20 ? content.slice(0, 20) + '...' : content} to your message
                 </p>
 
                 <div class="activity-preview">
-                    ${message.length > 10 ? message.slice(0, 10) + '...' : message}
+                    ${message.length > 20 ? message.slice(0, 20) + '...' : message}
                 </div>
 
                 <span class="activity-time">${formattedDateTime}</span>
@@ -3573,8 +3580,8 @@
                 });
                 activity.remove();
 
-                let message = event.message.length > 10 ?
-                    event.message.slice(0, 10) + '...' :
+                let message = event.message.length > 20 ?
+                    event.message.slice(0, 20) + '...' :
                     event.message;
                 let is_read = Number(event.is_read) ? 'read' : 'unread';
                 body.prepend(
@@ -4861,7 +4868,8 @@
 
             function cleanText(node) {
                 var copy = node.cloneNode(true);
-                copy.querySelectorAll('.meta, .meta-over, .flag-badge, .quote, .reactions, .sender, .edited-label')
+                copy.querySelectorAll(
+                        '.meta, .meta-over, .flag-badge, .quote, .reply-message, .reactions, .sender, .edited-label')
                     .forEach(function(n) {
                         n.remove();
                     });
@@ -4877,6 +4885,10 @@
                 var doc = b.querySelector('.doc-card .name');
                 if (doc) return '📄 ' + doc.textContent.trim();
                 if (b.querySelector('.img-wrap')) return '📷 Photo';
+
+                // reply message: return only the reply's own text, not the quoted message
+                var mc = b.querySelector('.message-content');
+                if (mc) return cleanText(mc);
 
                 var text = '';
                 Array.prototype.forEach.call(b.childNodes, function(n) {
@@ -5529,16 +5541,19 @@
                 var b = bubbleOf(row);
                 if (!b || b.querySelector('.edit-box')) return;
 
+                // for reply messages edit only inside .message-content (the quote stays untouched)
+                var target = b.querySelector('.message-content') || b;
+
                 var original = messageText(row);
                 var removed = [];
 
-                Array.prototype.slice.call(b.childNodes).forEach(function(n) {
+                Array.prototype.slice.call(target.childNodes).forEach(function(n) {
                     if (n.nodeType === 1 && (n.classList.contains('meta') || n.classList.contains('quote') ||
                             n.classList.contains('flag-badge'))) {
                         return;
                     }
                     removed.push(n);
-                    b.removeChild(n);
+                    target.removeChild(n);
                 });
 
                 var box = document.createElement('div');
@@ -5562,10 +5577,11 @@
                 box.appendChild(ta);
                 box.appendChild(actions);
 
-                if (b.querySelector('.meta')) {
-                    b.insertBefore(box, b.querySelector('.meta'));
+                var metaEl = target.querySelector('.meta');
+                if (metaEl) {
+                    target.insertBefore(box, metaEl);
                 } else {
-                    b.appendChild(box);
+                    target.appendChild(box);
                 }
 
                 ta.focus();
@@ -5573,10 +5589,10 @@
 
                 function restore() {
                     box.remove();
-                    var anchor = b.querySelector('.meta');
+                    var anchor = target.querySelector('.meta');
                     removed.forEach(function(n) {
-                        if (anchor) b.insertBefore(n, anchor);
-                        else b.appendChild(n);
+                        if (anchor) target.insertBefore(n, anchor);
+                        else target.appendChild(n);
                     });
                 }
 
@@ -5592,33 +5608,28 @@
                         data: {
                             message: val,
                             _token: "{{ csrf_token() }}",
-
                         },
                         success: function(response) {
 
                             box.remove();
 
-                            var anchor = b.querySelector('.meta');
-
+                            var anchor = target.querySelector('.meta');
                             var textNode = document.createTextNode(val);
 
                             if (anchor) {
-                                b.insertBefore(textNode, anchor);
+                                target.insertBefore(textNode, anchor);
                             } else {
-                                b.appendChild(textNode);
+                                target.appendChild(textNode);
                             }
 
                             row.dataset.edited = '1';
 
                             if (anchor && !anchor.querySelector('.edited-label')) {
-
                                 var lbl = document.createElement('span');
-
                                 lbl.className = 'edited-label';
                                 lbl.textContent = ' edited · ';
 
                                 var tick = anchor.querySelector('.message-status');
-
                                 if (tick) {
                                     anchor.insertBefore(lbl, tick);
                                 } else {
@@ -5628,8 +5639,7 @@
 
                             toast('Message edited');
                         },
-                    })
-
+                    });
                 }
 
                 cancelBtn.addEventListener('click', restore);
@@ -6002,7 +6012,7 @@
                     },
                     success: function(response) {
                         loadChat(conversation_id, receiver_id);
-                        toast('Chat cleared');
+                        toast(response.message);
                     }
                 });
 
