@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\ActivityCount;
 use App\Events\ActivityCreated;
+use App\Events\ActivityRead;
+use App\Events\ActivityRemove;
+use App\Events\ActivityUpdated;
 use App\Events\LatestMessageDeletedForMe;
 use App\Events\MessageCount;
 use App\Events\MessageDeleteEveryone;
@@ -254,7 +257,7 @@ class ChatController extends Controller
 
         if ($request->conversationId) {
 
-            Message::where('conversation_id', $request->conversationId)
+           Message::where('conversation_id', $request->conversationId)
                 ->where('sender_id', $request->receiverId)
                 ->whereNot('sender_id', Auth::id())
                 ->where('is_read', false)
@@ -262,6 +265,27 @@ class ChatController extends Controller
                     'is_read' => true,
                     'read_at' => now(),
                 ]);
+            Activity::where("conversation_id",$request->conversationId)
+            ->where("user_id",auth::id())
+            ->where("is_read",false)
+            ->update([
+                'is_read' =>true,
+
+            ]);
+            $activity_count=Activity::where("user_id",auth::id())
+            ->where("is_read",false)->count();
+            ActivityCount::dispatch(
+                auth::id(),
+                $activity_count,
+            );
+           $activityIds = Activity::where('conversation_id', $request->conversationId)
+    ->where('user_id', Auth::id())
+    ->where('is_read', false)
+    ->pluck('id');
+      foreach ($activityIds as $activityId) {
+        ActivityRead::dispatch($activityId, Auth::id());
+    }
+
 
 
             MessageRead::dispatch(
@@ -559,6 +583,7 @@ class ChatController extends Controller
         if ($message) {
             $message->update([
                 "reaction" => $request->emo,
+
             ]);
         } else {
             MessageReaction::create([
@@ -584,6 +609,24 @@ class ChatController extends Controller
                         'content' => $request->emo,
                         'is_read' => false,
                     ]);
+
+              ActivityUpdated::dispatch(
+                $activity->id,
+    $activity->conversation_id,
+    $activity->message_id,
+    $activity->type,
+    $activity->is_read,
+    $activity->actor_id,
+    $activity->actor->employee->first_name,
+    $activity->user_id,
+    $activity->content,
+    $activity->message->message,
+    $activity->updated_at,
+);
+
+
+
+
                 } else {
                    $activity= Activity::create([
                         'user_id' => $is_receiver->sender_id,
@@ -599,6 +642,7 @@ class ChatController extends Controller
 
 
             ActivityCreated::dispatch(
+                $activity->id,
                     $activity->conversation_id,
                     $activity->message_id,
                     $activity->user_id,
@@ -613,13 +657,14 @@ class ChatController extends Controller
             );
 
 
-                    $activity_count=Activity::where("user_id",$activity->user_id)->where("is_read",false)
+
+                }
+                  $activity_count=Activity::where("user_id",$activity->user_id)->where("is_read",false)
                     ->count();
                     ActivityCount::dispatch(
                         $activity->user_id,
                         $activity_count,
                     );
-                }
             }
 
         $message = Message::findOrFail($request->messageId);
@@ -659,54 +704,73 @@ class ChatController extends Controller
     }
 
     public function messageRemoveReact(Request $request)
-    {
-        $message = MessageReaction::where("message_id", $request->messageId)->where("user_id", auth::id())->first();
-        if ($message) {
-            $is_activity = Activity::where("message_id", $message->message_id)->where("actor_id", auth::id())
-                ->where("type", "react")
-                ->first();
-            if ($is_activity) {
-                $is_activity->delete();
-            }
-            $message->delete();
-             $activity_count=Activity::where("user_id",$is_activity->user_id)->where("is_read",false)
-                    ->count();
-                    ActivityCount::dispatch(
-                        $is_activity->user_id,
-                        $activity_count,
-                    );
-        }
-        $message = Message::findOrFail($request->messageId);
+{
+    $reaction = MessageReaction::where('message_id', $request->messageId)
+        ->where('user_id', auth::id())
+        ->first();
 
-        $receiverId = $message->sender_id == auth::id()
-            ? $message->receiver_id
-            : $message->sender_id;
+    if ($reaction) {
 
-        MessageReact::dispatch(
-            $message->id,
-            auth::id(),
-            $receiverId,
-            ''
-        );
+        $activity = Activity::where('message_id', $reaction->message_id)
+            ->where('actor_id', auth::id())
+            ->where('type', 'react')
+            ->first();
 
+        if ($activity) {
 
-        $message = Message::with('reactions')->where("id", $message->id)->first();
-        $reactions = [];
-        foreach ($message->reactions as $reaction) {
-            $reactions[] =
-                [
-                    'user_id' => $reaction->user_id,
-                    'reaction' => $reaction->reaction,
-                ];
+            $userId = $activity->user_id;
+            $activity_id=$activity->id;
+
+            $activity->delete();
+
+            $activityCount = Activity::where('user_id', $userId)
+                ->where('is_read', false)
+                ->count();
+
+            ActivityCount::dispatch(
+                $userId,
+                $activityCount
+            );
+            ActivityRemove::dispatch(
+                $activity_id,
+                $userId,
+
+            );
         }
 
-
-        return response()->json([
-            "success" => true,
-            "message_id" => $message->id,
-            "reactions" => $reactions,
-        ]);
+        $reaction->delete();
     }
+
+    $message = Message::findOrFail($request->messageId);
+
+    $receiverId = $message->sender_id == auth::id()
+        ? $message->receiver_id
+        : $message->sender_id;
+
+    MessageReact::dispatch(
+        $message->id,
+        auth::id(),
+        $receiverId,
+        ''
+    );
+
+    $message = Message::with('reactions')->findOrFail($message->id);
+
+    $reactions = [];
+
+    foreach ($message->reactions as $reaction) {
+        $reactions[] = [
+            'user_id' => $reaction->user_id,
+            'reaction' => $reaction->reaction,
+        ];
+    }
+
+    return response()->json([
+        'success' => true,
+        'message_id' => $message->id,
+        'reactions' => $reactions,
+    ]);
+}
 
     public function messageStar(Request $request)
     {

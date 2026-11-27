@@ -50,5 +50,6 @@ Route::post('/leave/{leave}/status', [LeaveController::class, 'updateStatus'])
 
 //activity
 Route::get('/load-activity', [ActivityController::class, 'loadActivity'])->name('loadActivity');
-
+Route::POST('/read-activity',[ActivityController::class,'readActivity'])->name('readActivity');
+Route::POST('/read-message-activity',[ActivityController::class,'readMessageActivity'])->name("readMessageActivity");
 });

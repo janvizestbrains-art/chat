@@ -22,6 +22,7 @@ class ActivityCreated implements ShouldBroadcastNow
      * Create a new event instance.
      */
     public function __construct(
+        public int $activity_id,
         public int $conversation_id,
         public int $message_id,
         public int $user_id,
@@ -53,6 +54,7 @@ class ActivityCreated implements ShouldBroadcastNow
     public function broadcastWith():array
     {
         return [
+            "activity_id" =>$this->activity_id,
             "conversation_id" =>$this->conversation_id,
             "message_id" =>$this->message_id,
             "user_id"=>$this->user_id,

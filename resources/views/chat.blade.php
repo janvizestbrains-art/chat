@@ -2789,9 +2789,11 @@
                             `
 
                          <div class="activity-item ${is_read}"
+                         data-activity-id="${activity.id}",
                             data-conversation-id="${activity.conversation_id}"
-                            data-message-id="${activity.message_id}",
-                            data-receiver-id="${activity.actor_id}",
+                            data-message-id="${activity.message_id}"
+                            data-receiver-id="${activity.actor_id}"
+                            data-type="${activity.type}"
                          >
 
 
@@ -3127,6 +3129,7 @@
                     MessageRead(event.conversation_id, event.sender_id);
 
 
+
                     body.scrollTop(body[0].scrollHeight);
 
                 } else {
@@ -3413,11 +3416,14 @@
 
                 MessageRead(event.conversation_id, event.sender_id);
 
+
                 if (body.length) {
                     body.scrollTop(body[0].scrollHeight);
                 }
 
             });
+
+
 
 
             channel.listen('.message.updated', function(event) {
@@ -3486,9 +3492,75 @@
 
 
             channel.listen('.activity.created', function(event) {
-                console.log("call activity");
+
+                let message = event.message ?? '';
+
+                let formattedDateTime = new Date(event.updated_at).toLocaleString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                let isRead = Number(event.is_read) ? 'read' : 'unread';
+
+                $('#activityList').prepend(`
+        <div class="activity-item ${isRead}"
+             data-activity-id="${event.activity_id}"
+             data-conversation-id="${event.conversation_id}"
+             data-message-id="${event.message_id}"
+             data-receiver-id="${event.actor_id}"
+             data-type="${event.type}">
+
+            <div class="activity-body">
+                <p class="activity-line">
+                    <strong>${event.actor_name}</strong>
+                    ${event.type} ${event.content} to your message
+                </p>
+
+                <div class="activity-preview">
+                    ${message.length > 10 ? message.slice(0, 10) + '...' : message}
+                </div>
+
+                <span class="activity-time">${formattedDateTime}</span>
+            </div>
+
+            <span class="activity-dot"></span>
+        </div>
+    `);
+
+                let pane = $('.chat-pane.active').filter(function() {
+                    return Number($(this).attr('data-conversation-id')) === Number(event
+                            .conversation_id) &&
+                        Number($(this).attr('data-receiver-id')) === Number(event.actor_id);
+                });
+
+                if (pane.length && document.visibilityState === 'visible') {
+                    messageActivityRead(event.activity_id);
+                }
+
+            });
+
+
+
+
+
+            channel.listen('.activity.updated', function(event) {
+
+                console.log("call actvity updated");
+
                 let body = $('#activityList');
 
+
+                let activity = $('#activityList .activity-item').filter(function() {
+                    return Number($(this).data('conversation-id')) === Number(event
+                            .conversation_id) &&
+                        Number($(this).data('receiver-id')) === Number(event.actor_id) &&
+                        String($(this).data('type')) === String(event.type) &&
+                        Number($(this).data('message-id')) === Number(event.message_id);
+                });
                 let updatedAt = new Date(event.updated_at);
 
                 let formattedDateTime = updatedAt.toLocaleString('en-IN', {
@@ -3499,6 +3571,8 @@
                     minute: '2-digit',
                     hour12: true
                 });
+                activity.remove();
+
                 let message = event.message.length > 10 ?
                     event.message.slice(0, 10) + '...' :
                     event.message;
@@ -3507,9 +3581,11 @@
                     `
 
                          <div class="activity-item ${is_read}"
+                         data-activity-id="${event.activity_id}"
                             data-conversation-id="${event.conversation_id}"
-                            data-message-id="${event.message_id}",
-                            data-receiver-id="${event.actor_id}",
+                            data-message-id="${event.message_id}"
+                            data-receiver-id="${event.actor_id}"
+                            data-type="${event.type}"
                          >
 
 
@@ -3531,8 +3607,31 @@
                 )
 
             });
+            channel.listen(".activity.remove", function(event) {
+
+                console.log("call activity remove");
+                let activity_item = $("#activityList .activity-item").filter(
+                    function() {
+                        return Number($(this).data('activity-id')) === event
+                            .activity_id;
+                    });
+                activity_item.remove();
+            });
+
+            channel.listen('.activity.read', function(event) {
+                console.log("activity read call");
+                let activity_item = $("#activityList .activity-item").filter(
+                    function() {
+                        return Number($(this).data('activity-id')) === event
+                            .activity_id;
+                    });
+                activity_item.removeClass("unread");
+                activity_item.addClass("read");
+            });
 
         });
+
+
 
 
 
@@ -4363,13 +4462,40 @@
                 });
             }
 
+            function messageActivityRead(message_id) {
+                $.ajax({
+                    "url": "{{ route('readMessageActivity') }}",
+                    "type": "POST",
+                    "data": {
+                        message_id: message_id,
+                        _token: "{{ csrf_token() }}",
+                    },
+                });
+            }
 
 
             $(document).on('click', '.activity-item', function() {
                 let conversation_id = $(this).attr('data-conversation-id');
                 let receiver_id = $(this).attr('data-receiver-id');
                 let message_id = $(this).attr('data-message-id');
+                let activity_id = $(this).attr('data-activity-id');
+                let has_read = $(this).hasClass('unread');
+                if (has_read) {
+                    $.ajax({
+                        url: "{{ route('readActivity') }}",
+                        type: "POST",
+                        data: {
+                            "activity_id": activity_id,
+                            _token: "{{ csrf_token() }}",
+                        },
+                        success: function(response) {
+
+                        },
+                    });
+
+                }
                 loadChat(conversation_id, receiver_id, message_id);
+
             });
 
             form.addEventListener('submit', function(e) {
